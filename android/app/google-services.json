@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "445987609145",
+    "project_id": "gigglio",
+    "storage_bucket": "gigglio.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445987609145:android:6b8585f8035edf102b8be8",
+        "android_client_info": {
+          "package_name": "com.samtech.gigglio"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_9RS6aGByAtw4ajkNiW_Y0QArlHnofJo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,68 @@
+name: gigglio
+description: "A new Flutter project."
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.4 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.6
+  # route & state management
+  get: ^4.6.6
+  # local storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  # resonsive layouts
+  responsive_framework: ^0.1.4
+  # toast
+  fluttertoast: ^8.2.6
+  firebase_core: ^3.4.0
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The lint set provided by the package is activated in the `analysis_options.yaml` 
+  # file located at the root of your package. 
+  flutter_lints: ^3.0.2
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/icons/
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #

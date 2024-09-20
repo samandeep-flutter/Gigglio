@@ -1,0 +1,30 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "gigglio",
+                    "appId": "1:445987609145:android:6b8585f8035edf102b8be8",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "ios": {
+                "default": {
+                    "projectId": "gigglio",
+                    "appId": "1:445987609145:ios:5febd0ad11abe9932b8be8",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "gigglio",
+                    "configurations": {
+                        "android": "1:445987609145:android:6b8585f8035edf102b8be8",
+                        "ios": "1:445987609145:ios:5febd0ad11abe9932b8be8"
+                    }
+                }
+            }
+        }
+    }
+}
