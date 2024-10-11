@@ -1,3 +1,5 @@
+import 'package:fluttertoast/fluttertoast.dart';
+
 class StringRes {
   static const String appName = 'Social Things';
 
@@ -30,4 +32,8 @@ class StringRes {
   static const String boxToken = '$boxName:token';
   static const String keyTheme = '$boxName:theme';
   static const String keyUser = '$boxName:user';
+}
+
+showToast(String text, {Toast? length}) {
+  Fluttertoast.showToast(msg: text, toastLength: length);
 }

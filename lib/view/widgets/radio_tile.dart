@@ -41,6 +41,7 @@ class _MyRadioTileState extends State<MyRadioTile> {
         groupValue = value;
         ThemeServices.maybeOf(context)?.changeTheme(value);
         Future.delayed(const Duration(milliseconds: 500))
+            // ignore: use_build_context_synchronously
             .then((value) => Navigator.pop(context));
       },
     );

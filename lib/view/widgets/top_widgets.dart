@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gigglio/services/theme_services.dart';
 import '../../model/utils/dimens.dart';
 
 class LoadingButton extends StatelessWidget {
@@ -44,3 +45,61 @@ class LoadingButton extends StatelessWidget {
     );
   }
 }
+
+class LoadingIcon extends StatelessWidget {
+  final IconButtonStyle buttonStyle;
+  final Widget icon;
+  final bool loading;
+  final double? loaderSize;
+  final ButtonStyle? style;
+  final VoidCallback onPressed;
+  const LoadingIcon({
+    super.key,
+    required this.buttonStyle,
+    required this.icon,
+    required this.loading,
+    required this.onPressed,
+    this.loaderSize,
+    this.style,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeServices.of(context);
+
+    switch (buttonStyle) {
+      case IconButtonStyle.outlined:
+        return IconButton.outlined(
+          style: style ??
+              IconButton.styleFrom(
+                side: BorderSide(color: scheme.textColorLight, width: 2),
+                padding: const EdgeInsets.all(Dimens.sizeMedSmall),
+                foregroundColor: scheme.textColor,
+              ),
+          onPressed: onPressed,
+          icon: loading
+              ? SizedBox.square(
+                  dimension: loaderSize ?? 24,
+                  child: const CircularProgressIndicator())
+              : icon,
+        );
+      case IconButtonStyle.filled:
+        return IconButton.filled(
+          style: style ??
+              IconButton.styleFrom(
+                side: BorderSide(color: scheme.textColorLight, width: 2),
+                padding: const EdgeInsets.all(Dimens.sizeMedSmall),
+                foregroundColor: scheme.textColor,
+              ),
+          onPressed: onPressed,
+          icon: loading
+              ? SizedBox.square(
+                  dimension: loaderSize ?? 24,
+                  child: const CircularProgressIndicator())
+              : icon,
+        );
+    }
+  }
+}
+
+enum IconButtonStyle { outlined, filled }

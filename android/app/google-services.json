@@ -12,7 +12,20 @@
           "package_name": "com.samtech.gigglio"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "445987609145-r0doen8u3ui4rrt71o9sips57ogeqkkt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.samtech.gigglio",
+            "certificate_hash": "5326e520b3ca538938b3649f2f70c92abfa16d8d"
+          }
+        },
+        {
+          "client_id": "445987609145-at0h2sfvltuusp5sn1baujeaeplkq39d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyA_9RS6aGByAtw4ajkNiW_Y0QArlHnofJo"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "445987609145-at0h2sfvltuusp5sn1baujeaeplkq39d.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "445987609145-v67iuvd3qqjp9ibutnlhrj5msdnaasrg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.samtech.gigglio"
+              }
+            }
+          ]
         }
       }
     }

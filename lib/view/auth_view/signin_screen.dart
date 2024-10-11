@@ -56,13 +56,13 @@ class SignInScreen extends GetView<SignInController> {
                 ],
               ),
               const SizedBox(height: Dimens.sizeMidLarge),
-              SizedBox(
-                width: 200,
-                child: LoadingButton(
-                    isLoading: false,
-                    onPressed: controller.onSumbit,
-                    child: const Text(StringRes.signin)),
-              ),
+              Obx(() => SizedBox(
+                    width: 200,
+                    child: LoadingButton(
+                        isLoading: controller.signInLoading.value,
+                        onPressed: controller.onSumbit,
+                        child: const Text(StringRes.signin)),
+                  )),
               const SizedBox(height: Dimens.sizeDefault),
               Text('or continue with',
                   style: TextStyle(color: scheme.disabled)),
@@ -70,21 +70,21 @@ class SignInScreen extends GetView<SignInController> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton.outlined(
-                    style: _iconStyle(scheme),
-                    onPressed: controller.googleLogin,
-                    icon: Image.asset(ImageRes.google, height: 24, width: 24),
-                  ),
+                  Obx(() => LoadingIcon(
+                        buttonStyle: IconButtonStyle.outlined,
+                        loading: controller.googleLoading.value,
+                        onPressed: controller.googleSignin,
+                        icon:
+                            Image.asset(ImageRes.google, height: 24, width: 24),
+                      )),
                   const SizedBox(width: Dimens.sizeDefault),
-                  IconButton.outlined(
-                    style: _iconStyle(scheme),
-                    onPressed: controller.appleLogin,
-                    icon: Image.asset(
-                      ImageRes.twitter,
-                      height: 24,
-                      width: 24,
-                    ),
-                  ),
+                  Obx(() => LoadingIcon(
+                        buttonStyle: IconButtonStyle.outlined,
+                        loading: controller.twitterLoading.value,
+                        onPressed: controller.twitterLogin,
+                        icon: Image.asset(ImageRes.twitter,
+                            height: 24, width: 24),
+                      )),
                 ],
               ),
               const SizedBox(height: Dimens.sizeLarge),
@@ -103,12 +103,4 @@ class SignInScreen extends GetView<SignInController> {
       ),
     ));
   }
-}
-
-ButtonStyle _iconStyle(scheme) {
-  return IconButton.styleFrom(
-    side: BorderSide(color: scheme.textColorLight, width: 2),
-    padding: const EdgeInsets.all(Dimens.sizeMedSmall),
-    foregroundColor: scheme.textColor,
-  );
 }

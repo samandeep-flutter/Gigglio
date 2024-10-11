@@ -35,6 +35,7 @@ class SignUpScreen extends GetView<SignUpController> {
               MyTextField(
                 title: 'Name',
                 controller: controller.nameController,
+                capitalization: TextCapitalization.words,
               ),
               const SizedBox(height: Dimens.sizeLarge),
               MyTextField(
@@ -65,13 +66,13 @@ class SignUpScreen extends GetView<SignUpController> {
                 },
               ),
               const SizedBox(height: Dimens.sizeExtraLarge),
-              SizedBox(
-                width: 200,
-                child: LoadingButton(
-                    isLoading: false,
-                    onPressed: controller.onSumbit,
-                    child: const Text(StringRes.signup)),
-              ),
+              Obx(() => SizedBox(
+                    width: 200,
+                    child: LoadingButton(
+                        isLoading: controller.isLoading.value,
+                        onPressed: controller.onSumbit,
+                        child: const Text(StringRes.signup)),
+                  )),
               const SizedBox(height: Dimens.sizeSmall),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

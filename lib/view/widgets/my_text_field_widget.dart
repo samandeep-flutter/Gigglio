@@ -11,6 +11,7 @@ class MyTextField extends StatefulWidget {
   final bool obscureText;
   final TextEditingController? controller;
   final FocusNode? focusNode;
+  final TextCapitalization? capitalization;
   final int maxLines;
   final int? maxLength;
   final bool isEmail;
@@ -24,6 +25,7 @@ class MyTextField extends StatefulWidget {
       this.controller,
       this.keyboardType,
       this.focusNode,
+      this.capitalization,
       this.maxLines = 1,
       this.maxLength,
       this.isEmail = false,
@@ -56,6 +58,7 @@ class _MyTextFieldState extends State<MyTextField> {
       focusNode: widget.focusNode,
       maxLength: widget.maxLength,
       maxLines: widget.maxLines,
+      textCapitalization: widget.capitalization ?? TextCapitalization.none,
       decoration: InputDecoration(
           suffixIcon: widget.obscureText
               ? IconButton(

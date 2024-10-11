@@ -19,9 +19,17 @@ class BoxServices {
     );
   }
 
-  UserDetails getUser() {
-    var user = box.get(StringRes.keyUser);
-    return user;
+  UserDetails? getUserDetails() {
+    try {
+      return UserDetails.fromJson(box.get(StringRes.keyUser));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<UserDetails?> saveUserDetails(UserDetails details) async {
+    box.put(StringRes.keyUser, details.toJson());
+    return getUserDetails();
   }
 
   void saveTheme(MyTheme theme) async {

@@ -63,6 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '445987609145',
     projectId: 'gigglio',
     storageBucket: 'gigglio.appspot.com',
+    androidClientId: '445987609145-r0doen8u3ui4rrt71o9sips57ogeqkkt.apps.googleusercontent.com',
+    iosClientId: '445987609145-v67iuvd3qqjp9ibutnlhrj5msdnaasrg.apps.googleusercontent.com',
     iosBundleId: 'com.samtech.gigglio',
   );
 }

@@ -20,10 +20,10 @@ Future<void> initServices() async {
   try {
     await Hive.initFlutter();
     await Hive.openBox(StringRes.boxName);
-    await Get.putAsync(() => AuthServices().init());
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    await Get.putAsync(() => AuthServices().init());
   } catch (e) {
     logPrint('init error: $e');
   }

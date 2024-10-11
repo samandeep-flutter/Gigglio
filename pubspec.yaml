@@ -17,6 +17,10 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.6
+  # auth 
+  firebase_core: ^3.4.0
+  firebase_auth: ^5.3.1
+  google_sign_in: ^6.2.1
   # route & state management
   get: ^4.6.6
   # local storage
@@ -26,7 +30,6 @@ dependencies:
   responsive_framework: ^0.1.4
   # toast
   fluttertoast: ^8.2.6
-  firebase_core: ^3.4.0
 
 
 dev_dependencies:

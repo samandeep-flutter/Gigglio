@@ -8,8 +8,9 @@ class MessagesScreen extends GetView<MessagesController> {
 
   @override
   Widget build(BuildContext context) {
-    return const BaseWidget(
-      child: Center(
+    return BaseWidget(
+      appBar: AppBar(),
+      child: const Center(
         child: Text('Messages'),
       ),
     );

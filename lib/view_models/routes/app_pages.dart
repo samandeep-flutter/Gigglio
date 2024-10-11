@@ -6,9 +6,9 @@ import 'package:gigglio/view/root_tabs_view/home_screen.dart';
 import 'package:gigglio/view/root_tabs_view/messages_screen.dart';
 import 'package:gigglio/view/root_tabs_view/profile_screen.dart';
 import 'package:gigglio/view/root_view.dart';
-import 'package:gigglio/view_models/bindings/auth_bindings.dart';
-import 'package:gigglio/view_models/bindings/root_bindings.dart';
 import 'package:gigglio/view_models/routes/routes.dart';
+import '../bindings/auth_bindings.dart';
+import '../bindings/root_bindings.dart';
 
 class AppPages {
   static final AuthServices _auth = Get.find();
