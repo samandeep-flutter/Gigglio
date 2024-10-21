@@ -2,9 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/model/utils/app_constants.dart';
-import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/view_models/routes/routes.dart';
+import '../../../model/utils/string.dart';
 
 class SignUpController extends GetxController {
   final formKey = GlobalKey<FormState>();
@@ -17,7 +17,8 @@ class SignUpController extends GetxController {
   RxBool isLoading = RxBool(false);
 
   void onSumbit() async {
-    if (!(formKey.currentState?.validate() ?? true)) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (!(formKey.currentState?.validate() ?? false)) return;
     isLoading.value = true;
     try {
       final credentials = await fbAuth.createUserWithEmailAndPassword(
@@ -26,20 +27,32 @@ class SignUpController extends GetxController {
       );
       await fbAuth.currentUser?.updateDisplayName(nameController.text);
       await authServices.saveCred(credentials);
+      await fbAuth.currentUser?.sendEmailVerification();
       isLoading.value = false;
-      Get.offAllNamed(Routes.rootView);
+      Get.offNamed(Routes.rootView);
     } on FirebaseAuthException catch (e) {
       isLoading.value = false;
-      if (e.code == 'weak-password') {
-        showToast('The password provided is too weak.');
-      } else if (e.code == 'invalid-email') {
-        showToast('Enter valid email address.');
-      } else if (e.code == 'email-already-in-use') {
-        showToast('The account already exists for that email.');
-      }
+      onFbSignUpException(e);
     } catch (e) {
       isLoading.value = false;
       logPrint('FbLogin: $e');
+    }
+  }
+
+  void onFbSignUpException(FirebaseAuthException e) {
+    logPrint('FbAuth: $e');
+    switch (e.code) {
+      case 'weak-password':
+        showToast('The password provided is too weak.');
+        break;
+      case 'invalid-email':
+        showToast('Enter valid email address.');
+        break;
+      case 'email-already-in-use':
+        showToast('The account already exists for that email.');
+        break;
+      default:
+        showToast(e.message ?? 'Something went wrong, try again');
     }
   }
 }

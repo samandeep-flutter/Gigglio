@@ -48,6 +48,7 @@ class SignUpScreen extends GetView<SignUpController> {
               MyTextField(
                 title: 'Password',
                 obscureText: true,
+                isPass: true,
                 controller: controller.passController,
               ),
               const SizedBox(height: Dimens.sizeLarge),
@@ -61,7 +62,6 @@ class SignUpScreen extends GetView<SignUpController> {
                   } else if (value != controller.passController.text) {
                     return StringRes.errorPassMatch;
                   }
-
                   return null;
                 },
               ),

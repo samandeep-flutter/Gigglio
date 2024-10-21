@@ -55,4 +55,10 @@ class Dimens {
 
   /// size of .75
   static const double borderWidthDefault = .75;
+
+  /// size of 12
+  static const double borderRadiusDefault = 12;
+
+  /// size of 32
+  static const double borderRadiusLarge = 32;
 }

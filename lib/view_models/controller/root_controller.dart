@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gigglio/services/auth_services.dart';
 
 class RootController extends GetxController with GetTickerProviderStateMixin {
+  AuthServices authServices = Get.find();
   late TabController tabController;
   final List<BottomNavigationBarItem> tabList = [
     const BottomNavigationBarItem(
@@ -24,6 +26,7 @@ class RootController extends GetxController with GetTickerProviderStateMixin {
   @override
   void onInit() {
     tabController = TabController(length: tabList.length, vsync: this);
+    authServices.getUserDetails();
     super.onInit();
   }
 }

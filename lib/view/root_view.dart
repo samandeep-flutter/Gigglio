@@ -22,6 +22,8 @@ class _RootViewState extends State<RootView> {
   Widget build(BuildContext context) {
     final scheme = ThemeServices.of(context);
     return BaseWidget(
+      padding: EdgeInsets.zero,
+      resizeBottom: false,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
@@ -35,7 +37,7 @@ class _RootViewState extends State<RootView> {
           ),
           SafeArea(
               child: Card(
-            margin: const EdgeInsets.symmetric(horizontal: Dimens.sizeDefault),
+            margin: const EdgeInsets.symmetric(horizontal: Dimens.sizeMidLarge),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(Dimens.sizeExtraLarge)),
             child: ClipRRect(

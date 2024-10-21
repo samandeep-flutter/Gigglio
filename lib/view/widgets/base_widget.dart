@@ -6,12 +6,16 @@ class BaseWidget extends StatelessWidget {
   final EdgeInsets? padding;
   final Color? color;
   final Widget child;
+  final bool? resizeBottom;
+  final bool safeAreaBottom;
 
   const BaseWidget({
     super.key,
     this.appBar,
     this.padding,
     this.color,
+    this.resizeBottom,
+    this.safeAreaBottom = false,
     required this.child,
   });
 
@@ -19,9 +23,10 @@ class BaseWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar,
+      resizeToAvoidBottomInset: resizeBottom,
       backgroundColor: color,
       body: SafeArea(
-          bottom: false,
+          bottom: safeAreaBottom,
           child: Padding(
             padding: padding ??
                 const EdgeInsets.symmetric(

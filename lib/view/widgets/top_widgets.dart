@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/services/theme_services.dart';
 import '../../model/utils/dimens.dart';
 
@@ -103,3 +105,58 @@ class LoadingIcon extends StatelessWidget {
 }
 
 enum IconButtonStyle { outlined, filled }
+
+class MyAlertDialog extends StatelessWidget {
+  final String title;
+  final TextStyle? titleTextStyle;
+  final Widget? content;
+  final List<Widget>? actions;
+  final VoidCallback? onTap;
+
+  const MyAlertDialog({
+    super.key,
+    required this.title,
+    this.content,
+    this.actions,
+    this.onTap,
+    this.titleTextStyle,
+  }) : assert(
+            (actions != null || onTap != null) &&
+                !(actions != null && onTap != null),
+            'Provide either custom actions or provide onTap');
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(title),
+      titleTextStyle: titleTextStyle,
+      content: content,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Dimens.borderRadiusDefault)),
+      buttonPadding: const EdgeInsets.only(right: Dimens.sizeDefault),
+      actions: actions ??
+          [
+            TextButton(
+                onPressed: Get.back, child: const Text(StringRes.cancel)),
+            TextButton(onPressed: onTap, child: const Text(StringRes.submit)),
+          ],
+    );
+  }
+}
+
+class MyDivider extends StatelessWidget {
+  final double? width;
+  final double? thickness;
+  final double? margin;
+  const MyDivider({super.key, this.width, this.thickness, this.margin});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        margin: EdgeInsets.symmetric(horizontal: margin ?? 0),
+        width: width,
+        child: Divider(
+          color: Colors.grey[300],
+          thickness: thickness,
+        ));
+  }
+}

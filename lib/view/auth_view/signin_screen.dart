@@ -52,19 +52,19 @@ class SignInScreen extends GetView<SignInController> {
                       style: TextButton.styleFrom(
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                       onPressed: controller.forgotPass,
-                      child: const Text('Forgot Password?'))
+                      child: const Text('${StringRes.forgotPass}?'))
                 ],
               ),
               const SizedBox(height: Dimens.sizeMidLarge),
-              Obx(() => SizedBox(
-                    width: 200,
-                    child: LoadingButton(
-                        isLoading: controller.signInLoading.value,
-                        onPressed: controller.onSumbit,
-                        child: const Text(StringRes.signin)),
-                  )),
+              SizedBox(
+                width: 200,
+                child: Obx(() => LoadingButton(
+                    isLoading: controller.signInLoading.value,
+                    onPressed: controller.onSumbit,
+                    child: const Text(StringRes.signin))),
+              ),
               const SizedBox(height: Dimens.sizeDefault),
-              Text('or continue with',
+              Text(StringRes.continueWith,
                   style: TextStyle(color: scheme.disabled)),
               const SizedBox(height: Dimens.sizeMedSmall),
               Row(

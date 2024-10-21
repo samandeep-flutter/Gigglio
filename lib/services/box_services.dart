@@ -1,5 +1,5 @@
-import 'package:gigglio/model/models/user_details.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:get_storage/get_storage.dart';
+import '../model/models/user_details.dart';
 import '../model/utils/color_resources.dart';
 import '../model/utils/string.dart';
 
@@ -9,10 +9,10 @@ class BoxServices {
 
   BoxServices._init();
 
-  Box box = Hive.box(StringRes.boxName);
+  final box = GetStorage(StringRes.boxName);
 
   MyTheme getTheme() {
-    String? title = box.get(StringRes.keyTheme);
+    String? title = box.read(StringRes.keyTheme);
     return MyTheme.values.firstWhere(
       (element) => element.title == title,
       orElse: () => MyTheme.values.first,
@@ -21,18 +21,22 @@ class BoxServices {
 
   UserDetails? getUserDetails() {
     try {
-      return UserDetails.fromJson(box.get(StringRes.keyUser));
-    } catch (_) {
+      var details = box.read(StringRes.keyUser);
+      return UserDetails.fromJson(details);
+    } catch (e) {
       return null;
     }
   }
 
-  Future<UserDetails?> saveUserDetails(UserDetails details) async {
-    box.put(StringRes.keyUser, details.toJson());
-    return getUserDetails();
+  Future<void> saveUserDetails(UserDetails details) async {
+    var value = details.toJson();
+    await box.write(StringRes.keyUser, value);
   }
 
-  void saveTheme(MyTheme theme) async {
-    await box.put(StringRes.keyTheme, theme.title);
+  Future<void> saveTheme(MyTheme theme) async {
+    await box.write(StringRes.keyTheme, theme.title);
   }
+
+  Future<void> clear() async => await box.erase();
+  Future<void> removeUserDetails() async => box.remove(StringRes.keyUser);
 }

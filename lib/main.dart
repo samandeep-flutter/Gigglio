@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:gigglio/model/utils/app_constants.dart';
 import 'package:gigglio/model/utils/string.dart';
@@ -18,8 +18,7 @@ void main() async {
 
 Future<void> initServices() async {
   try {
-    await Hive.initFlutter();
-    await Hive.openBox(StringRes.boxName);
+    await GetStorage.init(StringRes.boxName);
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );

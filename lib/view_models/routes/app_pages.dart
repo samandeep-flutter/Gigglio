@@ -1,10 +1,12 @@
 import 'package:get/get.dart';
 import 'package:gigglio/services/auth_services.dart';
+import 'package:gigglio/view/auth_view/forgot_password.dart';
 import 'package:gigglio/view/auth_view/signin_screen.dart';
 import 'package:gigglio/view/auth_view/signup_screen.dart';
 import 'package:gigglio/view/root_tabs_view/home_screen.dart';
 import 'package:gigglio/view/root_tabs_view/messages_screen.dart';
 import 'package:gigglio/view/root_tabs_view/profile_screen.dart';
+import 'package:gigglio/view/root_tabs_view/settings_screen.dart';
 import 'package:gigglio/view/root_view.dart';
 import 'package:gigglio/view_models/routes/routes.dart';
 import '../bindings/auth_bindings.dart';
@@ -26,6 +28,11 @@ class AppPages {
       binding: AuthBindings(),
     ),
     GetPage(
+      name: Routes.forgotPass,
+      page: () => const ForgotPassword(),
+      binding: AuthBindings(),
+    ),
+    GetPage(
       name: Routes.rootView,
       page: () => const RootView(),
       binding: RootBindings(),
@@ -34,6 +41,12 @@ class AppPages {
       name: Routes.home,
       page: () => const HomeScreen(),
       binding: RootBindings(),
+    ),
+    GetPage(
+      name: Routes.settings,
+      page: () => const SettingsScreen(),
+      binding: RootBindings(),
+      transition: Transition.leftToRight,
     ),
     GetPage(
       name: Routes.messages,
