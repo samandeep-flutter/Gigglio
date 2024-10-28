@@ -169,3 +169,26 @@ class MyDivider extends StatelessWidget {
         ));
   }
 }
+
+class PhotoPager extends StatelessWidget {
+  final bool current;
+  final VoidCallback? onTap;
+  const PhotoPager({super.key, required this.current, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeServices.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(Dimens.borderDefault),
+        onTap: onTap,
+        child: CircleAvatar(
+          radius: 4,
+          backgroundColor:
+              current ? scheme.primary : scheme.disabled.withOpacity(.3),
+        ),
+      ),
+    );
+  }
+}

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
-import 'package:gigglio/view_models/controller/profile_controller/profile_controller.dart';
+import 'package:gigglio/view_models/controller/profile_controller.dart';
 import '../../model/utils/dimens.dart';
 import '../../services/theme_services.dart';
 import '../widgets/my_cached_image.dart';

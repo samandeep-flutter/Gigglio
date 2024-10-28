@@ -22,7 +22,6 @@ class HomeController extends GetxController {
   RxBool isImageLoading = RxBool(false);
 
   final captionContr = TextEditingController();
-  final pageContr = PageController();
 
   void toNotifications() => Get.toNamed(Routes.notifications);
 
@@ -31,7 +30,7 @@ class HomeController extends GetxController {
     isImageLoading.value = true;
     try {
       List<XFile> images = await picker.pickMultiImage(
-          imageQuality: 40, requestFullMetadata: false);
+          imageQuality: 20, requestFullMetadata: false);
       if (images.isEmpty) return;
       postImages.addAll(images.map((e) => File(e.path)));
     } catch (e) {

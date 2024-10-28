@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gigglio/model/utils/app_constants.dart';
 import 'package:gigglio/services/box_services.dart';
 
 import '../model/utils/color_resources.dart';
@@ -12,8 +11,8 @@ class _Themes extends InheritedWidget {
 
   @override
   bool updateShouldNotify(covariant _Themes oldWidget) {
+    // ignore: unused_local_variable
     bool result = data.primary != oldWidget.data.primary;
-    dprint('[ThemeService] rebuilt: $result');
     return true;
   }
 }

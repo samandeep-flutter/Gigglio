@@ -7,10 +7,10 @@ import 'package:gigglio/model/utils/app_constants.dart';
 import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/services/theme_services.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../model/utils/color_resources.dart';
-import '../../../model/utils/string.dart';
-import '../../../view/widgets/top_widgets.dart';
-import '../../routes/routes.dart';
+import '../../model/utils/color_resources.dart';
+import '../../model/utils/string.dart';
+import '../../view/widgets/top_widgets.dart';
+import '../routes/routes.dart';
 
 class ProfileController extends GetxController {
   AuthServices authServices = Get.find();
@@ -101,8 +101,9 @@ class ProfileController extends GetxController {
     Get.back();
     isImageLoading.value = true;
     try {
-      XFile? file = await picker.pickImage(source: source, imageQuality: 30);
-      if (file == null) return;
+      XFile? file = await picker.pickImage(source: source, imageQuality: 15);
+      if (file == null) throw StringRes.cancelled;
+
       String? url = await _savetoFB(file);
       isImageLoading.value = false;
       imageUrl.value = url;

@@ -28,6 +28,7 @@ class StringRes {
   static const String addPost = 'Add Post';
   static const String refresh = 'Refresh';
   static const String newPost = 'New Post';
+  static const String cancelled = 'Process cancelled';
   static const String confirmEmail = 'Confirm your Email';
 
   // errors

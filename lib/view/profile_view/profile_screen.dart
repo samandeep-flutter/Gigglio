@@ -8,7 +8,7 @@ import 'package:gigglio/services/theme_services.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
 import 'package:gigglio/view/widgets/my_cached_image.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
-import 'package:gigglio/view_models/controller/profile_controller/profile_controller.dart';
+import 'package:gigglio/view_models/controller/profile_controller.dart';
 
 class ProfileScreen extends GetView<ProfileController> {
   const ProfileScreen({super.key});

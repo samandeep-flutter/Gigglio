@@ -6,7 +6,7 @@ import 'package:gigglio/view/widgets/my_text_field_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 import '../../model/utils/color_resources.dart';
 import '../../services/theme_services.dart';
-import '../../view_models/controller/home_controller/home_controller.dart';
+import '../../view_models/controller/home_controller.dart';
 import '../widgets/base_widget.dart';
 
 class AddPost extends GetView<HomeController> {

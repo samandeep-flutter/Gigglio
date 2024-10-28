@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,9 +28,13 @@ class SignInController extends GetxController {
 
   @override
   void onInit() {
+    if (kDebugMode) _debug();
+    super.onInit();
+  }
+
+  _debug() {
     emailController.text = 'morh@yopmail.com';
     passwordController.text = '123456';
-    super.onInit();
   }
 
   void onSumbit() async {

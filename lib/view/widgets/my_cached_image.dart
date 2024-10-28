@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gigglio/model/utils/app_constants.dart';
 import 'package:gigglio/model/utils/image_resources.dart';
+import 'package:gigglio/services/theme_services.dart';
 
 class MyCachedImage extends StatelessWidget {
   final String? image;
@@ -11,17 +12,21 @@ class MyCachedImage extends StatelessWidget {
   final bool isAvatar;
   final double? avatarRadius;
   final BorderRadiusGeometry? borderRadius;
+  final Color? foregroundColor;
   const MyCachedImage(this.image,
       {super.key,
       this.isAvatar = false,
       this.avatarRadius,
       this.height,
       this.width,
+      this.foregroundColor,
       this.borderRadius,
       this.fit});
 
   @override
   Widget build(BuildContext context) {
+    final scheme = ThemeServices.of(context);
+
     return CachedNetworkImage(
         imageUrl: image ?? '',
         fit: fit ?? BoxFit.cover,
@@ -43,8 +48,9 @@ class MyCachedImage extends StatelessWidget {
               ));
         },
         placeholder: (context, url) {
-          Widget placeholder = const Center(
-              child: CircularProgressIndicator(color: Colors.white));
+          Widget placeholder = Center(
+              child: CircularProgressIndicator(
+                  color: foregroundColor ?? scheme.primary));
 
           if (isAvatar) {
             return CircleAvatar(

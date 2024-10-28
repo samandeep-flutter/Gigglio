@@ -5,7 +5,8 @@ import 'package:gigglio/model/utils/dimens.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
 import 'package:gigglio/view/widgets/my_cached_image.dart';
-import 'package:gigglio/view_models/controller/home_controller/home_controller.dart';
+import 'package:gigglio/view/widgets/top_widgets.dart';
+import 'package:gigglio/view_models/controller/home_controller.dart';
 import '../../services/theme_services.dart';
 
 class HomeScreen extends GetView<HomeController> {
@@ -20,16 +21,11 @@ class HomeScreen extends GetView<HomeController> {
       appBar: AppBar(
         backgroundColor: scheme.background,
         automaticallyImplyLeading: false,
-        leading: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-            child: Builder(builder: (context) {
-              return TextButton.icon(
-                onPressed: controller.toPost,
-                label: const Text(StringRes.addPost),
-                icon: const Icon(Icons.add),
-              );
-            })),
-        leadingWidth: 150,
+        title: TextButton.icon(
+          onPressed: controller.toPost,
+          label: const Text(StringRes.addPost),
+          icon: const Icon(Icons.add),
+        ),
         centerTitle: false,
         actions: [
           IconButton(
@@ -77,9 +73,9 @@ class HomeScreen extends GetView<HomeController> {
             return ListView.builder(
                 itemCount: snapshot.data?.docs.length ?? 0,
                 itemBuilder: (context, index) {
-                  final data =
-                      PostModel.fromJson(snapshot.data!.docs[index].data());
-                  return PostTile(post: data);
+                  final json = snapshot.data!.docs[index].data();
+                  final post = PostModel.fromJson(json);
+                  return PostTile(post: post);
                 });
           }),
     );
@@ -133,10 +129,42 @@ class PostTile extends GetView<HomeController> {
           title: Text(post.author.displayName),
           subtitle: Text(post.author.email),
         ),
+        _ImageViewer(post: post)
+      ],
+    );
+  }
+}
+
+class _ImageViewer extends StatefulWidget {
+  final PostModel post;
+  const _ImageViewer({required this.post});
+
+  @override
+  State<_ImageViewer> createState() => _ImageViewerState();
+}
+
+class _ImageViewerState extends State<_ImageViewer> {
+  final pageContr = PageController();
+  late PostModel post;
+  int current = 0;
+
+  @override
+  void initState() {
+    post = widget.post;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
         ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: context.height * .3),
+          constraints: BoxConstraints(maxHeight: context.height * .35),
           child: PageView.builder(
-              controller: controller.pageContr,
+              controller: pageContr,
+              onPageChanged: (value) => setState(() {
+                    current = value;
+                  }),
               itemCount: post.images.length,
               itemBuilder: (context, index) {
                 return MyCachedImage(
@@ -145,7 +173,22 @@ class PostTile extends GetView<HomeController> {
                   fit: BoxFit.fitWidth,
                 );
               }),
-        )
+        ),
+        const SizedBox(height: Dimens.sizeMedSmall),
+        if (post.images.length > 1)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(post.images.length, (index) {
+              return PhotoPager(
+                current: current == index,
+                onTap: () {
+                  pageContr.animateToPage(index,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut);
+                },
+              );
+            }),
+          ),
       ],
     );
   }

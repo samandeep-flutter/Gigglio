@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gigglio/view_models/controller/profile_controller/profile_controller.dart';
+import 'package:gigglio/view_models/controller/profile_controller.dart';
 
 import '../../model/utils/dimens.dart';
 import '../../model/utils/string.dart';
