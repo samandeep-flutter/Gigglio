@@ -3,12 +3,17 @@ import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/view/auth_view/forgot_password.dart';
 import 'package:gigglio/view/auth_view/signin_screen.dart';
 import 'package:gigglio/view/auth_view/signup_screen.dart';
-import 'package:gigglio/view/root_tabs_view/home_screen.dart';
-import 'package:gigglio/view/root_tabs_view/messages_screen.dart';
-import 'package:gigglio/view/root_tabs_view/profile_screen.dart';
-import 'package:gigglio/view/root_tabs_view/settings_screen.dart';
+import 'package:gigglio/view/home_view/home_screen.dart';
+import 'package:gigglio/view/home_view/notifications.dart';
+import 'package:gigglio/view/messages_view/messages_screen.dart';
+import 'package:gigglio/view/profile_view/change_password.dart';
+import 'package:gigglio/view/profile_view/edit_profile.dart';
+import 'package:gigglio/view/profile_view/profile_screen.dart';
+import 'package:gigglio/view/settings_screen.dart';
 import 'package:gigglio/view/root_view.dart';
+import 'package:gigglio/view/profile_view/privacy_policy.dart';
 import 'package:gigglio/view_models/routes/routes.dart';
+import '../../view/home_view/add_post.dart';
 import '../bindings/auth_bindings.dart';
 import '../bindings/root_bindings.dart';
 
@@ -43,10 +48,19 @@ class AppPages {
       binding: RootBindings(),
     ),
     GetPage(
+      name: Routes.notifications,
+      page: () => const Notifications(),
+    ),
+    GetPage(
+      name: Routes.addPost,
+      page: () => const AddPost(),
+      transition: Transition.leftToRight,
+    ),
+    GetPage(
       name: Routes.settings,
       page: () => const SettingsScreen(),
       binding: RootBindings(),
-      transition: Transition.leftToRight,
+      transition: Transition.rightToLeft,
     ),
     GetPage(
       name: Routes.messages,
@@ -54,9 +68,23 @@ class AppPages {
       binding: RootBindings(),
     ),
     GetPage(
+      name: Routes.editProfile,
+      page: () => const EditProfile(),
+      binding: RootBindings(),
+    ),
+    GetPage(
+      name: Routes.changePass,
+      page: () => const ChangePassword(),
+      binding: RootBindings(),
+    ),
+    GetPage(
       name: Routes.profile,
       page: () => const ProfileScreen(),
       binding: RootBindings(),
+    ),
+    GetPage(
+      name: Routes.privacyPolicy,
+      page: () => const PrivacyPolicy(),
     ),
   ];
 }

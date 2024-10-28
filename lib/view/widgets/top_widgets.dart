@@ -10,6 +10,7 @@ class LoadingButton extends StatelessWidget {
   final Color? loaderColor;
   final EdgeInsets? padding;
   final EdgeInsets? margin;
+  final double? width;
   final VoidCallback onPressed;
   final ButtonStyle? style;
   const LoadingButton({
@@ -17,6 +18,7 @@ class LoadingButton extends StatelessWidget {
     this.style,
     this.padding,
     this.margin,
+    this.width,
     this.loaderColor,
     required this.isLoading,
     required this.onPressed,
@@ -28,6 +30,7 @@ class LoadingButton extends StatelessWidget {
     ColorScheme scheme = Theme.of(context).colorScheme;
     return Container(
       margin: margin,
+      width: width ?? 200,
       child: ElevatedButton(
         style: style ??
             ElevatedButton.styleFrom(
@@ -111,6 +114,7 @@ class MyAlertDialog extends StatelessWidget {
   final TextStyle? titleTextStyle;
   final Widget? content;
   final List<Widget>? actions;
+  final EdgeInsets? actionPadding;
   final VoidCallback? onTap;
 
   const MyAlertDialog({
@@ -119,6 +123,7 @@ class MyAlertDialog extends StatelessWidget {
     this.content,
     this.actions,
     this.onTap,
+    this.actionPadding,
     this.titleTextStyle,
   }) : assert(
             (actions != null || onTap != null) &&
@@ -126,13 +131,17 @@ class MyAlertDialog extends StatelessWidget {
             'Provide either custom actions or provide onTap');
   @override
   Widget build(BuildContext context) {
+    final scheme = ThemeServices.of(context);
+
     return AlertDialog(
+      backgroundColor: scheme.surface,
       title: Text(title),
       titleTextStyle: titleTextStyle,
       content: content,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Dimens.borderRadiusDefault)),
+          borderRadius: BorderRadius.circular(Dimens.borderDefault)),
       buttonPadding: const EdgeInsets.only(right: Dimens.sizeDefault),
+      actionsPadding: actionPadding,
       actions: actions ??
           [
             TextButton(

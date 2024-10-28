@@ -17,9 +17,11 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.6
-  # auth 
+  # firebase 
   firebase_core: ^3.4.0
   firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  firebase_storage: ^12.3.4
   google_sign_in: ^6.2.1
   # route & state management
   get: ^4.6.6
@@ -31,6 +33,8 @@ dependencies:
   fluttertoast: ^8.2.6
   cached_network_image: ^3.4.1
   easy_debounce: ^2.0.3
+  image_picker: ^1.1.2
+  flutter_widget_from_html: ^0.15.2
 
 
 dev_dependencies:

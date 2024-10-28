@@ -24,4 +24,6 @@ class MessagesController extends GetxController {
     searchController.clear();
     searchFoucs.unfocus();
   }
+
+  void newChat() {}
 }

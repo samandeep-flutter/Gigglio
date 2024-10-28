@@ -62,7 +62,7 @@ class MyCachedImage extends StatelessWidget {
               ));
         },
         errorWidget: (context, url, error) {
-          logPrint('error : $error');
+          logPrint('CachedImage: $error');
 
           final image = AssetImage(ImageRes.userThumbnail);
 

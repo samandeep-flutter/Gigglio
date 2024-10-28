@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:gigglio/model/utils/dimens.dart';
 
+import '../../services/theme_services.dart';
+
 class BaseWidget extends StatelessWidget {
   final PreferredSizeWidget? appBar;
   final EdgeInsets? padding;
+  final EdgeInsets? margin;
   final Color? color;
   final Widget child;
   final bool? resizeBottom;
@@ -13,6 +16,7 @@ class BaseWidget extends StatelessWidget {
     super.key,
     this.appBar,
     this.padding,
+    this.margin,
     this.color,
     this.resizeBottom,
     this.safeAreaBottom = false,
@@ -21,13 +25,16 @@ class BaseWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = ThemeServices.of(context);
+
     return Scaffold(
       appBar: appBar,
       resizeToAvoidBottomInset: resizeBottom,
-      backgroundColor: color,
+      backgroundColor: color ?? scheme.background,
       body: SafeArea(
           bottom: safeAreaBottom,
-          child: Padding(
+          child: Container(
+            margin: margin,
             padding: padding ??
                 const EdgeInsets.symmetric(
                   horizontal: Dimens.sizeLarge,

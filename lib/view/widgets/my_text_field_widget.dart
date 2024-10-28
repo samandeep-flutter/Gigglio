@@ -15,7 +15,8 @@ class MyTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final TextCapitalization? capitalization;
   final InputDecoration? decoration;
-  final int maxLines;
+  final bool? expands;
+  final int? maxLines;
   final int? maxLength;
   final bool isEmail;
   final bool isPass;
@@ -38,7 +39,8 @@ class MyTextField extends StatefulWidget {
       this.customValidator,
       this.inputFormatters,
       this.obscureText = false})
-      : decoration = null;
+      : expands = false,
+        decoration = null;
 
   const MyTextField._search({
     this.fieldKey,
@@ -51,11 +53,31 @@ class MyTextField extends StatefulWidget {
     this.inputFormatters,
     this.decoration,
   })  : maxLength = null,
+        expands = false,
         obscureText = false,
         isEmail = false,
         isPass = false,
         isNumber = false,
-        maxLines = 1;
+        maxLines = null;
+
+  const MyTextField._custom({
+    this.fieldKey,
+    required this.title,
+    this.controller,
+    this.keyboardType,
+    this.focusNode,
+    this.capitalization,
+    this.customValidator,
+    this.inputFormatters,
+    this.expands,
+    this.maxLines,
+    this.decoration,
+  })  : maxLength = null,
+        obscureText = false,
+        isEmail = false,
+        isPass = false,
+        isNumber = false;
+
   @override
   State<MyTextField> createState() => _MyTextFieldState();
 }
@@ -79,8 +101,11 @@ class _MyTextFieldState extends State<MyTextField> {
       keyboardType: widget.keyboardType,
       obscureText: obscureText,
       focusNode: widget.focusNode,
+      expands: widget.expands ?? false,
       maxLength: widget.maxLength,
       maxLines: widget.maxLines,
+      autocorrect: false,
+      textAlignVertical: widget.expands ?? false ? TextAlignVertical.top : null,
       textCapitalization: widget.capitalization ?? TextCapitalization.none,
       decoration: widget.decoration ??
           InputDecoration(
@@ -125,7 +150,7 @@ class _MyTextFieldState extends State<MyTextField> {
   }
 }
 
-class SearchTextField extends StatelessWidget {
+class SearchTextField extends StatefulWidget {
   final EdgeInsets? margin;
   final String title;
   final Key? fieldKey;
@@ -152,45 +177,128 @@ class SearchTextField extends StatelessWidget {
       this.inputFormatters});
 
   @override
+  State<SearchTextField> createState() => _SearchTextFieldState();
+}
+
+class _SearchTextFieldState extends State<SearchTextField> {
+  @override
+  void initState() {
+    widget.controller?.addListener(onChange);
+    super.initState();
+  }
+
+  void onChange() => setState(() {});
+
+  @override
   Widget build(BuildContext context) {
     final scheme = ThemeServices.of(context);
-    final borderRadius = BorderRadius.circular(Dimens.borderRadiusLarge);
+    final borderRadius = BorderRadius.circular(Dimens.borderLarge);
 
     InputBorder border() {
       return OutlineInputBorder(
         borderRadius: borderRadius,
-        borderSide: BorderSide(color: Colors.grey[300]!),
+        borderSide: BorderSide(color: Colors.grey[200]!),
+      );
+    }
+
+    return Container(
+      margin: widget.margin,
+      decoration: BoxDecoration(
+        color: widget.backgroundColor ?? Colors.white,
+        borderRadius: borderRadius,
+      ),
+      child: MyTextField._search(
+        title: widget.title,
+        fieldKey: widget.fieldKey,
+        controller: widget.controller,
+        keyboardType: widget.keyboardType,
+        focusNode: widget.focusNode,
+        capitalization: widget.capitalization,
+        inputFormatters: widget.inputFormatters,
+        customValidator: (value) {
+          return null;
+        },
+        decoration: InputDecoration(
+            hintText: widget.title,
+            hintStyle: TextStyle(color: scheme.disabled),
+            focusedBorder: border(),
+            enabledBorder: border(),
+            suffixIcon: widget.controller?.text.isEmpty ?? false
+                ? const SizedBox()
+                : IconButton(
+                    onPressed: widget.onClear ?? widget.controller?.clear,
+                    icon: Icon(
+                      Icons.clear,
+                      color: scheme.disabled,
+                    ))),
+      ),
+    );
+  }
+}
+
+class CustomTextField extends StatelessWidget {
+  final EdgeInsets? margin;
+  final String title;
+  final Key? fieldKey;
+  final TextInputType? keyboardType;
+  final TextEditingController? controller;
+  final FocusNode? focusNode;
+  final bool? expands;
+  final int? maxLines;
+  final TextCapitalization? capitalization;
+  final String? Function(String? value)? validator;
+  final List<TextInputFormatter>? inputFormatters;
+  final Color? backgroundColor;
+
+  const CustomTextField({
+    super.key,
+    this.margin,
+    required this.title,
+    this.fieldKey,
+    this.keyboardType,
+    this.controller,
+    this.focusNode,
+    this.expands,
+    this.maxLines,
+    this.capitalization,
+    this.validator,
+    this.inputFormatters,
+    this.backgroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeServices.of(context);
+    final borderRadius = BorderRadius.circular(Dimens.borderDefault);
+
+    InputBorder border() {
+      return OutlineInputBorder(
+        borderRadius: borderRadius,
+        borderSide: BorderSide(color: backgroundColor ?? Colors.white),
       );
     }
 
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white,
-        borderRadius: borderRadius,
-      ),
-      child: MyTextField._search(
+          color: backgroundColor ?? Colors.white, borderRadius: borderRadius),
+      child: MyTextField._custom(
         title: title,
         fieldKey: fieldKey,
-        controller: controller,
         keyboardType: keyboardType,
+        controller: controller,
         focusNode: focusNode,
+        maxLines: maxLines,
+        expands: expands ?? false,
         capitalization: capitalization,
+        customValidator: validator ?? (value) => null,
         inputFormatters: inputFormatters,
-        customValidator: (value) {
-          return null;
-        },
         decoration: InputDecoration(
-            hintText: title,
-            hintStyle: TextStyle(color: scheme.disabled),
-            focusedBorder: border(),
-            enabledBorder: border(),
-            suffixIcon: IconButton(
-                onPressed: onClear ?? controller?.clear,
-                icon: Icon(
-                  Icons.clear,
-                  color: scheme.disabled,
-                ))),
+          hintText: title,
+          hintStyle: TextStyle(color: scheme.disabled),
+          focusedBorder: border(),
+          enabledBorder: border(),
+        ),
       ),
     );
   }

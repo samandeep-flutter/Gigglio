@@ -29,6 +29,10 @@
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<!-- USER DEFINED KEYS START -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app requires access to the photo library.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app requires access to the camera.</string>
 	<!-- <key>GIDServerClientID</key>
 	<string>445987609145-v67iuvd3qqjp9ibutnlhrj5msdnaasrg.apps.googleusercontent.com</string> -->
 	<!-- Google Sign-in Section -->

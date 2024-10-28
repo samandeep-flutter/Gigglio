@@ -24,7 +24,8 @@ class SignUpScreen extends GetView<SignUpController> {
             children: [
               const Text(
                 StringRes.signup,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 48),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: Dimens.fontTitle),
               ),
               const SizedBox(height: Dimens.sizeLarge),
               Text(
@@ -51,7 +52,12 @@ class SignUpScreen extends GetView<SignUpController> {
                 isPass: true,
                 controller: controller.passController,
               ),
-              const SizedBox(height: Dimens.sizeLarge),
+              const SizedBox(height: Dimens.sizeSmall),
+              Text(
+                StringRes.newPassDesc,
+                style: TextStyle(color: scheme.textColorLight),
+              ),
+              const SizedBox(height: Dimens.sizeDefault),
               MyTextField(
                 title: 'Confirm Password',
                 obscureText: true,
@@ -66,13 +72,10 @@ class SignUpScreen extends GetView<SignUpController> {
                 },
               ),
               const SizedBox(height: Dimens.sizeExtraLarge),
-              Obx(() => SizedBox(
-                    width: 200,
-                    child: LoadingButton(
-                        isLoading: controller.isLoading.value,
-                        onPressed: controller.onSumbit,
-                        child: const Text(StringRes.signup)),
-                  )),
+              Obx(() => LoadingButton(
+                  isLoading: controller.isLoading.value,
+                  onPressed: controller.onSumbit,
+                  child: const Text(StringRes.signup))),
               const SizedBox(height: Dimens.sizeSmall),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

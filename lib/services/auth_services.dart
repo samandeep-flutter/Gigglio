@@ -31,6 +31,20 @@ class AuthServices extends GetxService {
     return Routes.rootView;
   }
 
+  Future<void> saveProfile() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    var details = UserDetails(
+        id: user.uid,
+        displayName: user.displayName ?? '',
+        email: user.email!,
+        image: user.photoURL,
+        verified: user.emailVerified);
+    this.user.value = details;
+    await boxServices.saveUserDetails(details);
+  }
+
   Future<void> saveCred(UserCredential credentials) async {
     if (credentials.user == null) return;
     var details = UserDetails(
@@ -39,6 +53,7 @@ class AuthServices extends GetxService {
         email: credentials.user!.email!,
         image: credentials.user?.photoURL,
         verified: credentials.user?.emailVerified);
+    user.value = details;
     await boxServices.saveUserDetails(details);
   }
 
@@ -53,8 +68,12 @@ class AuthServices extends GetxService {
   }
 
   void logout() async {
-    await _auth.signOut();
-    await boxServices.removeUserDetails();
+    try {
+      await _auth.signOut();
+      await boxServices.removeUserDetails();
+    } catch (e) {
+      logPrint('LOGOUT: $e');
+    }
     Get.offAllNamed(Routes.signIn);
   }
 

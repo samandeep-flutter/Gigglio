@@ -74,7 +74,7 @@ class SignInController extends GetxController {
             return MyAlertDialog(
               title: StringRes.success,
               content: Text(
-                StringRes.forgotPassOKText,
+                StringRes.forgotPassDesc,
                 style: TextStyle(color: scheme.textColorLight),
               ),
               actions: [
@@ -94,10 +94,8 @@ class SignInController extends GetxController {
     }
   }
 
-  void onForgotPassPop(bool didPop, result) {
-    forgotPassKey.currentState?.reset();
-    forgotPassContr.clear();
-  }
+  void fromForgotPass(bool didPop, result) =>
+      forgotPassKey.currentState?.reset();
 
   Future<void> googleSignin() async {
     formKey.currentState?.reset();

@@ -19,14 +19,16 @@ class ForgotPassword extends GetView<SignInController> {
         appBar: AppBar(),
         safeAreaBottom: true,
         child: PopScope(
-          onPopInvokedWithResult: controller.onForgotPassPop,
+          onPopInvokedWithResult: controller.fromForgotPass,
           child: ListView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             children: [
               const SizedBox(height: Dimens.sizeLarge),
               const Text(
                 StringRes.forgotPass,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 48),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: Dimens.fontUltraLarge),
               ),
               const SizedBox(height: Dimens.sizeLarge),
               Text(
@@ -41,13 +43,10 @@ class ForgotPassword extends GetView<SignInController> {
                 controller: controller.forgotPassContr,
               ),
               SizedBox(height: context.height * 0.35),
-              SizedBox(
-                width: 200,
-                child: Obx(() => LoadingButton(
-                    isLoading: controller.forgotPassLoading.value,
-                    onPressed: controller.sendForgotPassLink,
-                    child: const Text(StringRes.submit))),
-              ),
+              Obx(() => LoadingButton(
+                  isLoading: controller.forgotPassLoading.value,
+                  onPressed: controller.sendForgotPassLink,
+                  child: const Text(StringRes.submit))),
               const SizedBox(height: Dimens.sizeLarge),
             ],
           ),

@@ -24,6 +24,11 @@ class StringRes {
   static const String cancel = 'Cancel';
   static const String settings = 'Settings';
   static const String messages = 'Messages';
+  static const String newChat = 'New Chat';
+  static const String addPost = 'Add Post';
+  static const String refresh = 'Refresh';
+  static const String newPost = 'New Post';
+  static const String confirmEmail = 'Confirm your Email';
 
   // errors
   static const String errorEmail = 'Invalid Email';
@@ -46,11 +51,20 @@ class StringRes {
       ' connect with friends, and start sharing the fun.';
   static const String forgotPassDesc = 'No worries! Enter your email to '
       'reset your password and get back to the fun in no time.';
-  static const String forgotPassOKText = 'We\'ve sent you an email with '
+  static const String forgotPassOKDesc = 'We\'ve sent you an email with '
       'instructions to reset your password. Once reset, '
       'log in with your new credentials and get back to Gigglio.';
-  static const String logoutText = 'Are you sure you want to log out?'
+  static const String logoutDesc = 'Are you sure you want to log out?'
       ' We\'ll miss you! Come back soon..';
+  static const String editProfileDesc = 'Want to update your look? Tap your'
+      ' current profile photo to upload a new one.';
+  static const String newPassDesc = 'Create a strong password with at least'
+      ' 6 characters, including a mix of letters,'
+      ' numbers, and symbols for better security.';
+  static const String emailConfirmDesc = 'Please confirm your email'
+      ' by clicking the link we sent to your inbox';
+  static const String reauthDesc = 'For your security, please reauthenticate '
+      'to continue. Confirm your identity by signing in again';
 
   // box
   static const String boxName = 'gigglio';

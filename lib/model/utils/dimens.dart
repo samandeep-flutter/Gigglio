@@ -26,6 +26,9 @@ class Dimens {
   /// size of 32
   static const double fontUltraLarge = 32;
 
+  /// size of 48
+  static const double fontTitle = 48;
+
   /// size of 4
   static const double sizeExtraSmall = 4;
 
@@ -57,8 +60,11 @@ class Dimens {
   static const double borderWidthDefault = .75;
 
   /// size of 12
-  static const double borderRadiusDefault = 12;
+  static const double borderDefault = 12;
 
   /// size of 32
-  static const double borderRadiusLarge = 32;
+  static const double borderLarge = 32;
+
+  /// size of 100
+  static const double circularBoder = 100;
 }

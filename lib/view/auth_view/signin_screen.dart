@@ -26,7 +26,8 @@ class SignInScreen extends GetView<SignInController> {
             children: [
               const Text(
                 StringRes.signin,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 48),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: Dimens.fontTitle),
               ),
               const SizedBox(height: Dimens.sizeLarge),
               Text(
@@ -56,13 +57,10 @@ class SignInScreen extends GetView<SignInController> {
                 ],
               ),
               const SizedBox(height: Dimens.sizeMidLarge),
-              SizedBox(
-                width: 200,
-                child: Obx(() => LoadingButton(
-                    isLoading: controller.signInLoading.value,
-                    onPressed: controller.onSumbit,
-                    child: const Text(StringRes.signin))),
-              ),
+              Obx(() => LoadingButton(
+                  isLoading: controller.signInLoading.value,
+                  onPressed: controller.onSumbit,
+                  child: const Text(StringRes.signin))),
               const SizedBox(height: Dimens.sizeDefault),
               Text(StringRes.continueWith,
                   style: TextStyle(color: scheme.disabled)),

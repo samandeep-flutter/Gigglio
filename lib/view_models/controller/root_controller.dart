@@ -5,6 +5,7 @@ import 'package:gigglio/services/auth_services.dart';
 class RootController extends GetxController with GetTickerProviderStateMixin {
   AuthServices authServices = Get.find();
   late TabController tabController;
+
   final List<BottomNavigationBarItem> tabList = [
     const BottomNavigationBarItem(
       label: 'Home',
