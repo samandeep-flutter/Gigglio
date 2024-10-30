@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/model/models/user_details.dart';
@@ -9,6 +10,7 @@ import '../model/utils/color_resources.dart';
 class AuthServices extends GetxService {
   static AuthServices get to => Get.find();
   final _auth = FirebaseAuth.instance;
+  final _fbFire = FirebaseFirestore.instance;
   final boxServices = BoxServices.instance;
   late MyTheme _theme;
   MyTheme get theme => _theme;
@@ -17,6 +19,12 @@ class AuthServices extends GetxService {
   @override
   onInit() {
     _theme = boxServices.getTheme();
+    user.listen((value) {
+      if (value == null) return;
+      final doc = _fbFire.collection(FB.users).doc(value.id);
+      doc.set(value.toJson());
+      logPrint('[UserDetails] saved to Firestore');
+    });
     super.onInit();
   }
 

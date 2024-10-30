@@ -1,11 +1,9 @@
-import 'package:gigglio/model/models/user_details.dart';
-
 class PostModel {
-  final UserDetails author;
+  final String author;
   final String? desc;
   final List<String> images;
   final String dateTime;
-  final List<UserDetails> likes;
+  final List<String> likes;
   final List<CommentModel> comments;
 
   PostModel({
@@ -27,29 +25,46 @@ class PostModel {
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     return PostModel(
-        author: UserDetails.fromJson(json['author']),
+        author: json['author'],
         desc: json['desc'],
         images: List<String>.from(json['images']),
         dateTime: json['date_time'],
-        likes: List.from(json['likes'].map((e) => UserDetails.fromJson(e))),
+        likes: List<String>.from(json['likes']),
         comments:
-            List.from(json['comments'].map((e) => UserDetails.fromJson(e))));
+            List.from(json['comments'].map((e) => CommentModel.fromJson(e))));
   }
 
   Map<String, dynamic> toJson() => {
-        'author': author.toJson(),
+        'author': author,
         'desc': desc,
         'images': images,
         'date_time': dateTime,
-        'likes': likes.map((e) => e.toJson()).toList(),
+        'likes': likes,
         'comments': comments.map((e) => e.toJson()).toList(),
       };
+
+  PostModel copyWith({
+    String? author,
+    String? desc,
+    List<String>? images,
+    String? dateTime,
+    List<String>? likes,
+    List<CommentModel>? comments,
+  }) {
+    return PostModel(
+        author: author ?? this.author,
+        desc: desc ?? this.desc,
+        images: images ?? this.images,
+        dateTime: dateTime ?? this.dateTime,
+        likes: likes ?? this.likes,
+        comments: comments ?? this.comments);
+  }
 }
 
 class CommentModel {
-  final UserDetails author;
+  final String author;
   final String title;
-  final DateTime dateTime;
+  final String dateTime;
 
   CommentModel({
     required this.author,
@@ -59,9 +74,13 @@ class CommentModel {
 
   factory CommentModel.fromJson(Map<String, dynamic> json) {
     return CommentModel(
-        author: UserDetails.fromJson(json['author']),
+        author: json['author'],
         title: json['title'],
         dateTime: json['date_time']);
   }
-  Map<String, dynamic> toJson() => {'author': author.toJson()};
+  Map<String, dynamic> toJson() => {
+        'author': author,
+        'title': title,
+        'date_time': dateTime,
+      };
 }

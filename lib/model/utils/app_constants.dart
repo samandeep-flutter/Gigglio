@@ -15,6 +15,7 @@ class AppConstants {
 
 class FB {
   static const String post = 'posts';
+  static const String users = 'users';
   static const String userImage = '_userImages';
 }
 

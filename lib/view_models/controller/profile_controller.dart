@@ -68,8 +68,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  void toMyPosts() {}
-
   void imagePicker(BuildContext context) {
     showDialog(
         context: context,

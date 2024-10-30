@@ -16,6 +16,7 @@ class StringRes {
   static const String submit = 'Submit';
   static const String success = 'Success';
   static const String myPosts = 'My Posts';
+  static const String post = 'Post';
   static const String editProfile = 'Edit Profile';
   static const String changePass = 'Change Password';
   static const String privacyPolicy = 'Privacy Policy';
@@ -28,6 +29,10 @@ class StringRes {
   static const String addPost = 'Add Post';
   static const String refresh = 'Refresh';
   static const String newPost = 'New Post';
+  static const String addPhotos = 'New Photos';
+  static const String comments = 'Comments';
+  static const String viewComments = 'View all comments';
+  static const String endofPosts = 'End of posts';
   static const String cancelled = 'Process cancelled';
   static const String confirmEmail = 'Confirm your Email';
 

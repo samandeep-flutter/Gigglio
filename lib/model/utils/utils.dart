@@ -1,26 +1,25 @@
 class Utils {
-  static String dateTime(DateTime now) {
-    String date = '${now.year}${_format(now.month)}${_format(now.day)}';
-    String time = '${_format(now.hour)}${_format(now.minute)}'
-        '${_format(now.second)}${_formatMili(now.millisecond)}';
-    return date + time;
-  }
-
-  static String _formatMili(int number) {
-    String int = number.toString();
-    switch (int.length) {
-      case 2:
-        return '0$int';
-      case 1:
-        return '00$int';
-      default:
-        return int;
+  static String timeFromNow(DateTime date, now) {
+    final diff = now.difference(date);
+    if (diff.inDays != 0) {
+      switch (diff.inDays) {
+        case > 364:
+          return '${(diff.inDays / 365).round()} years';
+        case > 30:
+          return '${(diff.inDays / 30.416).round()} days';
+        case > 6:
+          return '${(diff.inDays / 7).round()} weeks';
+        case 1:
+          return '1 day';
+        default:
+          return '${diff.inDays} days';
+      }
+    } else if (diff.inHours > 0) {
+      return '${diff.inHours} hours';
+    } else if (diff.inMinutes > 0) {
+      return '${diff.inMinutes} min';
     }
-  }
 
-  static String _format(int number) {
-    String int = number.toString();
-    String result = int.length > 2 ? '0$int' : int;
-    return result;
+    return 'Just now';
   }
 }

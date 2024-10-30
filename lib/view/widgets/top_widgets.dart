@@ -170,10 +170,10 @@ class MyDivider extends StatelessWidget {
   }
 }
 
-class PhotoPager extends StatelessWidget {
+class PaginationDots extends StatelessWidget {
   final bool current;
   final VoidCallback? onTap;
-  const PhotoPager({super.key, required this.current, this.onTap});
+  const PaginationDots({super.key, required this.current, this.onTap});
 
   @override
   Widget build(BuildContext context) {

@@ -50,7 +50,7 @@ class AddPost extends GetView<HomeController> {
                       width: double.infinity,
                       isLoading: controller.isPostLoading.value,
                       onPressed: controller.addPost,
-                      child: const Text('Post'))),
+                      child: const Text(StringRes.post))),
                   const SizedBox(height: Dimens.sizeDefault),
                 ],
               ),
@@ -118,7 +118,7 @@ class ImageWidget extends GetView<HomeController> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Add Photos',
+                              StringRes.addPhotos,
                               style: TextStyle(color: scheme.textColorLight),
                             ),
                             const SizedBox(height: Dimens.sizeDefault),
