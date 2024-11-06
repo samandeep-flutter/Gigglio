@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/services/auth_services.dart';
+import 'package:gigglio/view_models/controller/home_controller.dart';
 
 class RootController extends GetxController with GetTickerProviderStateMixin {
   AuthServices authServices = Get.find();
@@ -28,6 +29,7 @@ class RootController extends GetxController with GetTickerProviderStateMixin {
   void onInit() {
     tabController = TabController(length: tabList.length, vsync: this);
     authServices.getUserDetails();
+    Get.find<HomeController>();
     super.onInit();
   }
 }

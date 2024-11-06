@@ -3,21 +3,24 @@ class UserDetails {
   final String displayName;
   final String? image;
   final String email;
+  final String? bio;
   final bool? verified;
 
-  UserDetails({
+  const UserDetails({
     required this.id,
     required this.image,
     required this.displayName,
     required this.email,
     required this.verified,
+    this.bio,
   });
 
-  UserDetails.blank()
+  const UserDetails.blank()
       : id = '',
         image = null,
         displayName = '',
         email = '',
+        bio = null,
         verified = false;
 
   factory UserDetails.fromJson(Map<String, dynamic> json) {
@@ -26,6 +29,7 @@ class UserDetails {
       image: json['image'],
       displayName: json['display_name'],
       email: json['email'],
+      bio: json['bio'],
       verified: json['verified'],
     );
   }
@@ -35,6 +39,7 @@ class UserDetails {
         'image': image,
         'display_name': displayName,
         'email': email,
+        'bio': bio,
         'verified': verified,
       };
 
@@ -43,6 +48,7 @@ class UserDetails {
     String? displayName,
     String? image,
     String? email,
+    String? bio,
     bool? verified,
   }) {
     return UserDetails(
@@ -50,7 +56,19 @@ class UserDetails {
       image: image ?? this.image,
       displayName: displayName ?? this.displayName,
       email: email ?? this.email,
+      bio: bio ?? this.bio,
       verified: verified ?? this.verified,
+    );
+  }
+
+  UserDetails copyFrom({required UserDetails? details}) {
+    return UserDetails(
+      id: details?.id ?? id,
+      image: details?.image ?? image,
+      displayName: details?.displayName ?? displayName,
+      email: details?.email ?? email,
+      bio: details?.bio ?? bio,
+      verified: details?.verified ?? verified,
     );
   }
 }

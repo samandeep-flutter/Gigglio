@@ -26,6 +26,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   RxList<File> postImages = RxList();
   RxBool isPostLoading = RxBool(false);
   RxBool isImageLoading = RxBool(false);
+  RxBool isCommentsLoading = RxBool(false);
 
   void toNotifications() => Get.toNamed(Routes.notifications);
   void toPost() => Get.toNamed(Routes.addPost);
@@ -35,8 +36,6 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
     postImages.clear();
     captionContr.clear();
   }
-
-  Future<void> reload() async {}
 
   void pickImages() async {
     final picker = ImagePicker();
@@ -111,6 +110,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
     post.comments.add(comment);
     posts.doc(id).set(post.toJson());
     commentKey.currentState?.reset();
+    commentContr.clear();
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   void sharePost(String id) => showToast('comming soon');

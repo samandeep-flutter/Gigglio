@@ -8,8 +8,17 @@ import 'package:gigglio/view_models/controller/home_controller.dart';
 import '../../services/theme_services.dart';
 import 'post_tile.dart';
 
-class HomeScreen extends GetView<HomeController> {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  HomeController controller = Get.find();
+
+  Future<void> reload() async => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -49,42 +58,46 @@ class HomeScreen extends GetView<HomeController> {
           const SizedBox(width: Dimens.sizeDefault),
         ],
       ),
-      child: FutureBuilder(
-          future: controller.posts.get(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) return const NoData();
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    height: context.height * .1,
-                    width: double.infinity,
-                  ),
-                  SizedBox.square(
-                    dimension: 24,
-                    child: CircularProgressIndicator(color: scheme.primary),
-                  )
-                ],
-              );
-            }
+      child: RefreshIndicator(
+        onRefresh: reload,
+        child: FutureBuilder(
+            future: controller.posts.get(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) return NoData(reload);
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: context.height * .1,
+                      width: double.infinity,
+                    ),
+                    SizedBox.square(
+                      dimension: 24,
+                      child: CircularProgressIndicator(color: scheme.primary),
+                    )
+                  ],
+                );
+              }
 
-            return ListView.builder(
-                itemCount: snapshot.data?.docs.length ?? 0,
-                padding: EdgeInsets.only(bottom: context.height * .12),
-                itemBuilder: (context, index) {
-                  bool last = snapshot.data?.docs.length == index + 1;
-                  final doc = snapshot.data!.docs[index];
-                  final post = PostModel.fromJson(doc.data());
-                  return PostTile(id: doc.id, post: post, last: last);
-                });
-          }),
+              return ListView.builder(
+                  itemCount: snapshot.data?.docs.length ?? 0,
+                  padding: EdgeInsets.only(bottom: context.height * .12),
+                  itemBuilder: (context, index) {
+                    bool last = snapshot.data?.docs.length == index + 1;
+                    final doc = snapshot.data!.docs[index];
+                    final post = PostModel.fromJson(doc.data());
+                    return PostTile(id: doc.id, post: post, last: last);
+                  });
+            }),
+      ),
     );
   }
 }
 
 class NoData extends GetView<HomeController> {
-  const NoData({super.key});
+  final VoidCallback onReload;
+  const NoData(this.onReload, {super.key, required});
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +116,7 @@ class NoData extends GetView<HomeController> {
           style: TextStyle(color: scheme.textColorLight),
         ),
         TextButton.icon(
-          onPressed: controller.reload,
+          onPressed: onReload,
           label: const Text(StringRes.refresh),
           icon: const Icon(Icons.refresh_outlined),
         )

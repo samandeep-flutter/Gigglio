@@ -192,3 +192,39 @@ class PaginationDots extends StatelessWidget {
     );
   }
 }
+
+class SnapshotLoading extends StatelessWidget {
+  final EdgeInsets? margin;
+  const SnapshotLoading({super.key, this.margin});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeServices.of(context);
+    return Container(
+      margin: margin ?? EdgeInsets.only(top: context.height * .1),
+      alignment: Alignment.topCenter,
+      child: SizedBox.square(
+        dimension: 30,
+        child: CircularProgressIndicator(color: scheme.primary),
+      ),
+    );
+  }
+}
+
+class SnapshotError extends StatelessWidget {
+  final EdgeInsets? margin;
+  final String? title;
+  const SnapshotError({super.key, this.margin, this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeServices.of(context);
+    return Container(
+        margin: margin ?? EdgeInsets.only(top: context.height * .1),
+        alignment: Alignment.topCenter,
+        child: Text(
+          title ?? StringRes.errorUnknown,
+          style: TextStyle(color: scheme.textColorLight),
+        ));
+  }
+}

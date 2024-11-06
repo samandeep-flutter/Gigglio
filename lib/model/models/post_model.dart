@@ -6,7 +6,7 @@ class PostModel {
   final List<String> likes;
   final List<CommentModel> comments;
 
-  PostModel({
+  const PostModel({
     required this.author,
     required this.desc,
     required this.images,
@@ -15,13 +15,13 @@ class PostModel {
     required this.comments,
   });
 
-  PostModel.add({
+  const PostModel.add({
     required this.author,
     required this.desc,
     required this.images,
     required this.dateTime,
-  })  : likes = [],
-        comments = [];
+  })  : likes = const [],
+        comments = const [];
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     return PostModel(
@@ -30,8 +30,9 @@ class PostModel {
         images: List<String>.from(json['images']),
         dateTime: json['date_time'],
         likes: List<String>.from(json['likes']),
-        comments:
-            List.from(json['comments'].map((e) => CommentModel.fromJson(e))));
+        comments: List.from(json['comments'].map((e) {
+          return CommentModel.fromJson(e);
+        })));
   }
 
   Map<String, dynamic> toJson() => {
@@ -66,7 +67,7 @@ class CommentModel {
   final String title;
   final String dateTime;
 
-  CommentModel({
+  const CommentModel({
     required this.author,
     required this.title,
     required this.dateTime,

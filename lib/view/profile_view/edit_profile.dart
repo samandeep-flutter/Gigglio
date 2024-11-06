@@ -87,11 +87,27 @@ class EditProfile extends GetView<ProfileController> {
                   style: TextStyle(color: scheme.textColorLight),
                 ),
                 const SizedBox(height: Dimens.sizeLarge),
-                MyTextField(
-                  fieldKey: controller.nameKey,
-                  title: 'Display Name',
-                  capitalization: TextCapitalization.words,
-                  controller: controller.nameController,
+                Form(
+                  key: controller.editFormKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      MyTextField(
+                        title: 'Display Name',
+                        capitalization: TextCapitalization.words,
+                        controller: controller.nameController,
+                      ),
+                      const SizedBox(height: Dimens.sizeLarge),
+                      CustomTextField(
+                        title: 'Bio',
+                        capitalization: TextCapitalization.words,
+                        maxLines: 4,
+                        controller: controller.bioContr,
+                        backgroundColor: Colors.transparent,
+                        defaultBorder: true,
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(height: context.height * .1),
                 Obx(() => LoadingButton(

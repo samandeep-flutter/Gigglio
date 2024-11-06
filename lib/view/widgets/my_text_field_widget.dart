@@ -58,7 +58,7 @@ class MyTextField extends StatefulWidget {
         isEmail = false,
         isPass = false,
         isNumber = false,
-        maxLines = null;
+        maxLines = 1;
 
   const MyTextField._custom({
     this.fieldKey,
@@ -161,6 +161,7 @@ class SearchTextField extends StatefulWidget {
   final String? Function(String? value)? customValidator;
   final List<TextInputFormatter>? inputFormatters;
   final Color? backgroundColor;
+  final bool showClear;
   final VoidCallback? onClear;
   const SearchTextField(
       {super.key,
@@ -174,6 +175,7 @@ class SearchTextField extends StatefulWidget {
       this.customValidator,
       this.backgroundColor,
       this.onClear,
+      this.showClear = true,
       this.inputFormatters});
 
   @override
@@ -183,11 +185,15 @@ class SearchTextField extends StatefulWidget {
 class _SearchTextFieldState extends State<SearchTextField> {
   @override
   void initState() {
-    widget.controller?.addListener(onChange);
+    if (widget.showClear) {
+      widget.controller?.addListener(onChange);
+    }
     super.initState();
   }
 
-  void onChange() => setState(() {});
+  void onChange() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -223,14 +229,16 @@ class _SearchTextFieldState extends State<SearchTextField> {
             hintStyle: TextStyle(color: scheme.disabled),
             focusedBorder: border(),
             enabledBorder: border(),
-            suffixIcon: widget.controller?.text.isEmpty ?? false
-                ? const SizedBox()
-                : IconButton(
+            prefixIcon: Icon(Icons.search, color: scheme.disabled),
+            suffixIcon: widget.showClear &&
+                    (widget.controller?.text.isNotEmpty ?? false)
+                ? IconButton(
                     onPressed: widget.onClear ?? widget.controller?.clear,
                     icon: Icon(
                       Icons.clear,
                       color: scheme.disabled,
-                    ))),
+                    ))
+                : null),
       ),
     );
   }
@@ -248,6 +256,8 @@ class CustomTextField extends StatelessWidget {
   final TextCapitalization? capitalization;
   final String? Function(String? value)? validator;
   final List<TextInputFormatter>? inputFormatters;
+  final bool? defaultBorder;
+  final BorderRadius? borderRadius;
   final Color? backgroundColor;
 
   const CustomTextField({
@@ -264,16 +274,18 @@ class CustomTextField extends StatelessWidget {
     this.validator,
     this.inputFormatters,
     this.backgroundColor,
+    this.defaultBorder,
+    this.borderRadius,
   });
 
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeServices.of(context);
-    final borderRadius = BorderRadius.circular(Dimens.borderDefault);
+    final radius = BorderRadius.circular(Dimens.borderDefault);
 
-    InputBorder border() {
+    InputBorder inputBorder() {
       return OutlineInputBorder(
-        borderRadius: borderRadius,
+        borderRadius: borderRadius ?? radius,
         borderSide: BorderSide(color: backgroundColor ?? Colors.white),
       );
     }
@@ -281,7 +293,8 @@ class CustomTextField extends StatelessWidget {
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-          color: backgroundColor ?? Colors.white, borderRadius: borderRadius),
+          color: backgroundColor ?? Colors.white,
+          borderRadius: borderRadius ?? radius),
       child: MyTextField._custom(
         title: title,
         fieldKey: fieldKey,
@@ -296,8 +309,18 @@ class CustomTextField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: title,
           hintStyle: TextStyle(color: scheme.disabled),
-          focusedBorder: border(),
-          enabledBorder: border(),
+          focusedBorder: defaultBorder ?? false
+              ? OutlineInputBorder(
+                  borderSide: BorderSide(color: scheme.primary),
+                )
+              : inputBorder(),
+          enabledBorder: defaultBorder ?? false
+              ? OutlineInputBorder(
+                  borderSide: BorderSide(
+                  color: scheme.disabled,
+                  width: 1.5,
+                ))
+              : inputBorder(),
         ),
       ),
     );

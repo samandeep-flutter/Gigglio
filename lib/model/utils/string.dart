@@ -32,6 +32,7 @@ class StringRes {
   static const String addPhotos = 'New Photos';
   static const String comments = 'Comments';
   static const String viewComments = 'View all comments';
+  static const String noComments = 'Be the first one to comment..';
   static const String endofPosts = 'End of posts';
   static const String cancelled = 'Process cancelled';
   static const String confirmEmail = 'Confirm your Email';
@@ -47,6 +48,7 @@ class StringRes {
   static const String errorSignCancel = 'Sign In cancelled';
   static const String errorUnknown = 'Something went wrong, try again';
   static const String errorSelect = 'Fill all required fields';
+  static const String errorLoad = 'Failed to load data, refresh to load again';
   static const String errorCredentials = 'Something went wrong,'
       ' please login again';
 
@@ -71,6 +73,8 @@ class StringRes {
       ' by clicking the link we sent to your inbox';
   static const String reauthDesc = 'For your security, please reauthenticate '
       'to continue. Confirm your identity by signing in again';
+  static const String defBio = 'Hey there! I\'m on Gigglio. Let\'s '
+      'chat and share some fun moments!';
 
   // box
   static const String boxName = 'gigglio';

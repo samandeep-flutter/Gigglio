@@ -22,7 +22,7 @@ extension MyDateTime on DateTime {
 
   String _format(int number) {
     String int = number.toString();
-    String result = int.length > 2 ? '0$int' : int;
+    String result = int.length > 1 ? int : '0$int';
     return result;
   }
 }
@@ -36,7 +36,8 @@ extension MyString on String {
     int day = int.parse(datetime.substring(6, 8));
     int hour = int.parse(datetime.substring(8, 10));
     int min = int.parse(datetime.substring(10, 12));
-    int milli = int.parse(datetime.substring(12, 16));
-    return DateTime(year, month, day, hour, min, milli);
+    int sec = int.parse(datetime.substring(12, 14));
+    int milli = int.parse(datetime.substring(14, 17));
+    return DateTime(year, month, day, hour, min, sec, milli);
   }
 }

@@ -10,6 +10,8 @@ class MyCachedImage extends StatelessWidget {
   final double? width;
   final BoxFit? fit;
   final bool isAvatar;
+  final bool error;
+  final bool loading;
   final double? avatarRadius;
   final BorderRadiusGeometry? borderRadius;
   final Color? foregroundColor;
@@ -21,11 +23,74 @@ class MyCachedImage extends StatelessWidget {
       this.width,
       this.foregroundColor,
       this.borderRadius,
-      this.fit});
+      this.fit})
+      : loading = false,
+        error = false;
+
+  const MyCachedImage.error(
+      {super.key,
+      this.isAvatar = false,
+      this.avatarRadius,
+      this.height,
+      this.width,
+      this.foregroundColor,
+      this.borderRadius,
+      this.fit})
+      : image = null,
+        loading = false,
+        error = true;
+  const MyCachedImage.loading(
+      {super.key,
+      this.isAvatar = false,
+      this.avatarRadius,
+      this.height,
+      this.width,
+      this.foregroundColor,
+      this.borderRadius,
+      this.fit})
+      : image = null,
+        loading = true,
+        error = false;
 
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeServices.of(context);
+
+    if (error) {
+      final image = AssetImage(ImageRes.userThumbnail);
+      if (isAvatar) {
+        return CircleAvatar(backgroundImage: image, radius: avatarRadius);
+      }
+      return ClipRRect(
+          borderRadius: borderRadius ?? BorderRadius.zero,
+          child: Image(
+            image: image,
+            fit: fit ?? BoxFit.cover,
+            height: height,
+            width: width,
+          ));
+    }
+
+    if (loading) {
+      Widget placeholder = Center(
+          child: CircularProgressIndicator(
+              color: foregroundColor ?? scheme.primary));
+
+      if (isAvatar) {
+        return CircleAvatar(
+            backgroundColor: Colors.grey[300],
+            radius: avatarRadius,
+            child: placeholder);
+      }
+
+      return ClipRRect(
+          borderRadius: borderRadius ?? BorderRadius.zero,
+          child: SizedBox(
+            height: height,
+            width: width,
+            child: placeholder,
+          ));
+    }
 
     return CachedNetworkImage(
         imageUrl: image ?? '',

@@ -18,7 +18,8 @@ class ProfileController extends GetxController {
   final _storage = FirebaseStorage.instance.ref();
 
   final nameController = TextEditingController();
-  final nameKey = GlobalKey<FormFieldState>();
+  final bioContr = TextEditingController();
+  final editFormKey = GlobalKey<FormState>();
 
   final changePassKey = GlobalKey<FormState>();
   final oldPassContr = TextEditingController();
@@ -134,14 +135,15 @@ class ProfileController extends GetxController {
     Get.toNamed(Routes.editProfile);
   }
 
-  void fromEditProfile(bool canPop, result) => nameKey.currentState?.reset();
+  void fromEditProfile(bool canPop, result) =>
+      editFormKey.currentState?.reset();
 
   void fromChangePass(bool canPop, result) =>
       changePassKey.currentState?.reset();
 
   void editProfile() async {
     FocusManager.instance.primaryFocus?.unfocus();
-    if (!(nameKey.currentState?.validate() ?? false)) return;
+    if (!(editFormKey.currentState?.validate() ?? false)) return;
     if (isImageLoading.value) return;
     isProfileLoading.value = true;
     final user = authServices.user.value;
@@ -154,7 +156,7 @@ class ProfileController extends GetxController {
       if (modifiedName) {
         await _user!.updateDisplayName(nameController.text);
       }
-      await authServices.saveProfile();
+      await authServices.saveProfile(bioContr.text);
       isProfileLoading.value = false;
       Get.back();
     } catch (e) {

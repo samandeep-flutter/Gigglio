@@ -7,14 +7,17 @@ import 'package:gigglio/services/auth_services.dart';
 class AppConstants {
   static final _user = Get.find<AuthServices>().user.value;
 
-  static const String searchKey = 'messages-search-key';
+  static const String messageSearchKey = 'messages-search-key';
+  static const String usersSearchKey = 'users-search-key';
   static String profileImage(String ext) => '${FB.userImage}/${_user!.id}.$ext';
   static String postImage(String image, {required String time}) =>
       '${FB.post}/$time/$image';
 }
 
 class FB {
+  static const String about = 'about';
   static const String post = 'posts';
+  static const String messages = 'messages';
   static const String users = 'users';
   static const String userImage = '_userImages';
 }

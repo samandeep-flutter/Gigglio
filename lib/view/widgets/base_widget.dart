@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gigglio/model/utils/dimens.dart';
-
 import '../../services/theme_services.dart';
 
 class BaseWidget extends StatelessWidget {
@@ -8,6 +7,7 @@ class BaseWidget extends StatelessWidget {
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final Color? color;
+  final BoxDecoration? decoration;
   final Widget child;
   final bool? resizeBottom;
   final bool safeAreaBottom;
@@ -18,6 +18,7 @@ class BaseWidget extends StatelessWidget {
     this.padding,
     this.margin,
     this.color,
+    this.decoration,
     this.resizeBottom,
     this.safeAreaBottom = false,
     required this.child,
@@ -31,16 +32,19 @@ class BaseWidget extends StatelessWidget {
       appBar: appBar,
       resizeToAvoidBottomInset: resizeBottom,
       backgroundColor: color ?? scheme.background,
-      body: SafeArea(
-          bottom: safeAreaBottom,
-          child: Container(
-            margin: margin,
-            padding: padding ??
-                const EdgeInsets.symmetric(
-                  horizontal: Dimens.sizeLarge,
-                ),
-            child: child,
-          )),
+      body: Container(
+        decoration: decoration,
+        child: SafeArea(
+            bottom: safeAreaBottom,
+            child: Container(
+              margin: margin,
+              padding: padding ??
+                  const EdgeInsets.symmetric(
+                    horizontal: Dimens.sizeLarge,
+                  ),
+              child: child,
+            )),
+      ),
     );
   }
 }

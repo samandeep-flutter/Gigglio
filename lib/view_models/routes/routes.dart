@@ -12,6 +12,8 @@ abstract class Routes {
   static const String addPost = '/add-post';
   // messages routes
   static const String messages = '/messages';
+  static const String chatScreen = '/chat-screen';
+  static const String newChat = '/new-chat';
   // profile routes
   static const String profile = '/profile';
   static const String userProfile = '/user-posts';

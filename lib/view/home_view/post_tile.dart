@@ -37,16 +37,22 @@ class PostTile extends GetView<HomeController> {
             stream: controller.users.doc(post.author).snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                // TODO: replace with error widget.
-                return const SizedBox();
+                return const ListTile(
+                  leading: MyCachedImage.error(isAvatar: true),
+                  subtitle: Text(StringRes.errorLoad),
+                );
               }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
-                // TODO: replace with loading widget.
-                return const SizedBox();
+                return const ListTile(
+                  leading: MyCachedImage.loading(
+                    isAvatar: true,
+                    // TODO: replace with loading widget for title and subtitle.
+                  ),
+                );
               }
 
-              final json = snapshot.data!.data();
+              final json = snapshot.data?.data();
               final author = UserDetails.fromJson(json!);
               return ListTile(
                 leading: MyCachedImage(
@@ -63,15 +69,16 @@ class PostTile extends GetView<HomeController> {
             stream: controller.posts.doc(id).snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                // TODO: replace with error widget.
+                // TODO: replace with error widget for like icons.
                 return const SizedBox();
               }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
-                // TODO: replace with loading widget.
+                // TODO: replace with loading widget for like icons.
                 return const SizedBox();
               }
-              final post = PostModel.fromJson(snapshot.data!.data()!);
+              final json = snapshot.data?.data();
+              final post = PostModel.fromJson(json!);
               return Row(
                 children: [
                   const SizedBox(width: Dimens.sizeSmall),
@@ -130,7 +137,7 @@ class PostTile extends GetView<HomeController> {
                               ConnectionState.waiting) {
                             return const SizedBox();
                           }
-                          final json = snapshot.data!.data();
+                          final json = snapshot.data?.data();
                           UserDetails user = UserDetails.fromJson(json!);
                           return RichText(
                               text: TextSpan(
@@ -166,7 +173,7 @@ class PostTile extends GetView<HomeController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${Utils.timeFromNow(post.dateTime.toDateTime, DateTime.now())} ago',
+                  Utils.timeFromNow(post.dateTime.toDateTime, DateTime.now()),
                   style: TextStyle(color: scheme.textColorLight),
                 ),
               ],
@@ -196,7 +203,9 @@ class PostTile extends GetView<HomeController> {
         isScrollControlled: true,
         builder: (context) {
           return BottomSheet(
-              onClosing: () {},
+              onClosing: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+              },
               animationController:
                   BottomSheet.createAnimationController(controller),
               builder: (context) {
@@ -265,14 +274,42 @@ class _ImageCarouselState extends State<_ImageCarousel> {
   }
 }
 
-class MyBottomSheet extends GetView<HomeController> {
+class MyBottomSheet extends StatefulWidget {
   final String id;
   final PostModel post;
   const MyBottomSheet(this.id, this.post, {super.key});
 
   @override
+  State<MyBottomSheet> createState() => _MyBottomSheetState();
+}
+
+class _MyBottomSheetState extends State<MyBottomSheet> {
+  List<UserDetails> users = [];
+  HomeController controller = Get.find();
+
+  @override
+  void initState() {
+    _getUsers();
+    super.initState();
+  }
+
+  Future<void> _getUsers() async {
+    controller.isCommentsLoading.value = true;
+    List<UserDetails> details = [];
+    final collection = await controller.users.get();
+
+    for (var e in collection.docs) {
+      details.add(UserDetails.fromJson(e.data()));
+    }
+
+    users = details;
+    controller.isCommentsLoading.value = false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final scheme = ThemeServices.of(context);
+    final now = DateTime.now();
 
     return Column(
       children: [
@@ -288,20 +325,33 @@ class MyBottomSheet extends GetView<HomeController> {
         const MyDivider(),
         const SizedBox(height: Dimens.sizeDefault),
         Expanded(
-          child: StreamBuilder(
-              stream: controller.posts.doc(id).snapshots(),
+          child: FutureBuilder(
+              future: controller.posts.doc(widget.id).get(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  // TODO: replace with error widget.
-                  return const SizedBox();
+                  return Padding(
+                    padding: EdgeInsets.only(top: context.height * 0.3),
+                    child: Text(StringRes.errorUnknown,
+                        style: TextStyle(color: scheme.textColorLight)),
+                  );
                 }
 
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  // TODO: replace with loading widget.
-                  return const SizedBox();
+                if (snapshot.connectionState == ConnectionState.waiting ||
+                    controller.isCommentsLoading.value) {
+                  // TODO: replace with loading widget for comments.
+                  return const SnapshotLoading();
                 }
-                final json = snapshot.data!.data();
+
+                final json = snapshot.data?.data();
                 final post = PostModel.fromJson(json!);
+
+                if (post.comments.isEmpty) {
+                  return Container(
+                    margin: EdgeInsets.only(top: context.height * 0.3),
+                    child: Text(StringRes.noComments,
+                        style: TextStyle(color: scheme.textColorLight)),
+                  );
+                }
                 return ListView.builder(
                     padding: const EdgeInsets.symmetric(
                         horizontal: Dimens.sizeLarge),
@@ -309,33 +359,19 @@ class MyBottomSheet extends GetView<HomeController> {
                     itemBuilder: (context, index) {
                       final comment = post.comments[index];
                       final date = comment.dateTime.toDateTime;
+                      final author = users.firstWhere((e) {
+                        return e.id == comment.author;
+                      });
                       return Padding(
                         padding: const EdgeInsets.symmetric(
                             vertical: Dimens.sizeSmall),
                         child: Row(
                           children: [
-                            FutureBuilder(
-                                future: controller.users.doc(post.author).get(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasError) {
-                                    // TODO: replace with error widget.
-                                    return const SizedBox();
-                                  }
-
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    // TODO: replace with loading widget.
-                                    return const SizedBox();
-                                  }
-
-                                  final json = snapshot.data!.data();
-                                  final author = UserDetails.fromJson(json!);
-                                  return MyCachedImage(
-                                    author.image,
-                                    isAvatar: true,
-                                    avatarRadius: 24,
-                                  );
-                                }),
+                            MyCachedImage(
+                              author.image,
+                              isAvatar: true,
+                              avatarRadius: 24,
+                            ),
                             const SizedBox(width: Dimens.sizeDefault),
                             Expanded(
                               child: Column(
@@ -344,33 +380,14 @@ class MyBottomSheet extends GetView<HomeController> {
                                 children: [
                                   Row(
                                     children: [
-                                      FutureBuilder(
-                                          future: controller.users
-                                              .doc(post.author)
-                                              .get(),
-                                          builder: (context, snapshot) {
-                                            if (snapshot.hasError) {
-                                              // TODO: replace with error widget.
-                                              return const SizedBox();
-                                            }
-
-                                            if (snapshot.connectionState ==
-                                                ConnectionState.waiting) {
-                                              // TODO: replace with loading widget.
-                                              return const SizedBox();
-                                            }
-                                            final json = snapshot.data!.data();
-                                            final author =
-                                                UserDetails.fromJson(json!);
-                                            return Text(
-                                              author.displayName,
-                                              style: const TextStyle(
-                                                  fontSize: Dimens.fontMed),
-                                            );
-                                          }),
+                                      Text(
+                                        author.displayName,
+                                        style: const TextStyle(
+                                            fontSize: Dimens.fontMed),
+                                      ),
                                       const SizedBox(width: Dimens.sizeSmall),
                                       Text(
-                                        Utils.timeFromNow(date, DateTime.now()),
+                                        Utils.timeFromNow(date, now),
                                         style: TextStyle(
                                             fontSize: Dimens.fontMed,
                                             color: scheme.disabled),
@@ -409,7 +426,8 @@ class MyBottomSheet extends GetView<HomeController> {
                 ),
                 const SizedBox(width: Dimens.sizeDefault),
                 IconButton.filled(
-                  onPressed: () => controller.postComment(id, post: post),
+                  onPressed: () =>
+                      controller.postComment(widget.id, post: widget.post),
                   icon: const Icon(Icons.send),
                 ),
                 const SizedBox(width: Dimens.sizeDefault)

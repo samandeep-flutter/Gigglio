@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
-
+import 'package:gigglio/view_models/controller/settings_controller.dart';
 import '../services/theme_services.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends GetView<SettingsController> {
   const SettingsScreen({super.key});
 
   @override

@@ -15,6 +15,7 @@ class AuthServices extends GetxService {
   late MyTheme _theme;
   MyTheme get theme => _theme;
   Rxn<UserDetails> user = Rxn();
+  late String minVersion;
 
   @override
   onInit() {
@@ -24,7 +25,9 @@ class AuthServices extends GetxService {
       final doc = _fbFire.collection(FB.users).doc(value.id);
       doc.set(value.toJson());
       logPrint('[UserDetails] saved to Firestore');
+      _getVersion();
     });
+
     super.onInit();
   }
 
@@ -39,18 +42,30 @@ class AuthServices extends GetxService {
     return Routes.rootView;
   }
 
-  Future<void> saveProfile() async {
+  Future<void> _getVersion() async {
+    try {
+      final doc = await _fbFire.collection(FB.about).doc('info').get();
+      minVersion = doc.data()!['min_version'];
+    } catch (e) {
+      logPrint('FB: $e');
+    }
+  }
+
+  Future<void> saveProfile(String? bio) async {
     final user = _auth.currentUser;
     if (user == null) return;
-
     var details = UserDetails(
         id: user.uid,
         displayName: user.displayName ?? '',
         email: user.email!,
         image: user.photoURL,
+        bio: bio,
         verified: user.emailVerified);
-    this.user.value = details;
-    await boxServices.saveUserDetails(details);
+
+    final saved = boxServices.getUserDetails();
+    final updated = saved?.copyFrom(details: details);
+    this.user.value = updated ?? details;
+    await boxServices.saveUserDetails(updated ?? details);
   }
 
   Future<void> saveCred(UserCredential credentials) async {

@@ -67,4 +67,5 @@ class DefaultFirebaseOptions {
     iosClientId: '445987609145-v67iuvd3qqjp9ibutnlhrj5msdnaasrg.apps.googleusercontent.com',
     iosBundleId: 'com.samtech.gigglio',
   );
+
 }
