@@ -35,7 +35,7 @@ class NewChatScreen extends GetView<MessagesController> {
         child: FutureBuilder(
             future: controller.users.get(),
             builder: (context, snapshot) {
-              if (snapshot.hasError) return const SnapshotError();
+              if (snapshot.hasError) return const ToolTipWidget();
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SnapshotLoading();
               }
@@ -55,7 +55,7 @@ class NewChatScreen extends GetView<MessagesController> {
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: Dimens.sizeLarge,
                       ),
-                      onTap: () => controller.toChatScreen(user),
+                      onTap: () => controller.toChatScreen(user, replace: true),
                       leading: MyCachedImage(
                         user.image,
                         isAvatar: true,

@@ -59,7 +59,8 @@ class AuthServices extends GetxService {
         displayName: user.displayName ?? '',
         email: user.email!,
         image: user.photoURL,
-        bio: bio,
+        bio: bio?.isNotEmpty ?? false ? bio : null,
+        login: true,
         verified: user.emailVerified);
 
     final saved = boxServices.getUserDetails();
@@ -68,13 +69,14 @@ class AuthServices extends GetxService {
     await boxServices.saveUserDetails(updated ?? details);
   }
 
-  Future<void> saveCred(UserCredential credentials) async {
+  Future<void> saveCred(UserCredential credentials, {String? name}) async {
     if (credentials.user == null) return;
     var details = UserDetails(
         id: credentials.user!.uid,
-        displayName: credentials.user!.displayName ?? '',
+        displayName: name ?? credentials.user!.displayName ?? '',
         email: credentials.user!.email!,
         image: credentials.user?.photoURL,
+        login: true,
         verified: credentials.user?.emailVerified);
     user.value = details;
     await boxServices.saveUserDetails(details);
@@ -91,13 +93,17 @@ class AuthServices extends GetxService {
   }
 
   void logout() async {
+    Get.offAllNamed(Routes.signIn);
     try {
-      await _auth.signOut();
-      await boxServices.removeUserDetails();
+      if (user.value != null) {
+        final doc = _fbFire.collection(FB.users).doc(user.value!.id);
+        doc.set(user.value!.copyWith(login: false).toJson());
+      }
+      _auth.signOut();
+      boxServices.removeUserDetails();
     } catch (e) {
       logPrint('LOGOUT: $e');
     }
-    Get.offAllNamed(Routes.signIn);
   }
 
   /// Currently disalbed through firebase

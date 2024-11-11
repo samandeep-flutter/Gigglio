@@ -211,10 +211,10 @@ class SnapshotLoading extends StatelessWidget {
   }
 }
 
-class SnapshotError extends StatelessWidget {
+class ToolTipWidget extends StatelessWidget {
   final EdgeInsets? margin;
   final String? title;
-  const SnapshotError({super.key, this.margin, this.title});
+  const ToolTipWidget({super.key, this.margin, this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -224,6 +224,7 @@ class SnapshotError extends StatelessWidget {
         alignment: Alignment.topCenter,
         child: Text(
           title ?? StringRes.errorUnknown,
+          textAlign: TextAlign.center,
           style: TextStyle(color: scheme.textColorLight),
         ));
   }

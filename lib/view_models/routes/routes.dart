@@ -18,6 +18,7 @@ abstract class Routes {
   static const String profile = '/profile';
   static const String userProfile = '/user-posts';
   static const String editProfile = '/edit-profile';
+  static const String myPosts = '/my-posts';
   static const String changePass = '/change-password';
   static const String privacyPolicy = '/privacy-policy';
 }

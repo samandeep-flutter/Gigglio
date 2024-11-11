@@ -4,8 +4,8 @@ import 'package:gigglio/model/models/post_model.dart';
 import 'package:gigglio/model/utils/dimens.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
-import 'package:gigglio/view_models/controller/home_controller.dart';
 import '../../services/theme_services.dart';
+import '../../view_models/controller/home_controller.dart';
 import 'post_tile.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -61,7 +61,8 @@ class _HomeScreenState extends State<HomeScreen> {
       child: RefreshIndicator(
         onRefresh: reload,
         child: FutureBuilder(
-            future: controller.posts.get(),
+            future:
+                controller.posts.orderBy('date_time', descending: true).get(),
             builder: (context, snapshot) {
               if (snapshot.hasError) return NoData(reload);
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -82,11 +83,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
               return ListView.builder(
                   itemCount: snapshot.data?.docs.length ?? 0,
-                  padding: EdgeInsets.only(bottom: context.height * .12),
+                  padding: EdgeInsets.only(bottom: context.height * .1),
                   itemBuilder: (context, index) {
                     bool last = snapshot.data?.docs.length == index + 1;
-                    final doc = snapshot.data!.docs[index];
-                    final post = PostModel.fromJson(doc.data());
+
+                    final doc = snapshot.data?.docs[index];
+                    final post = PostModel.fromJson(doc!.data());
                     return PostTile(id: doc.id, post: post, last: last);
                   });
             }),

@@ -16,7 +16,7 @@ class ForgotPassword extends GetView<SignInController> {
     final scheme = ThemeServices.of(context);
 
     return BaseWidget(
-        appBar: AppBar(),
+        appBar: AppBar(backgroundColor: scheme.background),
         safeAreaBottom: true,
         child: PopScope(
           onPopInvokedWithResult: controller.fromForgotPass,

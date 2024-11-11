@@ -42,7 +42,6 @@ class SignUpScreen extends GetView<SignUpController> {
               MyTextField(
                 title: 'Email',
                 isEmail: true,
-                keyboardType: TextInputType.emailAddress,
                 controller: controller.emailController,
               ),
               const SizedBox(height: Dimens.sizeLarge),

@@ -26,7 +26,7 @@ class SignUpController extends GetxController {
         password: confirmPassController.text,
       );
       await fbAuth.currentUser?.updateDisplayName(nameController.text);
-      await authServices.saveCred(credentials);
+      await authServices.saveCred(credentials, name: nameController.text);
       await fbAuth.currentUser?.sendEmailVerification();
       isLoading.value = false;
       Get.offNamed(Routes.rootView);

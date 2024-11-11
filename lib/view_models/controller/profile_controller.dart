@@ -32,6 +32,15 @@ class ProfileController extends GetxController {
   RxnString imageUrl = RxnString();
 
   void toChangePassword() => Get.toNamed(Routes.changePass);
+  void toPrivacyPolicy() => Get.toNamed(Routes.privacyPolicy);
+  void toSettings() => Get.toNamed(Routes.settings);
+  void toMyPosts() => Get.toNamed(Routes.myPosts);
+
+  void fromEditProfile(bool canPop, result) =>
+      editFormKey.currentState?.reset();
+
+  void fromChangePass(bool canPop, result) =>
+      changePassKey.currentState?.reset();
 
   void changePassword() async {
     FocusManager.instance.primaryFocus?.unfocus();
@@ -135,12 +144,6 @@ class ProfileController extends GetxController {
     Get.toNamed(Routes.editProfile);
   }
 
-  void fromEditProfile(bool canPop, result) =>
-      editFormKey.currentState?.reset();
-
-  void fromChangePass(bool canPop, result) =>
-      changePassKey.currentState?.reset();
-
   void editProfile() async {
     FocusManager.instance.primaryFocus?.unfocus();
     if (!(editFormKey.currentState?.validate() ?? false)) return;
@@ -156,7 +159,7 @@ class ProfileController extends GetxController {
       if (modifiedName) {
         await _user!.updateDisplayName(nameController.text);
       }
-      await authServices.saveProfile(bioContr.text);
+      await authServices.saveProfile(bioContr.text.trim());
       isProfileLoading.value = false;
       Get.back();
     } catch (e) {
@@ -165,10 +168,6 @@ class ProfileController extends GetxController {
       authServices.logout();
     }
   }
-
-  void toPrivacyPolicy() => Get.toNamed(Routes.privacyPolicy);
-
-  void toSettings() => Get.toNamed(Routes.settings);
 
   void logout(BuildContext context) {
     final scheme = ThemeServices.of(context);

@@ -23,6 +23,7 @@ class MessagesScreen extends GetView<MessagesController> {
     final bodyTextStyle = context.textTheme.bodyMedium;
 
     return BaseWidget(
+        padding: EdgeInsets.zero,
         appBar: AppBar(
           backgroundColor: scheme.background,
           title: const Text(StringRes.messages),
@@ -60,49 +61,58 @@ class MessagesScreen extends GetView<MessagesController> {
                 return e.id.contains(user!.id);
               }).toList();
 
+              if (docs.isEmpty) {
+                return ToolTipWidget(
+                    margin: EdgeInsets.symmetric(
+                      vertical: context.height * .08,
+                      horizontal: context.width * .22,
+                    ),
+                    title: StringRes.noMessages);
+              }
+
               return ListView.builder(
                   itemCount: docs.length,
+                  padding: const EdgeInsets.only(top: Dimens.sizeDefault),
                   itemBuilder: (context, index) {
-                    final users = docs[index].id.split(':');
                     final json = docs[index].data();
-                    final list = List<Messages>.from(
-                        json.entries.map((e) => Messages.fromJson(e.value)));
-                    final chat = MessagesModel(users: users, messages: list);
-                    final otherUser =
-                        chat.users.firstWhere((e) => e != user!.id);
+                    final chat = MessagesModel.fromJson(json);
+
+                    final otherUser = chat.users.firstWhere((e) {
+                      return e.id != user!.id;
+                    });
+
                     return StreamBuilder(
-                        stream: controller.users.doc(otherUser).snapshots(),
+                        stream: controller.users.doc(otherUser.id).snapshots(),
                         builder: (context, snapshot) {
                           if (snapshot.hasError) {
                             // TODO: replace with error widget for messages.
-                            return const SnapshotError();
+                            return const ToolTipWidget();
                           }
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
                             // TODO: replace with loading widget for messages.
                             return const SnapshotLoading();
                           }
+                          if (chat.messages.isEmpty) return const SizedBox();
                           final json = snapshot.data?.data();
                           final user = UserDetails.fromJson(json!);
+                          Messages last = chat.messages.last;
 
-                          Messages? last;
-                          if (chat.messages.isNotEmpty) {
-                            last = chat.messages.last;
-                          }
                           return ListTile(
+                            onTap: () => controller.toChatScreen(user),
                             leading: MyCachedImage(
                               user.image,
                               isAvatar: true,
                               avatarRadius: 24,
                             ),
                             title: Text(user.displayName),
-                            subtitle: Text(last?.message ?? ''),
+                            subtitle: Text(last.text),
                             subtitleTextStyle: bodyTextStyle?.copyWith(
                               color: scheme.textColorLight,
                             ),
                             trailing: Text(
                               Utils.timeFromNow(
-                                  last?.dateTime.toDateTime, DateTime.now()),
+                                  last.dateTime.toDateTime, DateTime.now()),
                               style: TextStyle(color: scheme.disabled),
                             ),
                           );

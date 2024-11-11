@@ -26,7 +26,6 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   RxList<File> postImages = RxList();
   RxBool isPostLoading = RxBool(false);
   RxBool isImageLoading = RxBool(false);
-  RxBool isCommentsLoading = RxBool(false);
 
   void toNotifications() => Get.toNamed(Routes.notifications);
   void toPost() => Get.toNamed(Routes.addPost);
@@ -73,7 +72,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
       return;
     }
     isPostLoading.value = true;
-    final now = DateTime.now().toJson;
+    final now = DateTime.now().toJson();
     try {
       List<String> images = await _uploadImages(postImages, dateTime: now);
       var post = PostModel.add(
@@ -106,7 +105,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
     final comment = CommentModel(
         author: authServices.user.value!.id,
         title: commentContr.text,
-        dateTime: DateTime.now().toJson);
+        dateTime: DateTime.now().toJson());
     post.comments.add(comment);
     posts.doc(id).set(post.toJson());
     commentKey.currentState?.reset();

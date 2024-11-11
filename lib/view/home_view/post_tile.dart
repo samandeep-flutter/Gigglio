@@ -60,65 +60,86 @@ class PostTile extends GetView<HomeController> {
                   isAvatar: true,
                 ),
                 title: Text(author.displayName),
-                subtitle: Text(author.email),
+                subtitle: Text(
+                  author.bio ?? author.email,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               );
             }),
         _ImageCarousel(post: post),
         const SizedBox(height: Dimens.sizeSmall),
-        StreamBuilder(
-            stream: controller.posts.doc(id).snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                // TODO: replace with error widget for like icons.
-                return const SizedBox();
-              }
-
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                // TODO: replace with loading widget for like icons.
-                return const SizedBox();
-              }
-              final json = snapshot.data?.data();
-              final post = PostModel.fromJson(json!);
-              return Row(
-                children: [
-                  const SizedBox(width: Dimens.sizeSmall),
-                  IconButton(
-                      onPressed: () => controller.likePost(id, post: post),
-                      style: IconButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 2)),
-                      isSelected: post.likes.contains(user!.id),
-                      iconSize: bottomIcon,
-                      selectedIcon: const Icon(Icons.favorite),
-                      icon: Icon(
+        Row(
+          children: [
+            const SizedBox(width: Dimens.sizeSmall),
+            StreamBuilder(
+                stream: controller.posts.doc(id).snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError ||
+                      snapshot.connectionState == ConnectionState.waiting) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Icon(
                         Icons.favorite_outline,
                         color: scheme.disabled,
-                      )),
-                  if (post.likes.isNotEmpty) Text(post.likes.length.toString()),
-                  const SizedBox(width: Dimens.sizeSmall),
-                  IconButton(
-                      onPressed: () => toComments(context),
-                      style: IconButton.styleFrom(
-                          padding: const EdgeInsets.only(top: 2)),
-                      iconSize: bottomIcon,
-                      icon: Icon(
-                        Icons.comment_outlined,
-                        color: scheme.disabled,
-                      )),
-                  if (post.comments.isNotEmpty)
-                    Text(post.comments.length.toString()),
-                  const SizedBox(width: Dimens.sizeSmall),
-                  IconButton(
-                      onPressed: () => controller.sharePost(id),
-                      style: IconButton.styleFrom(
-                          padding: const EdgeInsets.only(bottom: 2)),
-                      iconSize: bottomIcon,
-                      icon: Icon(
-                        Icons.ios_share_outlined,
-                        color: scheme.disabled,
-                      )),
-                ],
-              );
-            }),
+                        size: bottomIcon,
+                      ),
+                    );
+                  }
+
+                  final json = snapshot.data?.data();
+                  final post = PostModel.fromJson(json!);
+                  return Row(
+                    children: [
+                      IconButton(
+                          onPressed: () => controller.likePost(id, post: post),
+                          style: IconButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 2)),
+                          isSelected: post.likes.contains(user!.id),
+                          iconSize: bottomIcon,
+                          selectedIcon: const Icon(Icons.favorite),
+                          icon: Icon(
+                            Icons.favorite_outline,
+                            color: scheme.disabled,
+                          )),
+                      if (post.likes.isNotEmpty)
+                        Text(post.likes.length.toString()),
+                    ],
+                  );
+                }),
+            const SizedBox(width: Dimens.sizeSmall),
+            IconButton(
+                onPressed: () => toComments(context),
+                style: IconButton.styleFrom(
+                    padding: const EdgeInsets.only(top: 2)),
+                iconSize: bottomIcon,
+                icon: Icon(
+                  Icons.comment_outlined,
+                  color: scheme.disabled,
+                )),
+            StreamBuilder(
+                stream: controller.posts.doc(id).snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError ||
+                      snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox.shrink();
+                  }
+                  final json = snapshot.data?.data();
+                  final length = PostModel.fromJson(json!).comments.length;
+                  return Text(length > 0 ? '$length' : '');
+                }),
+            const SizedBox(width: Dimens.sizeSmall),
+            IconButton(
+                onPressed: () => controller.sharePost(id),
+                style: IconButton.styleFrom(
+                    padding: const EdgeInsets.only(bottom: 4)),
+                iconSize: bottomIcon - 2,
+                icon: Icon(
+                  Icons.ios_share_outlined,
+                  color: scheme.disabled,
+                )),
+          ],
+        ),
         if (post.desc?.isNotEmpty ?? false)
           Container(
               margin: const EdgeInsets.only(
@@ -285,6 +306,7 @@ class MyBottomSheet extends StatefulWidget {
 
 class _MyBottomSheetState extends State<MyBottomSheet> {
   List<UserDetails> users = [];
+  RxBool isCommentsLoading = RxBool(false);
   HomeController controller = Get.find();
 
   @override
@@ -294,7 +316,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
   }
 
   Future<void> _getUsers() async {
-    controller.isCommentsLoading.value = true;
+    isCommentsLoading.value = true;
     List<UserDetails> details = [];
     final collection = await controller.users.get();
 
@@ -303,7 +325,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
     }
 
     users = details;
-    controller.isCommentsLoading.value = false;
+    isCommentsLoading.value = false;
   }
 
   @override
@@ -330,82 +352,84 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Padding(
-                    padding: EdgeInsets.only(top: context.height * 0.3),
+                    padding: EdgeInsets.only(top: context.height * 0.1),
                     child: Text(StringRes.errorUnknown,
                         style: TextStyle(color: scheme.textColorLight)),
                   );
                 }
 
-                if (snapshot.connectionState == ConnectionState.waiting ||
-                    controller.isCommentsLoading.value) {
-                  // TODO: replace with loading widget for comments.
-                  return const SnapshotLoading();
-                }
+                return Obx(() {
+                  if (isCommentsLoading.value ||
+                      snapshot.connectionState == ConnectionState.waiting) {
+                    // TODO: replace with loading widget for comments.
+                    return const SnapshotLoading();
+                  }
 
-                final json = snapshot.data?.data();
-                final post = PostModel.fromJson(json!);
+                  final json = snapshot.data?.data();
+                  final post = PostModel.fromJson(json!);
 
-                if (post.comments.isEmpty) {
-                  return Container(
-                    margin: EdgeInsets.only(top: context.height * 0.3),
-                    child: Text(StringRes.noComments,
-                        style: TextStyle(color: scheme.textColorLight)),
-                  );
-                }
-                return ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: Dimens.sizeLarge),
-                    itemCount: post.comments.length,
-                    itemBuilder: (context, index) {
-                      final comment = post.comments[index];
-                      final date = comment.dateTime.toDateTime;
-                      final author = users.firstWhere((e) {
-                        return e.id == comment.author;
-                      });
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: Dimens.sizeSmall),
-                        child: Row(
-                          children: [
-                            MyCachedImage(
-                              author.image,
-                              isAvatar: true,
-                              avatarRadius: 24,
-                            ),
-                            const SizedBox(width: Dimens.sizeDefault),
-                            Expanded(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        author.displayName,
-                                        style: const TextStyle(
-                                            fontSize: Dimens.fontMed),
-                                      ),
-                                      const SizedBox(width: Dimens.sizeSmall),
-                                      Text(
-                                        Utils.timeFromNow(date, now),
-                                        style: TextStyle(
-                                            fontSize: Dimens.fontMed,
-                                            color: scheme.disabled),
-                                      )
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Expanded(child: Text(comment.title)),
-                                    ],
-                                  ),
-                                ],
+                  if (post.comments.isEmpty) {
+                    return Container(
+                      margin: EdgeInsets.only(top: context.height * 0.1),
+                      child: Text(StringRes.noComments,
+                          style: TextStyle(color: scheme.textColorLight)),
+                    );
+                  }
+                  return ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: Dimens.sizeLarge),
+                      itemCount: post.comments.length,
+                      itemBuilder: (context, index) {
+                        final comment = post.comments[index];
+                        final date = comment.dateTime.toDateTime;
+                        final author = users.firstWhere((e) {
+                          return e.id == comment.author;
+                        });
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: Dimens.sizeSmall),
+                          child: Row(
+                            children: [
+                              MyCachedImage(
+                                author.image,
+                                isAvatar: true,
+                                avatarRadius: 24,
                               ),
-                            )
-                          ],
-                        ),
-                      );
-                    });
+                              const SizedBox(width: Dimens.sizeDefault),
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          author.displayName,
+                                          style: const TextStyle(
+                                              fontSize: Dimens.fontMed),
+                                        ),
+                                        const SizedBox(width: Dimens.sizeSmall),
+                                        Text(
+                                          Utils.timeFromNow(date, now),
+                                          style: TextStyle(
+                                              fontSize: Dimens.fontMed,
+                                              color: scheme.disabled),
+                                        )
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Expanded(child: Text(comment.title)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                        );
+                      });
+                });
               }),
         ),
         SafeArea(

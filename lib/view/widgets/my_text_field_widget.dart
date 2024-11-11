@@ -85,10 +85,14 @@ class MyTextField extends StatefulWidget {
 class _MyTextFieldState extends State<MyTextField> {
   bool isSelected = false;
   late bool obscureText;
+  TextInputType? inputType;
 
   @override
   void initState() {
     obscureText = widget.obscureText;
+    if (widget.isEmail) {
+      inputType = widget.keyboardType ?? TextInputType.emailAddress;
+    }
     super.initState();
   }
 
@@ -98,7 +102,7 @@ class _MyTextFieldState extends State<MyTextField> {
     return TextFormField(
       key: widget.fieldKey,
       controller: widget.controller,
-      keyboardType: widget.keyboardType,
+      keyboardType: widget.keyboardType ?? inputType,
       obscureText: obscureText,
       focusNode: widget.focusNode,
       expands: widget.expands ?? false,
@@ -133,13 +137,13 @@ class _MyTextFieldState extends State<MyTextField> {
       inputFormatters: widget.inputFormatters,
       validator: widget.customValidator ??
           (value) {
-            final reg = RegExp(r'^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,}$');
+            final reg = RegExp(r'^(?=.*[A-Z])(?=.*\d).{6,}$');
             if (value?.isEmpty ?? true) {
               return StringRes.errorEmpty(widget.title);
             } else if (widget.isEmail && !(value?.isEmail ?? false)) {
               return StringRes.errorEmail;
             } else if (widget.isPass && !reg.hasMatch(value!)) {
-              return StringRes.errorWeakPass;
+              return StringRes.errorCriteria;
             } else if (widget.isNumber &&
                 (value?.length != 10 && value.runtimeType is! int)) {
               return StringRes.errorPhone;

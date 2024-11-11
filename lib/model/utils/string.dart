@@ -44,6 +44,7 @@ class StringRes {
   static const String errorPassMatch = "Password dosen't match";
   static const String errorPassSame = 'Password is same as old';
   static const String errorWeakPass = 'The password provided is too weak';
+  static const String errorCriteria = 'Password criteria dosen\'t match';
   static String errorEmpty(String title) => '$title is required';
   static const String errorSignCancel = 'Sign In cancelled';
   static const String errorUnknown = 'Something went wrong, try again';
@@ -75,6 +76,8 @@ class StringRes {
       'to continue. Confirm your identity by signing in again';
   static const String defBio = 'Hey there! I\'m on Gigglio. Let\'s '
       'chat and share some fun moments!';
+  static const String noMessages = 'No conversations yet! Press +'
+      ' to start a chat.';
 
   // box
   static const String boxName = 'gigglio';

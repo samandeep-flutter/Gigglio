@@ -61,7 +61,11 @@ class MessagesController extends GetxController {
 
   void toNewChat() => Get.toNamed(Routes.newChat);
 
-  void toChatScreen(UserDetails otherUser) {
-    Get.offNamed(Routes.chatScreen, arguments: otherUser);
+  void toChatScreen(UserDetails otherUser, {bool replace = false}) {
+    if (replace) {
+      Get.offNamed(Routes.chatScreen, arguments: otherUser);
+      return;
+    }
+    Get.toNamed(Routes.chatScreen, arguments: otherUser);
   }
 }

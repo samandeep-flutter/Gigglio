@@ -67,7 +67,7 @@ class SignInController extends GetxController {
             return MyAlertDialog(
               title: StringRes.success,
               content: Text(
-                StringRes.forgotPassDesc,
+                StringRes.forgotPassOKDesc,
                 style: TextStyle(color: scheme.textColorLight),
               ),
               actions: [

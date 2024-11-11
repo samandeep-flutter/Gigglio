@@ -1,5 +1,7 @@
 extension MyDateTime on DateTime {
-  String get toJson => _dateTime(this);
+  String toJson() => _dateTime(this);
+  String get formatTime => _formatedTime(this);
+  String get formatDate => _formatedDate(this);
 
   String _dateTime(DateTime now) {
     String date = '${now.year}${_format(now.month)}${_format(now.day)}';
@@ -18,6 +20,20 @@ extension MyDateTime on DateTime {
       default:
         return int;
     }
+  }
+
+  String _formatedTime(DateTime time) {
+    String hour = _format(time.hour);
+    String min = _format(time.minute);
+
+    return '$hour:$min';
+  }
+
+  String _formatedDate(DateTime time) {
+    String month = _format(time.month);
+    String day = _format(time.day);
+
+    return '$month:$day';
   }
 
   String _format(int number) {
