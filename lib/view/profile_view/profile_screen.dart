@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gigglio/model/utils/color_resources.dart';
+import 'package:gigglio/model/models/post_model.dart';
 import 'package:gigglio/model/utils/dimens.dart';
 import 'package:gigglio/model/utils/string.dart';
-import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/services/theme_services.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
 import 'package:gigglio/view/widgets/my_cached_image.dart';
@@ -15,17 +14,18 @@ class ProfileScreen extends GetView<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
-    final AuthServices authServices = Get.find();
+    final user = controller.authServices.user;
     final scheme = ThemeServices.of(context);
 
     return BaseWidget(
-      child: Column(
+      child: ListView(
         children: [
-          const SizedBox(height: Dimens.sizeLarge),
+          const SizedBox(height: Dimens.sizeDefault),
           Obx(() => Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   MyCachedImage(
-                    authServices.user.value?.image,
+                    user.value?.image,
                     isAvatar: true,
                     avatarRadius: 50,
                   ),
@@ -34,162 +34,162 @@ class ProfileScreen extends GetView<ProfileController> {
                       child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(children: [
-                        Expanded(
-                          flex: 4,
-                          child: Text(
-                            authServices.user.value?.displayName ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: Dimens.fontExtraDoubleLarge,
-                                color: scheme.textColor,
-                                fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        if (!(authServices.user.value?.verified ?? false)) ...[
-                          const SizedBox(width: Dimens.sizeSmall),
-                          Expanded(
-                            flex: 5,
-                            child: Container(
-                              padding: const EdgeInsets.all(Dimens.sizeSmall),
-                              decoration: const BoxDecoration(
-                                  color: ColorRes.tertiaryContainer,
-                                  borderRadius: BorderRadius.all(
-                                      Radius.circular(Dimens.borderLarge))),
-                              child: const Tooltip(
-                                message: StringRes.emailConfirmDesc,
-                                triggerMode: TooltipTriggerMode.tap,
-                                showDuration: Duration(seconds: 5),
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: Dimens.sizeExtraDoubleLarge),
-                                child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.email_outlined,
-                                        size: Dimens.sizeMedium,
-                                        color: ColorRes.onTertiaryContainer,
-                                      ),
-                                      SizedBox(width: Dimens.sizeSmall),
-                                      Text(StringRes.notVerified,
-                                          style: TextStyle(
-                                            fontSize: Dimens.fontMed,
-                                            color: ColorRes.onTertiaryContainer,
-                                          )),
-                                    ]),
-                              ),
-                            ),
-                          ),
-                        ]
-                      ]),
+                      const SizedBox(height: Dimens.sizeSmall),
                       Text(
-                        authServices.user.value?.email ?? '',
+                        user.value?.displayName ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: Dimens.fontExtraDoubleLarge,
+                            color: scheme.textColor,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      Text(
+                        user.value?.bio ?? user.value?.email ?? '',
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             color: scheme.textColorLight,
                             fontWeight: FontWeight.w500),
                       ),
                     ],
-                  ))
+                  )),
                 ],
               )),
           const SizedBox(height: Dimens.sizeLarge),
-          const MyDivider(),
-          const SizedBox(height: Dimens.sizeSmall),
-          Card(
-            color: scheme.surface,
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: buttonStyle(context),
+                  onPressed: controller.toEditProfile,
+                  label: const Text(StringRes.editProfile),
+                  icon: const Icon(Icons.edit_outlined),
+                ),
+              ),
+              const SizedBox(width: Dimens.sizeDefault),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: buttonStyle(context),
+                  onPressed: controller.toSettings,
+                  label: const Text(StringRes.settings),
+                  icon: const Icon(Icons.settings_outlined),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Dimens.sizeDefault),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                onTap: () {},
+                minVerticalPadding: 0,
+                visualDensity: VisualDensity.compact,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                  Dimens.borderSmall,
+                )),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: Dimens.sizeSmall),
+                leading: const Icon(Icons.people_outline),
+                title: const Text(StringRes.friends),
+              ),
+              SizedBox(height: context.width * .3)
+            ],
+          ),
+          const SizedBox(height: Dimens.sizeDefault),
+          Container(
+            padding: const EdgeInsets.all(Dimens.sizeSmall),
+            decoration: BoxDecoration(
+                border: Border.all(color: scheme.disabled.withOpacity(.5)),
+                borderRadius: BorderRadius.circular(Dimens.borderSmall)),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: Dimens.sizeSmall),
-                MyListTile(
-                  title: StringRes.editProfile,
-                  leading: Icons.edit_outlined,
-                  foregroundColor: scheme.textColorLight,
-                  onTap: controller.toEditProfile,
+                ListTile(
+                  onTap: controller.toMyPosts,
+                  minVerticalPadding: 0,
+                  visualDensity: VisualDensity.compact,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                    Dimens.borderSmall,
+                  )),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: Dimens.sizeSmall),
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: const Text(StringRes.myPosts),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: Dimens.sizeDefault,
+                  ),
                 ),
-                const MyDivider(margin: Dimens.sizeDefault),
-                MyListTile(
-                  title: StringRes.changePass,
-                  leading: Icons.password,
-                  foregroundColor: scheme.textColorLight,
-                  onTap: controller.toChangePassword,
-                ),
-                const MyDivider(margin: Dimens.sizeDefault),
-                MyListTile(
-                  title: StringRes.myPosts,
-                  leading: Icons.perm_media_outlined,
-                  foregroundColor: scheme.textColorLight,
-                  // onTap: controller.toMyPosts,
-                ),
-                const SizedBox(height: Dimens.sizeSmall),
+                StreamBuilder(
+                    stream: controller.posts
+                        .where('author', isEqualTo: user.value!.id)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) return const ToolTipWidget();
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const SnapshotLoading();
+                      }
+
+                      final posts = snapshot.data?.docs.map((e) {
+                        return PostModel.fromJson(e.data());
+                      }).toList();
+
+                      if (posts?.isEmpty ?? true) return const SizedBox();
+
+                      return SizedBox(
+                        height: context.width * .3,
+                        child: ListView.builder(
+                            padding: const EdgeInsets.only(
+                              top: Dimens.sizeSmall,
+                            ),
+                            scrollDirection: Axis.horizontal,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: posts!.length > 3 ? 4 : posts.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  right: Dimens.sizeExtraSmall - 2,
+                                ),
+                                child: MyCachedImage(
+                                  borderRadius: index == 0
+                                      ? const BorderRadius.only(
+                                          bottomLeft: Radius.circular(
+                                          Dimens.sizeSmall,
+                                        ))
+                                      : null,
+                                  posts[index].images.first,
+                                  fit: BoxFit.cover,
+                                  width: context.width * .3,
+                                  height: context.width * .3,
+                                ),
+                              );
+                            }),
+                      );
+                    }),
               ],
             ),
-          ),
-          const SizedBox(height: Dimens.sizeSmall),
-          const MyDivider(),
-          const SizedBox(height: Dimens.sizeSmall),
-          // MyListTile(
-          //   title: StringRes.settings,
-          //   leading: Icons.settings_outlined,
-          //   foregroundColor: scheme.textColorLight,
-          //   onTap: controller.toSettings,
-          // ),
-          MyListTile(
-            title: StringRes.privacyPolicy,
-            leading: Icons.privacy_tip_outlined,
-            foregroundColor: scheme.textColorLight,
-            onTap: controller.toPrivacyPolicy,
-          ),
-          MyListTile(
-            title: StringRes.logout,
-            foregroundColor: scheme.textColorLight,
-            iconColor: ColorRes.onErrorContainer,
-            splashColor: ColorRes.errorContainer,
-            leading: Icons.logout,
-            onTap: () => controller.logout(context),
           )
         ],
       ),
     );
   }
-}
 
-class MyListTile extends StatelessWidget {
-  final String? title;
-  final Color? foregroundColor;
-  final IconData? leading;
-  final Widget? trailing;
-  final Color? splashColor;
-  final EdgeInsets? margin;
-  final Color? iconColor;
-  final VoidCallback? onTap;
-  const MyListTile({
-    super.key,
-    this.title,
-    this.leading,
-    this.trailing,
-    this.foregroundColor,
-    this.margin,
-    this.splashColor,
-    this.iconColor,
-    this.onTap,
-  });
+  ButtonStyle buttonStyle(BuildContext context) {
+    final scheme = ThemeServices.of(context);
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: margin ?? EdgeInsets.zero,
-      child: ListTile(
-        onTap: onTap,
-        visualDensity: VisualDensity.compact,
-        splashColor: splashColor,
-        textColor: foregroundColor,
-        iconColor: iconColor ?? foregroundColor,
-        minVerticalPadding: 0,
-        title: Text(title ?? ''),
-        leading: Icon(leading, size: Dimens.sizeMedium),
-        trailing: trailing,
-      ),
+    return ElevatedButton.styleFrom(
+      backgroundColor: scheme.surface,
+      elevation: .5,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+        Radius.circular(Dimens.borderSmall),
+      )),
+      padding: const EdgeInsets.symmetric(vertical: Dimens.sizeMedSmall),
     );
   }
 }

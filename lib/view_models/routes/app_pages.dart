@@ -3,18 +3,17 @@ import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/view/auth_view/forgot_password.dart';
 import 'package:gigglio/view/auth_view/signin_screen.dart';
 import 'package:gigglio/view/auth_view/signup_screen.dart';
-import 'package:gigglio/view/home_view/home_screen.dart';
-import 'package:gigglio/view/home_view/notifications.dart';
+import 'package:gigglio/view/auth_view/verify_email.dart';
+import 'package:gigglio/view/home_view/notification_screen.dart';
 import 'package:gigglio/view/messages_view/chat_screen.dart';
-import 'package:gigglio/view/messages_view/messages_screen.dart';
 import 'package:gigglio/view/messages_view/new_chat_screen.dart';
 import 'package:gigglio/view/profile_view/change_password.dart';
 import 'package:gigglio/view/profile_view/edit_profile.dart';
-import 'package:gigglio/view/profile_view/profile_screen.dart';
 import 'package:gigglio/view/settings_screen.dart';
 import 'package:gigglio/view/root_view.dart';
 import 'package:gigglio/view/profile_view/privacy_policy.dart';
 import 'package:gigglio/view_models/bindings/messages_bindings.dart';
+import 'package:gigglio/view_models/bindings/profile_bindings.dart';
 import 'package:gigglio/view_models/routes/routes.dart';
 import '../../view/home_view/add_post.dart';
 import '../bindings/auth_bindings.dart';
@@ -22,7 +21,7 @@ import '../bindings/root_bindings.dart';
 
 class AppPages {
   static final AuthServices _auth = Get.find();
-  static String get initial => _auth.initRoutes();
+  static String get initial => _auth.verify();
 
   static final List<GetPage> pages = [
     GetPage(
@@ -40,28 +39,23 @@ class AppPages {
       page: () => const ForgotPassword(),
     ),
     GetPage(
+      name: Routes.verifyEmail,
+      page: () => const VerifyEmail(),
+      binding: AuthBindings(),
+    ),
+    GetPage(
       name: Routes.rootView,
       page: () => const RootView(),
       binding: RootBindings(),
     ),
     GetPage(
-      name: Routes.home,
-      page: () => const HomeScreen(),
-      binding: RootBindings(),
-    ),
-    GetPage(
       name: Routes.notifications,
-      page: () => const Notifications(),
+      page: () => const NotificationScreen(),
     ),
     GetPage(
       name: Routes.addPost,
       page: () => const AddPost(),
       transition: Transition.leftToRight,
-    ),
-    GetPage(
-      name: Routes.messages,
-      page: () => const MessagesScreen(),
-      binding: RootBindings(),
     ),
     GetPage(
       name: Routes.chatScreen,
@@ -81,16 +75,11 @@ class AppPages {
       name: Routes.settings,
       page: () => const SettingsScreen(),
       transition: Transition.rightToLeft,
-      binding: RootBindings(),
+      binding: ProfileBindings(),
     ),
     GetPage(
       name: Routes.changePass,
       page: () => const ChangePassword(),
-    ),
-    GetPage(
-      name: Routes.profile,
-      page: () => const ProfileScreen(),
-      binding: RootBindings(),
     ),
     GetPage(
       name: Routes.privacyPolicy,

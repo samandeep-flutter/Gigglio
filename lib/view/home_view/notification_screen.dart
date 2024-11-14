@@ -4,8 +4,8 @@ import 'package:gigglio/view/widgets/base_widget.dart';
 import '../../services/theme_services.dart';
 import '../../view_models/controller/home_controller.dart';
 
-class Notifications extends GetView<HomeController> {
-  const Notifications({super.key});
+class NotificationScreen extends GetView<HomeController> {
+  const NotificationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

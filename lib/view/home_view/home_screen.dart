@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/model/models/post_model.dart';
-import 'package:gigglio/model/utils/dimens.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
 import '../../services/theme_services.dart';
@@ -35,28 +34,28 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: const Icon(Icons.add),
         ),
         centerTitle: false,
-        actions: [
-          IconButton(
-              onPressed: controller.toNotifications,
-              icon: Stack(
-                alignment: Alignment.topRight,
-                children: [
-                  const Icon(Icons.favorite_border_rounded),
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: scheme.background,
-                    ),
-                    padding: const EdgeInsets.all(2),
-                    child: CircleAvatar(
-                      radius: Dimens.sizeExtraSmall,
-                      backgroundColor: scheme.primary,
-                    ),
-                  )
-                ],
-              )),
-          const SizedBox(width: Dimens.sizeDefault),
-        ],
+        // actions: [
+        //   IconButton(
+        //       onPressed: controller.toNotifications,
+        //       icon: Stack(
+        //         alignment: Alignment.topRight,
+        //         children: [
+        //           const Icon(Icons.favorite_border_rounded),
+        //           Container(
+        //             decoration: BoxDecoration(
+        //               shape: BoxShape.circle,
+        //               color: scheme.background,
+        //             ),
+        //             padding: const EdgeInsets.all(2),
+        //             child: CircleAvatar(
+        //               radius: Dimens.sizeExtraSmall,
+        //               backgroundColor: scheme.primary,
+        //             ),
+        //           )
+        //         ],
+        //       )),
+        //   const SizedBox(width: Dimens.sizeDefault),
+        // ],
       ),
       child: RefreshIndicator(
         onRefresh: reload,

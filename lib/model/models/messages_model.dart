@@ -1,9 +1,11 @@
 class MessagesModel {
   final List<UserData> users;
+  final String? lastUpdated;
   final List<Messages> messages;
 
   MessagesModel({
     required List<UserData> users,
+    this.lastUpdated,
     this.messages = const [],
   }) : users = users.take(2).toList();
 
@@ -12,6 +14,7 @@ class MessagesModel {
       users: List<UserData>.from(json['users'].map((e) {
         return UserData.fromJson(e);
       })),
+      lastUpdated: json['last_updated'],
       messages: List<Messages>.from(json['messages'].map((e) {
         return Messages.fromJson(e);
       })),
@@ -20,15 +23,18 @@ class MessagesModel {
 
   Map<String, dynamic> toJson() => {
         'users': users.map((e) => e.toJson()),
+        'last_updated': lastUpdated,
         'messages': messages.map((e) => e.toJson()),
       };
 
   MessagesModel copyWith({
     List<UserData>? users,
+    String? lastUpdated,
     List<Messages>? messages,
   }) {
     return MessagesModel(
       users: users ?? this.users,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
       messages: messages ?? this.messages,
     );
   }

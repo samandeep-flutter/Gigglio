@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:gigglio/model/utils/dimens.dart';
+
 class Utils {
   static String timeFromNow(DateTime? date, DateTime now) {
     if (date == null) return '';
@@ -22,5 +25,13 @@ class Utils {
     }
 
     return 'Just now';
+  }
+
+  static TextStyle get defTitleStyle {
+    return const TextStyle(
+      fontSize: Dimens.fontExtraLarge,
+      fontWeight: FontWeight.w500,
+      color: Colors.black87,
+    );
   }
 }

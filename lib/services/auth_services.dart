@@ -35,10 +35,14 @@ class AuthServices extends GetxService {
     return this;
   }
 
-  String initRoutes() {
+  String verify() {
     if (_auth.currentUser == null) {
       return Routes.signIn;
     }
+    // if (!(_auth.currentUser?.emailVerified ?? true)) {
+    //   return Routes.verifyEmail;
+    // }
+
     return Routes.rootView;
   }
 
@@ -69,15 +73,19 @@ class AuthServices extends GetxService {
     await boxServices.saveUserDetails(updated ?? details);
   }
 
-  Future<void> saveCred(UserCredential credentials, {String? name}) async {
+  Future<void> createFbUser(
+    UserCredential credentials, {
+    required String name,
+  }) async {
     if (credentials.user == null) return;
     var details = UserDetails(
         id: credentials.user!.uid,
-        displayName: name ?? credentials.user!.displayName ?? '',
+        displayName: name,
         email: credentials.user!.email!,
         image: credentials.user?.photoURL,
         login: true,
         verified: credentials.user?.emailVerified);
+
     user.value = details;
     await boxServices.saveUserDetails(details);
   }
@@ -92,18 +100,38 @@ class AuthServices extends GetxService {
     }
   }
 
+  Future<void> fetchFbUser(UserCredential credentials) async {
+    final user = credentials.user;
+    if (user == null) return;
+    try {
+      final json = await _fbFire.collection(FB.users).doc(user.uid).get();
+      this.user.value = UserDetails.fromJson(json.data()!)
+          .copyWith(login: true, verified: user.emailVerified);
+    } catch (_) {
+      var details = UserDetails(
+          id: user.uid,
+          displayName: user.displayName ?? '',
+          email: user.email!,
+          image: user.photoURL,
+          login: true,
+          verified: user.emailVerified);
+      this.user.value = details;
+    }
+    await boxServices.saveUserDetails(this.user.value!);
+  }
+
   void logout() async {
-    Get.offAllNamed(Routes.signIn);
     try {
       if (user.value != null) {
         final doc = _fbFire.collection(FB.users).doc(user.value!.id);
-        doc.set(user.value!.copyWith(login: false).toJson());
+        doc.update({'login': false});
       }
-      _auth.signOut();
+      await _auth.signOut();
       boxServices.removeUserDetails();
     } catch (e) {
       logPrint('LOGOUT: $e');
     }
+    Get.offAllNamed(Routes.signIn);
   }
 
   /// Currently disalbed through firebase

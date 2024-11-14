@@ -5,6 +5,7 @@ import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/view/widgets/my_text_field_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 import '../../model/utils/color_resources.dart';
+import '../../model/utils/utils.dart';
 import '../../services/theme_services.dart';
 import '../../view_models/controller/home_controller.dart';
 import '../widgets/base_widget.dart';
@@ -21,6 +22,7 @@ class AddPost extends GetView<HomeController> {
       appBar: AppBar(
         backgroundColor: scheme.background,
         title: const Text(StringRes.newPost),
+        titleTextStyle: Utils.defTitleStyle,
         centerTitle: true,
       ),
       child: PopScope(

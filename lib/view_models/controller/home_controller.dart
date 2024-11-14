@@ -4,12 +4,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/model/models/post_model.dart';
+import 'package:gigglio/model/models/user_details.dart';
 import 'package:gigglio/model/utils/app_constants.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/services/extension_services.dart';
 import 'package:gigglio/view_models/routes/routes.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../model/models/notification_model.dart';
 
 class HomeController extends GetxController with GetTickerProviderStateMixin {
   AuthServices authServices = Get.find();
@@ -18,6 +20,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   final storage = FirebaseStorage.instance.ref();
   final posts = FirebaseFirestore.instance.collection(FB.post);
   final users = FirebaseFirestore.instance.collection(FB.users);
+  final noti = FirebaseFirestore.instance.collection(FB.noti);
 
   final captionContr = TextEditingController();
   final commentContr = TextEditingController();
@@ -91,26 +94,44 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
     }
   }
 
-  void likePost(String id, {required PostModel post}) {
-    bool check = post.likes.contains(authServices.user.value!.id);
-    if (check) post.likes.remove(authServices.user.value!.id);
-    post.likes.addIf(!check, authServices.user.value!.id);
-    PostModel modified = post.copyWith(likes: post.likes);
-    posts.doc(id).set(modified.toJson());
+  void likePost(String id, {required PostModel post}) async {
+    final user = authServices.user.value!;
+    posts.doc(id).update({
+      'likes': post.likes.contains(user.id)
+          ? FieldValue.arrayRemove([user.id])
+          : FieldValue.arrayUnion([user.id]),
+    });
   }
 
-  void postComment(String id, {required PostModel post}) {
+  addFriend(String id) {}
+  unfriend(String id) {}
+  deletePost(String doc, {required String dateTime}) {}
+
+  void postComment(String doc, {required UserDetails postAuthor}) async {
     if (!(commentKey.currentState?.validate() ?? false)) return;
     if (commentContr.text.isEmpty) return;
+    final user = authServices.user.value!;
     final comment = CommentModel(
-        author: authServices.user.value!.id,
+        author: user.id,
         title: commentContr.text,
         dateTime: DateTime.now().toJson());
-    post.comments.add(comment);
-    posts.doc(id).set(post.toJson());
+
+    posts.doc(doc).update({
+      'comments': FieldValue.arrayUnion([comment.toJson()])
+    });
     commentKey.currentState?.reset();
     commentContr.clear();
     FocusManager.instance.primaryFocus?.unfocus();
+
+    if (postAuthor.friends.contains(user.id)) {
+      final noti = NotiModel(
+        from: user.id,
+        to: postAuthor.id,
+        postId: doc,
+        category: NotiCategory.comment,
+      );
+      this.noti.add(noti.toJson());
+    }
   }
 
   void sharePost(String id) => showToast('comming soon');

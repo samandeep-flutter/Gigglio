@@ -16,6 +16,8 @@ class StringRes {
   static const String submit = 'Submit';
   static const String success = 'Success';
   static const String myPosts = 'My Posts';
+  static const String actions = 'Actions';
+  static const String friends = 'Friends';
   static const String post = 'Post';
   static const String editProfile = 'Edit Profile';
   static const String changePass = 'Change Password';
@@ -31,11 +33,14 @@ class StringRes {
   static const String newPost = 'New Post';
   static const String addPhotos = 'New Photos';
   static const String comments = 'Comments';
+  static const String goBack = 'go back';
   static const String viewComments = 'View all comments';
   static const String noComments = 'Be the first one to comment..';
   static const String endofPosts = 'End of posts';
   static const String cancelled = 'Process cancelled';
   static const String confirmEmail = 'Confirm your Email';
+  static const String sendEmail = 'Send Verification Email';
+  static const String verifyEmail = 'Verify Email';
 
   // errors
   static const String errorEmail = 'Invalid Email';
@@ -78,6 +83,15 @@ class StringRes {
       'chat and share some fun moments!';
   static const String noMessages = 'No conversations yet! Press +'
       ' to start a chat.';
+  static const String noFriends = 'You don\'t currently have any friends,\n'
+      'add some to chat with!';
+  static const String verifyEmailDesc = 'To get started, please verify your'
+      ' email. We\'ve sent a link to your inbox – just click it to confirm your account.'
+      ' Once verified, you\'ll be ready to dive into all the fun on Gigglio!';
+  static const String verifyEmailOKDesc = 'We\'ve sent a verification link '
+      'to your email. Please check your inbox and click the link'
+      ' to confirm your account. Once verified, you\'ll be all '
+      'set to enjoy everything Gigglio has to offer!';
 
   // box
   static const String boxName = 'gigglio';

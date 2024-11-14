@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/model/utils/app_constants.dart';
 import 'package:gigglio/services/auth_services.dart';
-import 'package:gigglio/view_models/routes/routes.dart';
 import '../../../model/utils/string.dart';
 
 class SignUpController extends GetxController {
@@ -26,10 +25,9 @@ class SignUpController extends GetxController {
         password: confirmPassController.text,
       );
       await fbAuth.currentUser?.updateDisplayName(nameController.text);
-      await authServices.saveCred(credentials, name: nameController.text);
-      await fbAuth.currentUser?.sendEmailVerification();
+      await authServices.createFbUser(credentials, name: nameController.text);
       isLoading.value = false;
-      Get.offNamed(Routes.rootView);
+      Get.offAllNamed(authServices.verify());
     } on FirebaseAuthException catch (e) {
       isLoading.value = false;
       onFbSignUpException(e);

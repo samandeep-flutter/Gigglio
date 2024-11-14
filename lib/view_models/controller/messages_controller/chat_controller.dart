@@ -17,6 +17,7 @@ class ChatController extends GetxController {
 
   final scrollContr = ScrollController();
   RxBool isIdLoading = RxBool(false);
+  bool isScrolled = false;
 
   late UserDetails otherUser;
   String chatId = '';
@@ -36,33 +37,36 @@ class ChatController extends GetxController {
       }
       this.chatId = chatId;
       isIdLoading.value = false;
-      scrollListener();
+      readRecipts();
     });
     super.onInit();
   }
 
   @override
   void onReady() {
-    scrollContr.addListener(scrollListener);
+    scrollContr.addListener(readRecipts);
     super.onReady();
   }
 
-  void scrollListener() async {
+  void readRecipts() async {
     final json = await messages.doc(chatId).get();
     final model = MessagesModel.fromJson(json.data()!);
     final user = authServices.user.value;
+    final index = model.users.indexWhere((e) => e.id == user!.id);
 
     try {
       final position = scrollContr.position;
-      model.users.firstWhere((e) => e.id == user!.id)
+      model.users[index]
         ..scrollAt = position.pixels
         ..seen = model.messages.length;
     } catch (_) {
-      model.users.firstWhere((e) => e.id == user!.id).seen =
-          model.messages.length;
+      model.users[index].seen = model.messages.length;
     }
-
-    messages.doc(chatId).set(model.toJson());
+    messages.doc(chatId).update({
+      'users': model.users.map((e) {
+        return e.toJson();
+      }).toList()
+    });
   }
 
   Future<String?> _findDoc() async {
@@ -76,8 +80,8 @@ class ChatController extends GetxController {
     return doc?.id;
   }
 
-  void sendMessage(MessagesModel? messages) async {
-    if (messageContr.text.isEmpty || messages == null) return;
+  void sendMessage(MessagesModel? model) async {
+    if (messageContr.text.isEmpty || model == null) return;
     final dateTime = DateTime.now().toJson();
     final position = scrollContr.position;
 
@@ -87,11 +91,12 @@ class ChatController extends GetxController {
       dateTime: dateTime,
       text: messageContr.text,
       scrollAt: scrollAt,
-      position: messages.messages.length + 1,
+      position: model.messages.length + 1,
     );
-
-    messages.messages.add(newMessage);
-    this.messages.doc(chatId).set(messages.toJson());
+    messages.doc(chatId).update({
+      'messages': FieldValue.arrayUnion([newMessage.toJson()]),
+      'last_updated': dateTime,
+    });
     messageContr.clear();
   }
 }

@@ -39,13 +39,27 @@ class NewChatScreen extends GetView<MessagesController> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SnapshotLoading();
               }
-              final docs = snapshot.data!.docs;
-              docs.removeWhere((e) => e.id == user!.id);
+              List docs = [];
+              final list = snapshot.data!.docs;
+              for (final doc in list) {
+                docs.addIf(user?.friends.contains(doc.id), doc);
+              }
+
               controller.allUsers.value = docs.map((e) {
                 return UserDetails.fromJson(e.data());
               }).toList();
 
               controller.usersList.value = controller.allUsers;
+
+              if (controller.usersList.isEmpty) {
+                return ToolTipWidget(
+                  title: StringRes.noFriends,
+                  margin: EdgeInsets.symmetric(
+                    horizontal: Dimens.sizeLarge,
+                    vertical: context.height * .1,
+                  ),
+                );
+              }
               return Obx(() => ListView.builder(
                   padding: const EdgeInsets.only(top: Dimens.sizeLarge),
                   itemCount: controller.usersList.length,

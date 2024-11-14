@@ -8,7 +8,7 @@ import 'package:gigglio/services/theme_services.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
 import 'package:gigglio/view/widgets/my_cached_image.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
-import 'package:gigglio/view_models/controller/messages_controller/chat_controller.dart';
+import '../../view_models/controller/messages_controller/chat_controller.dart';
 import '../widgets/my_text_field_widget.dart';
 
 class ChatScreen extends GetView<ChatController> {
@@ -16,6 +16,7 @@ class ChatScreen extends GetView<ChatController> {
 
   void _scrollTo(double? to) {
     if (to == null) return;
+    if (controller.isScrolled) return;
     const duration = Duration(milliseconds: 500);
     Future.delayed(duration, () {
       if (controller.scrollContr.position.haveDimensions) {
@@ -24,8 +25,22 @@ class ChatScreen extends GetView<ChatController> {
           duration: duration,
           curve: Curves.easeOut,
         );
+        controller.isScrolled = true;
       }
     });
+  }
+
+  _readRecipt(MessagesModel? model) async {
+    if (model == null) return;
+    await Future.delayed(const Duration(milliseconds: 200));
+    try {
+      if (controller.scrollContr.position.maxScrollExtent > 0) return;
+      final user = controller.authServices.user.value;
+      final index = model.users.indexWhere((e) => e.id == user!.id);
+      controller.messages
+          .doc(controller.chatId)
+          .update({'users.$index.seen': model.messages.length});
+    } catch (_) {}
   }
 
   @override
@@ -79,6 +94,13 @@ class ChatScreen extends GetView<ChatController> {
                   _scrollTo(messages!.users.firstWhere((e) {
                     return e.id != user!.id;
                   }).scrollAt);
+                  final index =
+                      messages!.users.indexWhere((e) => e.id == user!.id);
+
+                  if (messages!.users[index].seen !=
+                      messages!.messages.length) {
+                    _readRecipt(messages);
+                  }
 
                   return ListView.builder(
                       padding: const EdgeInsets.only(top: Dimens.sizeDefault),

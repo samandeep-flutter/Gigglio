@@ -18,6 +18,7 @@ class FB {
   static const String about = 'about';
   static const String post = 'posts';
   static const String messages = 'messages';
+  static const String noti = 'notifications';
   static const String users = 'users';
   static const String userImage = '_userImages';
 }

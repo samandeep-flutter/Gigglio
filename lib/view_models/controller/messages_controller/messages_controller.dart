@@ -16,6 +16,10 @@ class MessagesController extends GetxController {
   RxList<UserDetails> usersList = RxList();
   RxList<UserDetails> seachedUsers = RxList();
 
+  // RxList<MessagesModel> allMessages = RxList();
+  // RxList<MessagesModel> messageList = RxList();
+  // RxList<MessagesModel> searchedMessages = RxList();
+
   final searchContr = TextEditingController();
   final newChatContr = TextEditingController();
   final searchFoucs = FocusNode();
@@ -23,17 +27,24 @@ class MessagesController extends GetxController {
 
   @override
   void onInit() {
-    searchContr.addListener(onSearch);
+    // searchContr.addListener(onSearch);
     newChatContr.addListener(onUserSearch);
     super.onInit();
   }
 
-  Future<void> onSearch() async {
-    const duration = Duration(milliseconds: 800);
-    EasyDebounce.debounce(AppConstants.messageSearchKey, duration, () {
-      // searchFoucs.unfocus();
-    });
-  }
+  // Future<void> onSearch() async {
+  //   const duration = Duration(milliseconds: 500);
+  //   EasyDebounce.debounce(AppConstants.messageSearchKey, duration, () {
+  //     if (searchContr.text.isNotEmpty) {
+  //       searchedMessages.value = allMessages.where((e) {
+  //         return e.displayName.toLowerCase().contains(searchContr.text);
+  //       }).toList();
+  //       messageList.value = searchedMessages;
+  //       return;
+  //     }
+  //     messageList.value = allMessages;
+  //   });
+  // }
 
   Future<void> onUserSearch() async {
     const duration = Duration(milliseconds: 500);

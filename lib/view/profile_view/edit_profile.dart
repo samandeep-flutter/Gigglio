@@ -4,6 +4,7 @@ import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
 import 'package:gigglio/view_models/controller/profile_controller.dart';
 import '../../model/utils/dimens.dart';
+import '../../model/utils/utils.dart';
 import '../../services/theme_services.dart';
 import '../widgets/my_cached_image.dart';
 import '../widgets/my_text_field_widget.dart';
@@ -20,6 +21,7 @@ class EditProfile extends GetView<ProfileController> {
         appBar: AppBar(
           backgroundColor: scheme.background,
           title: const Text(StringRes.editProfile),
+          titleTextStyle: Utils.defTitleStyle,
           centerTitle: true,
         ),
         child: PopScope(

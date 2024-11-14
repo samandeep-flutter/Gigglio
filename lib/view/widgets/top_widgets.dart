@@ -7,6 +7,7 @@ import '../../model/utils/dimens.dart';
 class LoadingButton extends StatelessWidget {
   final Widget child;
   final bool isLoading;
+  final bool enable;
   final Color? loaderColor;
   final EdgeInsets? padding;
   final EdgeInsets? margin;
@@ -19,6 +20,7 @@ class LoadingButton extends StatelessWidget {
     this.padding,
     this.margin,
     this.width,
+    this.enable = true,
     this.loaderColor,
     required this.isLoading,
     required this.onPressed,
@@ -38,7 +40,7 @@ class LoadingButton extends StatelessWidget {
                 foregroundColor: scheme.onPrimary,
                 padding: padding ??
                     const EdgeInsets.symmetric(vertical: Dimens.sizeDefault)),
-        onPressed: isLoading ? null : onPressed,
+        onPressed: enable && !isLoading ? onPressed : null,
         child: isLoading
             ? SizedBox(
                 height: 24,
@@ -184,7 +186,7 @@ class PaginationDots extends StatelessWidget {
         borderRadius: BorderRadius.circular(Dimens.borderDefault),
         onTap: onTap,
         child: CircleAvatar(
-          radius: 4,
+          radius: 3,
           backgroundColor:
               current ? scheme.primary : scheme.disabled.withOpacity(.3),
         ),
@@ -213,19 +215,64 @@ class SnapshotLoading extends StatelessWidget {
 
 class ToolTipWidget extends StatelessWidget {
   final EdgeInsets? margin;
+  final Alignment? alignment;
   final String? title;
-  const ToolTipWidget({super.key, this.margin, this.title});
+  const ToolTipWidget({super.key, this.margin, this.title, this.alignment});
 
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeServices.of(context);
     return Container(
         margin: margin ?? EdgeInsets.only(top: context.height * .1),
-        alignment: Alignment.topCenter,
+        alignment: alignment ?? Alignment.topCenter,
         child: Text(
           title ?? StringRes.errorUnknown,
           textAlign: TextAlign.center,
           style: TextStyle(color: scheme.textColorLight),
         ));
+  }
+}
+
+class CustomListTile extends StatelessWidget {
+  final String title;
+  final Color? foregroundColor;
+  final IconData? leading;
+  final Widget? trailing;
+  final Color? splashColor;
+  final EdgeInsets? margin;
+  final Color? iconColor;
+  final VoidCallback? onTap;
+  const CustomListTile({
+    super.key,
+    required this.title,
+    this.leading,
+    this.trailing,
+    this.foregroundColor,
+    this.margin,
+    this.splashColor,
+    this.iconColor,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: margin ?? EdgeInsets.zero,
+      child: ListTile(
+        onTap: onTap,
+        visualDensity: VisualDensity.compact,
+        splashColor: splashColor,
+        textColor: foregroundColor,
+        iconColor: iconColor ?? foregroundColor,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: Dimens.sizeSmall,
+        ),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Dimens.borderSmall)),
+        title: Text(title),
+        leading: Icon(leading, size: Dimens.sizeMedium),
+        trailing: trailing,
+      ),
+    );
   }
 }

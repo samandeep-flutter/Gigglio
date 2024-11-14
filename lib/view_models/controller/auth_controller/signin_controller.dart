@@ -24,6 +24,28 @@ class SignInController extends GetxController {
   RxBool forgotPassLoading = RxBool(false);
   RxBool googleLoading = RxBool(false);
   RxBool twitterLoading = RxBool(false);
+  RxBool verifyEmailLoading = RxBool(false);
+  RxBool verifyEmailEnable = RxBool(true);
+
+  sendVerificationEmail() async {
+    verifyEmailLoading.value = true;
+    try {
+      await fbAuth.currentUser?.sendEmailVerification();
+    } catch (e) {
+      logPrint('Verify Email: $e');
+    }
+    verifyEmailLoading.value = false;
+    verifyEmailEnable.value = false;
+  }
+
+  fromVerifyEmail(BuildContext context) async {
+    if (Navigator.canPop(context)) {
+      Get.back();
+    } else {
+      Get.offNamed(Routes.signIn);
+    }
+    await fbAuth.signOut();
+  }
 
   void onSumbit() async {
     FocusManager.instance.primaryFocus?.unfocus();
@@ -32,9 +54,9 @@ class SignInController extends GetxController {
     try {
       final credentials = await fbAuth.signInWithEmailAndPassword(
           email: emailController.text, password: passwordController.text);
-      await authServices.saveCred(credentials);
+      await authServices.fetchFbUser(credentials);
       signInLoading.value = false;
-      Get.offAllNamed(Routes.rootView);
+      Get.offAllNamed(authServices.verify());
     } on FirebaseAuthException catch (e) {
       signInLoading.value = false;
       onFbSignInException(e);
@@ -108,7 +130,7 @@ class SignInController extends GetxController {
       );
 
       var credentials = await fbAuth.signInWithCredential(credential);
-      await authServices.saveCred(credentials);
+      await authServices.fetchFbUser(credentials);
       googleLoading.value = false;
       Get.offAllNamed(Routes.rootView);
     } catch (e) {
@@ -123,7 +145,7 @@ class SignInController extends GetxController {
     try {
       TwitterAuthProvider twitterProvider = TwitterAuthProvider();
       final credentials = await fbAuth.signInWithProvider(twitterProvider);
-      await authServices.saveCred(credentials);
+      await authServices.fetchFbUser(credentials);
       twitterLoading.value = false;
       Get.offAllNamed(Routes.rootView);
     } on FirebaseAuthException catch (e) {

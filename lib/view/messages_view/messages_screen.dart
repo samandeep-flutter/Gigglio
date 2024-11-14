@@ -8,7 +8,6 @@ import 'package:gigglio/model/utils/utils.dart';
 import 'package:gigglio/services/extension_services.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
 import 'package:gigglio/view/widgets/my_cached_image.dart';
-import 'package:gigglio/view/widgets/my_text_field_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 import 'package:gigglio/view_models/controller/messages_controller/messages_controller.dart';
 import '../../services/theme_services.dart';
@@ -35,20 +34,20 @@ class MessagesScreen extends GetView<MessagesController> {
             )
           ],
           centerTitle: false,
-          bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(kToolbarHeight),
-              child: SearchTextField(
-                title: 'Search',
-                focusNode: controller.searchFoucs,
-                margin: const EdgeInsets.symmetric(
-                  horizontal: Dimens.sizeDefault,
-                ),
-                controller: controller.searchContr,
-                onClear: controller.onClear,
-              )),
+          // bottom: PreferredSize(
+          //     preferredSize: const Size.fromHeight(kToolbarHeight),
+          //     child: SearchTextField(
+          //       title: 'Search',
+          //       focusNode: controller.searchFoucs,
+          //       margin: const EdgeInsets.symmetric(
+          //         horizontal: Dimens.sizeDefault,
+          //       ),
+          //       controller: controller.searchContr,
+          //       onClear: controller.onClear,
+          //     )),
         ),
         child: StreamBuilder(
-            stream: controller.messages.snapshots(),
+            stream: controller.messages.orderBy('last_updated').snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) return const SizedBox();
 

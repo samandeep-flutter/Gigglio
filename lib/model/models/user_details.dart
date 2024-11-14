@@ -3,6 +3,8 @@ class UserDetails {
   final String displayName;
   final String? image;
   final String email;
+  final List<String> friends;
+  final List<String> requests;
   final String? bio;
   final bool? login;
   final bool? verified;
@@ -14,6 +16,8 @@ class UserDetails {
     required this.email,
     required this.verified,
     required this.login,
+    this.friends = const [],
+    this.requests = const [],
     this.bio,
   });
 
@@ -23,6 +27,8 @@ class UserDetails {
         displayName = '',
         email = '',
         bio = null,
+        friends = const [],
+        requests = const [],
         login = false,
         verified = false;
 
@@ -33,6 +39,8 @@ class UserDetails {
       displayName: json['display_name'],
       email: json['email'],
       bio: json['bio'],
+      friends: List<String>.from(json['friends'] ?? []),
+      requests: List<String>.from(json['requests'] ?? []),
       login: json['login'],
       verified: json['verified'],
     );
@@ -44,6 +52,8 @@ class UserDetails {
         'display_name': displayName,
         'email': email,
         'bio': bio,
+        'friends': friends,
+        'requests': requests,
         'login': login,
         'verified': verified,
       };
@@ -54,6 +64,8 @@ class UserDetails {
     String? image,
     String? email,
     String? bio,
+    List<String>? friends,
+    List<String>? requests,
     bool? login,
     bool? verified,
   }) {
@@ -63,6 +75,8 @@ class UserDetails {
       displayName: displayName ?? this.displayName,
       email: email ?? this.email,
       bio: bio ?? this.bio,
+      friends: friends ?? this.friends,
+      requests: requests ?? this.requests,
       login: login ?? this.login,
       verified: verified ?? this.verified,
     );
@@ -75,6 +89,8 @@ class UserDetails {
       displayName: details?.displayName ?? displayName,
       email: details?.email ?? email,
       bio: details?.bio ?? bio,
+      friends: details?.friends ?? friends,
+      requests: details?.requests ?? requests,
       login: details?.login ?? login,
       verified: details?.verified ?? verified,
     );
