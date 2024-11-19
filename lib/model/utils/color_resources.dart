@@ -1,7 +1,7 @@
-// ignore_for_file: unused_element
 import 'package:flutter/material.dart';
 
 class ColorRes {
+  static const Color shimmer = Color(0xFFE0E0E0);
   static const Color secondaryLight = Color(0xFFD6D6D6);
   static const Color onSucessContainer = Color(0xFF2B722E);
   static const Color sucessContainer = Color(0xFFD1EFCE);
@@ -61,7 +61,7 @@ enum MyTheme {
   })  : brightness = Brightness.light,
         background = const Color(0xFFFAFAFA),
         surface = Colors.white,
-        textColor = Colors.black87,
-        textColorLight = Colors.black54,
+        textColor = const Color(0xFF212121),
+        textColorLight = const Color(0xFF616161),
         disabled = Colors.grey;
 }

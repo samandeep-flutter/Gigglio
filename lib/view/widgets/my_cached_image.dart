@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gigglio/model/utils/app_constants.dart';
 import 'package:gigglio/model/utils/image_resources.dart';
-import 'package:gigglio/services/theme_services.dart';
+import 'package:gigglio/view/widgets/shimmer_widget.dart';
 
 class MyCachedImage extends StatelessWidget {
   final String? image;
@@ -50,17 +50,12 @@ class MyCachedImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = ThemeServices.of(context);
     if (loading) {
-      Widget placeholder = Center(
-          child: CircularProgressIndicator(
-              color: foregroundColor ?? scheme.primary));
-
       if (isAvatar) {
         return CircleAvatar(
             backgroundColor: Colors.grey[300],
             radius: avatarRadius,
-            child: placeholder);
+            child: Shimmer.avatar);
       }
 
       return ClipRRect(
@@ -68,7 +63,7 @@ class MyCachedImage extends StatelessWidget {
           child: SizedBox(
             height: height,
             width: width,
-            child: placeholder,
+            child: Shimmer.box,
           ));
     }
 
@@ -104,19 +99,15 @@ class MyCachedImage extends StatelessWidget {
                 image: imageProvider,
                 height: height,
                 width: width,
-                fit: fit,
+                fit: fit ?? BoxFit.cover,
               ));
         },
         placeholder: (context, url) {
-          Widget placeholder = Center(
-              child: CircularProgressIndicator(
-                  color: foregroundColor ?? scheme.primary));
-
           if (isAvatar) {
             return CircleAvatar(
                 backgroundColor: Colors.grey[300],
                 radius: avatarRadius,
-                child: placeholder);
+                child: Shimmer.avatar);
           }
 
           return ClipRRect(
@@ -124,7 +115,7 @@ class MyCachedImage extends StatelessWidget {
               child: SizedBox(
                 height: height,
                 width: width,
-                child: placeholder,
+                child: Shimmer.box,
               ));
         },
         errorWidget: (context, url, error) {

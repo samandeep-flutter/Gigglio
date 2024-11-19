@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gigglio/model/models/user_details.dart';
 import 'package:gigglio/model/utils/app_constants.dart';
 import 'package:gigglio/services/auth_services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,17 +17,56 @@ class ProfileController extends GetxController {
   final _user = FirebaseAuth.instance.currentUser;
   final _storage = FirebaseStorage.instance.ref();
   final posts = FirebaseFirestore.instance.collection(FB.post);
+  final users = FirebaseFirestore.instance.collection(FB.users);
 
   final nameController = TextEditingController();
   final bioContr = TextEditingController();
   final editFormKey = GlobalKey<FormState>();
+
+  final friendContr = TextEditingController();
+  RxList<UserDetails> allUsers = RxList();
+  RxList<UserDetails> friendsList = RxList();
+  RxList<UserDetails> searchedUsers = RxList();
+  RxList<bool> reqAccepted = RxList();
 
   RxBool isProfileLoading = RxBool(false);
   RxBool isImageLoading = RxBool(false);
   RxnString imageUrl = RxnString();
 
   void toSettings() => Get.toNamed(Routes.settings);
-  void toMyPosts() {}
+  void toFriends() => Get.toNamed(Routes.addFriends);
+  void toViewRequests() => Get.toNamed(Routes.viewRequests);
+
+  void toPost(String? id) {}
+
+  void fromFriends(bool didPop, [result]) {
+    friendContr.clear();
+    allUsers.clear();
+    searchedUsers.clear();
+    friendsList.clear();
+  }
+
+  void sendRequest(String id) {
+    final userId = authServices.user.value!.id;
+    final doc = users.doc(id);
+    doc.update({
+      'requests': FieldValue.arrayUnion([userId])
+    });
+  }
+
+  void acceptRequest(String id, {required int index}) async {
+    final userId = authServices.user.value!.id;
+    final otherUser = users.doc(id);
+    final myUser = users.doc(userId);
+    await otherUser.update({
+      'friends': FieldValue.arrayUnion([userId]),
+    });
+    await myUser.update({
+      'friends': FieldValue.arrayUnion([id]),
+      'requests': FieldValue.arrayRemove([id]),
+    });
+    reqAccepted[index] = true;
+  }
 
   void toEditProfile() {
     final user = authServices.user.value;
@@ -39,6 +79,19 @@ class ProfileController extends GetxController {
 
   void fromEditProfile(bool canPop, result) =>
       editFormKey.currentState?.reset();
+
+  @override
+  void onReady() {
+    friendContr.addListener(onSearch);
+    super.onReady();
+  }
+
+  onSearch() {
+    if (friendContr.text.isEmpty) return searchedUsers.value = friendsList;
+    searchedUsers.value = allUsers.where((e) {
+      return e.email.split('@').first.contains(friendContr.text);
+    }).toList();
+  }
 
   void imagePicker(BuildContext context) {
     showDialog(

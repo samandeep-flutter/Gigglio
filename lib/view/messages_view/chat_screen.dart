@@ -91,9 +91,11 @@ class ChatScreen extends GetView<ChatController> {
                   final json = snapshot.data!.data();
                   messages = MessagesModel.fromJson(json!);
 
-                  _scrollTo(messages!.users.firstWhere((e) {
-                    return e.id != user!.id;
-                  }).scrollAt);
+                  if (!controller.isScrolled) {
+                    _scrollTo(messages!.users.firstWhere((e) {
+                      return e.id != user!.id;
+                    }).scrollAt);
+                  }
                   final index =
                       messages!.users.indexWhere((e) => e.id == user!.id);
 

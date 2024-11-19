@@ -5,6 +5,7 @@ import 'package:gigglio/model/utils/dimens.dart';
 import 'package:gigglio/services/theme_services.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
 import 'package:gigglio/view/widgets/my_cached_image.dart';
+import 'package:gigglio/view/widgets/shimmer_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 import 'package:gigglio/view_models/controller/messages_controller/messages_controller.dart';
 import '../../model/utils/string.dart';
@@ -16,7 +17,6 @@ class NewChatScreen extends GetView<MessagesController> {
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeServices.of(context);
-    final user = controller.authServices.user.value;
     final bodyTextStyle = context.textTheme.bodyMedium;
 
     return BaseWidget(
@@ -37,19 +37,30 @@ class NewChatScreen extends GetView<MessagesController> {
             builder: (context, snapshot) {
               if (snapshot.hasError) return const ToolTipWidget();
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SnapshotLoading();
-              }
-              List docs = [];
-              final list = snapshot.data!.docs;
-              for (final doc in list) {
-                docs.addIf(user?.friends.contains(doc.id), doc);
+                return ListView(
+                  padding: const EdgeInsets.only(top: Dimens.sizeLarge),
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: List.generate(3, (_) {
+                    return const UserTileShimmer(
+                      avatarRadius: 24,
+                      trailing: SizedBox(),
+                    );
+                  }),
+                );
               }
 
-              controller.allUsers.value = docs.map((e) {
+              controller.allUsers.value = snapshot.data!.docs.map((e) {
                 return UserDetails.fromJson(e.data());
               }).toList();
 
-              controller.usersList.value = controller.allUsers;
+              final cUser = controller.allUsers.firstWhere((e) {
+                return e.id == controller.authServices.user.value!.id;
+              });
+              controller.allUsers.removeWhere((e) {
+                return !cUser.friends.contains(e.id);
+              });
+
+              controller.onUserSearch();
 
               if (controller.usersList.isEmpty) {
                 return ToolTipWidget(

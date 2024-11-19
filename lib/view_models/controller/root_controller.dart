@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/view_models/controller/home_controller.dart';
 
@@ -9,17 +10,17 @@ class RootController extends GetxController with GetTickerProviderStateMixin {
 
   final List<BottomNavigationBarItem> tabList = [
     const BottomNavigationBarItem(
-      label: 'Home',
+      label: StringRes.home,
       icon: Icon(Icons.home_outlined),
       activeIcon: Icon(Icons.home),
     ),
     const BottomNavigationBarItem(
-      label: 'Messages',
+      label: StringRes.messages,
       icon: Icon(Icons.message_outlined),
       activeIcon: Icon(Icons.message),
     ),
     const BottomNavigationBarItem(
-      label: 'Profile',
+      label: StringRes.profile,
       icon: Icon(Icons.person_outline),
       activeIcon: Icon(Icons.person),
     ),

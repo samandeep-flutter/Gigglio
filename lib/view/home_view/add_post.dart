@@ -26,7 +26,7 @@ class AddPost extends GetView<HomeController> {
         centerTitle: true,
       ),
       child: PopScope(
-        onPopInvokedWithResult: (_, __) => controller.fromPost(),
+        onPopInvokedWithResult: controller.fromPost,
         child: ListView(
           children: [
             const SizedBox(height: Dimens.sizeLarge),

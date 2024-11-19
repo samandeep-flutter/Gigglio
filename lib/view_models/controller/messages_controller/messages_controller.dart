@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/model/models/user_details.dart';
@@ -47,17 +46,15 @@ class MessagesController extends GetxController {
   // }
 
   Future<void> onUserSearch() async {
-    const duration = Duration(milliseconds: 500);
-    EasyDebounce.debounce(AppConstants.usersSearchKey, duration, () {
-      if (newChatContr.text.isNotEmpty) {
-        seachedUsers.value = allUsers.where((e) {
-          return e.displayName.toLowerCase().contains(newChatContr.text);
-        }).toList();
-        usersList.value = seachedUsers;
-        return;
-      }
+    if (newChatContr.text.isEmpty) {
       usersList.value = allUsers;
-    });
+      return;
+    }
+    seachedUsers.value = allUsers.where((e) {
+      return e.displayName.toLowerCase().contains(newChatContr.text);
+    }).toList();
+    usersList.value = seachedUsers;
+    return;
   }
 
   void onClear() async {

@@ -12,6 +12,7 @@ class LoadingButton extends StatelessWidget {
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final double? width;
+  final bool defWidth;
   final VoidCallback onPressed;
   final ButtonStyle? style;
   const LoadingButton({
@@ -21,6 +22,7 @@ class LoadingButton extends StatelessWidget {
     this.margin,
     this.width,
     this.enable = true,
+    this.defWidth = false,
     this.loaderColor,
     required this.isLoading,
     required this.onPressed,
@@ -32,7 +34,7 @@ class LoadingButton extends StatelessWidget {
     ColorScheme scheme = Theme.of(context).colorScheme;
     return Container(
       margin: margin,
-      width: width ?? 200,
+      width: defWidth ? null : width ?? 200,
       child: ElevatedButton(
         style: style ??
             ElevatedButton.styleFrom(

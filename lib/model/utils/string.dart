@@ -4,6 +4,10 @@ class StringRes {
   static const String appName = 'Gigglio';
   static const String fullAppName = 'Gigglio: Social App';
   static const String packageName = 'com.samtech.gigglio';
+  // box
+  static const String boxName = 'gigglio';
+  static const String keyTheme = '$boxName:theme';
+  static const String keyUser = '$boxName:user';
 
   static const String signin = 'Sign In';
   static const String signup = 'Sign Up';
@@ -18,7 +22,19 @@ class StringRes {
   static const String myPosts = 'My Posts';
   static const String actions = 'Actions';
   static const String friends = 'Friends';
+  static const String addFriends = 'Add Friends';
+  static const String viewRequests = 'View Requests';
+  static const String sendRequest = 'Send Request';
+  static const String sendFriendReq = 'Send friend request';
+  static const String accept = 'Accept';
+  static const String send = 'Send';
+  static const String requested = 'Requested';
+  static const String inReq = 'In Requests';
+  static const String unFriend = 'Unfriend';
+  static const String home = 'Home';
+  static const String profile = 'Profile';
   static const String post = 'Post';
+  static const String deletePost = 'Delete post';
   static const String editProfile = 'Edit Profile';
   static const String changePass = 'Change Password';
   static const String privacyPolicy = 'Privacy Policy';
@@ -30,10 +46,12 @@ class StringRes {
   static const String newChat = 'New Chat';
   static const String addPost = 'Add Post';
   static const String refresh = 'Refresh';
+  static const String noti = 'Notifications';
   static const String newPost = 'New Post';
   static const String addPhotos = 'New Photos';
   static const String comments = 'Comments';
   static const String goBack = 'go back';
+  static const String somethingWrong = 'Something went wrong';
   static const String viewComments = 'View all comments';
   static const String noComments = 'Be the first one to comment..';
   static const String endofPosts = 'End of posts';
@@ -41,6 +59,10 @@ class StringRes {
   static const String confirmEmail = 'Confirm your Email';
   static const String sendEmail = 'Send Verification Email';
   static const String verifyEmail = 'Verify Email';
+  static const String noPosts = 'No Posts Yet';
+  static const String noNoti = 'No new notifications';
+  static const String noResults = 'No results found, '
+      'try using different keyword.';
 
   // errors
   static const String errorEmail = 'Invalid Email';
@@ -85,6 +107,8 @@ class StringRes {
       ' to start a chat.';
   static const String noFriends = 'You don\'t currently have any friends,\n'
       'add some to chat with!';
+  static const String addFriendsDesc = 'Looking for friends? Enter their '
+      'email address to find and connect with them on Gigglio!';
   static const String verifyEmailDesc = 'To get started, please verify your'
       ' email. We\'ve sent a link to your inbox – just click it to confirm your account.'
       ' Once verified, you\'ll be ready to dive into all the fun on Gigglio!';
@@ -92,12 +116,6 @@ class StringRes {
       'to your email. Please check your inbox and click the link'
       ' to confirm your account. Once verified, you\'ll be all '
       'set to enjoy everything Gigglio has to offer!';
-
-  // box
-  static const String boxName = 'gigglio';
-  static const String boxToken = '$boxName:token';
-  static const String keyTheme = '$boxName:theme';
-  static const String keyUser = '$boxName:user';
 }
 
 showToast(String text, {int? timeInSec}) {

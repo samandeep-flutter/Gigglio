@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/services/extension_services.dart';
+import 'package:gigglio/view/widgets/shimmer_widget.dart';
 import '../../model/models/post_model.dart';
 import '../../model/models/user_details.dart';
 import '../../model/utils/dimens.dart';
@@ -78,8 +79,13 @@ class _CommentSheetState extends State<CommentSheet> {
                 return Obx(() {
                   if (isCommentsLoading.value ||
                       snapshot.connectionState == ConnectionState.waiting) {
-                    // TODO: replace with loading widget for comments.
-                    return const SnapshotLoading();
+                    return Column(
+                        children: List.generate(3, (_) {
+                      return UserTileShimmer(
+                        trailing: const SizedBox(),
+                        subtitle: context.width * .7,
+                      );
+                    }));
                   }
 
                   final json = snapshot.data?.data();

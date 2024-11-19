@@ -6,6 +6,7 @@ class UserDetails {
   final List<String> friends;
   final List<String> requests;
   final String? bio;
+  final int? notiSeen;
   final bool? login;
   final bool? verified;
 
@@ -16,9 +17,10 @@ class UserDetails {
     required this.email,
     required this.verified,
     required this.login,
+    this.bio,
+    this.notiSeen,
     this.friends = const [],
     this.requests = const [],
-    this.bio,
   });
 
   const UserDetails.blank()
@@ -27,6 +29,7 @@ class UserDetails {
         displayName = '',
         email = '',
         bio = null,
+        notiSeen = 0,
         friends = const [],
         requests = const [],
         login = false,
@@ -39,6 +42,7 @@ class UserDetails {
       displayName: json['display_name'],
       email: json['email'],
       bio: json['bio'],
+      notiSeen: json['noti_seen_count'],
       friends: List<String>.from(json['friends'] ?? []),
       requests: List<String>.from(json['requests'] ?? []),
       login: json['login'],
@@ -52,6 +56,7 @@ class UserDetails {
         'display_name': displayName,
         'email': email,
         'bio': bio,
+        'noti_seen_count': notiSeen,
         'friends': friends,
         'requests': requests,
         'login': login,
@@ -64,6 +69,7 @@ class UserDetails {
     String? image,
     String? email,
     String? bio,
+    int? notiSeen,
     List<String>? friends,
     List<String>? requests,
     bool? login,
@@ -75,6 +81,7 @@ class UserDetails {
       displayName: displayName ?? this.displayName,
       email: email ?? this.email,
       bio: bio ?? this.bio,
+      notiSeen: notiSeen ?? this.notiSeen,
       friends: friends ?? this.friends,
       requests: requests ?? this.requests,
       login: login ?? this.login,
@@ -89,6 +96,7 @@ class UserDetails {
       displayName: details?.displayName ?? displayName,
       email: details?.email ?? email,
       bio: details?.bio ?? bio,
+      notiSeen: details?.notiSeen ?? notiSeen,
       friends: details?.friends ?? friends,
       requests: details?.requests ?? requests,
       login: details?.login ?? login,

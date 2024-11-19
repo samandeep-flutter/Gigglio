@@ -36,13 +36,7 @@ class AuthServices extends GetxService {
   }
 
   String verify() {
-    if (_auth.currentUser == null) {
-      return Routes.signIn;
-    }
-    // if (!(_auth.currentUser?.emailVerified ?? true)) {
-    //   return Routes.verifyEmail;
-    // }
-
+    if (_auth.currentUser == null) return Routes.signIn;
     return Routes.rootView;
   }
 
@@ -83,6 +77,7 @@ class AuthServices extends GetxService {
         displayName: name,
         email: credentials.user!.email!,
         image: credentials.user?.photoURL,
+        notiSeen: 0,
         login: true,
         verified: credentials.user?.emailVerified);
 
@@ -114,6 +109,7 @@ class AuthServices extends GetxService {
           email: user.email!,
           image: user.photoURL,
           login: true,
+          notiSeen: 0,
           verified: user.emailVerified);
       this.user.value = details;
     }

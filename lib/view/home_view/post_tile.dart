@@ -6,6 +6,7 @@ import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/model/utils/utils.dart';
 import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/services/extension_services.dart';
+import 'package:gigglio/view/widgets/shimmer_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 import '../../model/models/post_model.dart';
 import '../../model/utils/dimens.dart';
@@ -48,12 +49,7 @@ class PostTile extends GetView<HomeController> {
               }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const ListTile(
-                  leading: MyCachedImage.loading(
-                    isAvatar: true,
-                    // TODO: replace with loading widget for title and subtitle.
-                  ),
-                );
+                return const UserTileShimmer();
               }
 
               final json = snapshot.data?.data();
@@ -66,9 +62,13 @@ class PostTile extends GetView<HomeController> {
                 ),
                 title: Text(author.displayName),
                 subtitle: Text(
-                  author.bio ?? author.email,
+                  author.email,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                ),
+                subtitleTextStyle: TextStyle(
+                  color: scheme.textColorLight,
+                  fontSize: Dimens.fontMed,
                 ),
                 trailing: IconButton(
                   onPressed: () => showMore(
@@ -308,12 +308,12 @@ class MoreActions extends GetView<HomeController> {
             CustomListTile(
               onTap: () => controller.addFriend(author.id),
               leading: Icons.person_add_outlined,
-              title: 'Send Friend request',
+              title: StringRes.sendFriendReq,
             ),
           if (author.id == user.id)
             CustomListTile(
               onTap: () => controller.deletePost(doc, dateTime: dateTime),
-              title: 'Delete post',
+              title: StringRes.deletePost,
               iconColor: ColorRes.onErrorContainer,
               splashColor: ColorRes.errorContainer,
               leading: Icons.delete_outline,
@@ -322,7 +322,7 @@ class MoreActions extends GetView<HomeController> {
             CustomListTile(
               onTap: () => controller.unfriend(author.id),
               leading: Icons.person_remove_outlined,
-              title: 'Unfriend',
+              title: StringRes.unFriend,
             )
         ],
       ),

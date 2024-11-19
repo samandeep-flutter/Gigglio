@@ -50,7 +50,7 @@ class SignUpController extends GetxController {
         showToast('The account already exists for that email.');
         break;
       default:
-        showToast(e.message ?? 'Something went wrong, try again');
+        showToast(e.message ?? StringRes.errorUnknown);
     }
   }
 }

@@ -7,9 +7,11 @@ import 'package:gigglio/view/auth_view/verify_email.dart';
 import 'package:gigglio/view/home_view/notification_screen.dart';
 import 'package:gigglio/view/messages_view/chat_screen.dart';
 import 'package:gigglio/view/messages_view/new_chat_screen.dart';
+import 'package:gigglio/view/profile_view/add_friends.dart';
 import 'package:gigglio/view/profile_view/change_password.dart';
 import 'package:gigglio/view/profile_view/edit_profile.dart';
-import 'package:gigglio/view/settings_screen.dart';
+import 'package:gigglio/view/profile_view/settings_screen.dart';
+import 'package:gigglio/view/profile_view/view_requests.dart';
 import 'package:gigglio/view/root_view.dart';
 import 'package:gigglio/view/profile_view/privacy_policy.dart';
 import 'package:gigglio/view_models/bindings/messages_bindings.dart';
@@ -70,6 +72,14 @@ class AppPages {
     GetPage(
       name: Routes.editProfile,
       page: () => const EditProfile(),
+    ),
+    GetPage(
+      name: Routes.viewRequests,
+      page: () => const ViewRequests(),
+    ),
+    GetPage(
+      name: Routes.addFriends,
+      page: () => const AddFriends(),
     ),
     GetPage(
       name: Routes.settings,

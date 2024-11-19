@@ -11,7 +11,7 @@ class NotiModel {
     required this.category,
   });
 
-  NotiModel fromJson(Map<String, dynamic> json) {
+  factory NotiModel.fromJson(Map<String, dynamic> json) {
     return NotiModel(
       from: json['from'],
       to: json['to'],

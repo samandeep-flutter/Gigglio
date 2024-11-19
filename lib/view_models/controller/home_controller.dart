@@ -29,11 +29,13 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   RxList<File> postImages = RxList();
   RxBool isPostLoading = RxBool(false);
   RxBool isImageLoading = RxBool(false);
+  int notiSeen = 0;
 
   void toNotifications() => Get.toNamed(Routes.notifications);
+
   void toPost() => Get.toNamed(Routes.addPost);
 
-  void fromPost() {
+  void fromPost(bool didPop, [result]) {
     FocusManager.instance.primaryFocus?.unfocus();
     postImages.clear();
     captionContr.clear();
