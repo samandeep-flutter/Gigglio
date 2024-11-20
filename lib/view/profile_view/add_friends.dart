@@ -6,7 +6,7 @@ import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/model/utils/utils.dart';
 import 'package:gigglio/view/widgets/shimmer_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
-import 'package:gigglio/view_models/controller/profile_controller.dart';
+import 'package:gigglio/view_models/controller/profile_controllers/profile_controller.dart';
 import '../../services/theme_services.dart';
 import '../widgets/base_widget.dart';
 import '../widgets/my_cached_image.dart';
@@ -134,10 +134,21 @@ class AddFriends extends GetView<ProfileController> {
                                           const EdgeInsets.symmetric(
                                         horizontal: Dimens.sizeLarge,
                                       ),
-                                      leading: MyCachedImage(
-                                        user.image,
-                                        isAvatar: true,
-                                        avatarRadius: 24,
+                                      leading: InkWell(
+                                        onTap: () =>
+                                            controller.gotoProfile(user.id),
+                                        splashColor:
+                                            scheme.disabled.withOpacity(.7),
+                                        borderRadius: BorderRadius.circular(
+                                            Dimens.sizeMidLarge),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: MyCachedImage(
+                                            user.image,
+                                            isAvatar: true,
+                                            avatarRadius: 24,
+                                          ),
+                                        ),
                                       ),
                                       title: Text(user.displayName),
                                       subtitle: Text(

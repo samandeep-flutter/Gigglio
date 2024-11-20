@@ -6,12 +6,13 @@ import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/model/utils/utils.dart';
 import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/services/extension_services.dart';
+import 'package:gigglio/view/home_view/share_tile.dart';
 import 'package:gigglio/view/widgets/shimmer_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 import '../../model/models/post_model.dart';
 import '../../model/utils/dimens.dart';
 import '../../services/theme_services.dart';
-import '../../view_models/controller/home_controller.dart';
+import '../../view_models/controller/home_controllers/home_controller.dart';
 import '../widgets/image_carosual.dart';
 import '../widgets/my_cached_image.dart';
 import 'comments_screen.dart';
@@ -56,9 +57,18 @@ class PostTile extends GetView<HomeController> {
               final author = UserDetails.fromJson(json!);
               return ListTile(
                 contentPadding: const EdgeInsets.only(left: Dimens.sizeDefault),
-                leading: MyCachedImage(
-                  author.image,
-                  isAvatar: true,
+                leading: InkWell(
+                  onTap: () => controller.gotoProfile(author.id),
+                  splashColor: scheme.disabled.withOpacity(.7),
+                  borderRadius: BorderRadius.circular(Dimens.sizeMidLarge),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: MyCachedImage(
+                      author.image,
+                      isAvatar: true,
+                      avatarRadius: 20,
+                    ),
+                  ),
                 ),
                 title: Text(author.displayName),
                 subtitle: Text(
@@ -144,7 +154,7 @@ class PostTile extends GetView<HomeController> {
                 }),
             const SizedBox(width: Dimens.sizeSmall),
             IconButton(
-                onPressed: () => controller.sharePost(id),
+                onPressed: () => sharePost(context, doc: id),
                 style: IconButton.styleFrom(
                     padding: const EdgeInsets.only(bottom: 4)),
                 iconSize: bottomIcon - 2,
@@ -230,44 +240,52 @@ class PostTile extends GetView<HomeController> {
     );
   }
 
+  void sharePost(BuildContext context, {required String doc}) {
+    showModalBottomSheet(
+        context: context,
+        useSafeArea: true,
+        showDragHandle: true,
+        builder: (context) {
+          return MyBottomSheet(
+            title: StringRes.share,
+            vsync: controller,
+            onClose: () {
+              // controller.
+            },
+            child: ShareTileSheet(onTap: controller.sharePost),
+          );
+        });
+  }
+
   void showMore(BuildContext context,
       {required UserDetails author,
       required String doc,
       required String dateTime}) {
     showModalBottomSheet(
         context: context,
-        showDragHandle: true,
         useSafeArea: true,
+        showDragHandle: true,
         builder: (context) {
-          return BottomSheet(
-              onClosing: () {},
-              animationController:
-                  BottomSheet.createAnimationController(controller),
-              builder: (_) {
-                return SafeArea(
-                    child: MoreActions(
-                  author: author,
-                  doc: doc,
-                  dateTime: dateTime,
-                ));
-              });
+          return MyBottomSheet(
+            title: StringRes.actions,
+            vsync: controller,
+            child: MoreActions(author: author, doc: doc, dateTime: dateTime),
+          );
         });
   }
 
   void toComments(BuildContext context) {
     showModalBottomSheet(
         context: context,
-        useSafeArea: true,
         showDragHandle: true,
+        useSafeArea: true,
         isScrollControlled: true,
         builder: (context) {
-          return BottomSheet(
-              onClosing: () {
-                FocusManager.instance.primaryFocus?.unfocus();
-              },
-              animationController:
-                  BottomSheet.createAnimationController(controller),
-              builder: (_) => CommentSheet(id, post));
+          return MyBottomSheet(
+              title: StringRes.comments,
+              vsync: controller,
+              onClose: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: CommentSheet(id: id, post: post));
         });
   }
 }
@@ -292,18 +310,6 @@ class MoreActions extends GetView<HomeController> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                StringRes.actions,
-                style: TextStyle(fontWeight: FontWeight.w600),
-              )
-            ],
-          ),
-          const SizedBox(height: Dimens.sizeSmall),
-          const MyDivider(),
-          const SizedBox(height: Dimens.sizeDefault),
           if (!author.friends.contains(user!.id) && author.id != user.id)
             CustomListTile(
               onTap: () => controller.addFriend(author.id),

@@ -9,7 +9,7 @@ import 'package:gigglio/view/widgets/base_widget.dart';
 import 'package:gigglio/view/widgets/my_cached_image.dart';
 import 'package:gigglio/view/widgets/shimmer_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
-import 'package:gigglio/view_models/controller/profile_controller.dart';
+import 'package:gigglio/view_models/controller/profile_controllers/profile_controller.dart';
 
 class ProfileScreen extends GetView<ProfileController> {
   const ProfileScreen({super.key});
@@ -21,7 +21,7 @@ class ProfileScreen extends GetView<ProfileController> {
 
     return BaseWidget(
       padding: EdgeInsets.zero,
-      child: Column(
+      child: ListView(
         children: [
           const SizedBox(height: Dimens.sizeMidLarge),
           Obx(() => Row(
@@ -162,21 +162,20 @@ class ProfileScreen extends GetView<ProfileController> {
               builder: (context, snapshot) {
                 if (snapshot.hasError) return const ToolTipWidget();
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Expanded(
-                    child: GridView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.all(Dimens.sizeExtraSmall),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 2,
-                          crossAxisSpacing: 2,
-                        ),
-                        itemCount: 12,
-                        itemBuilder: (context, _) {
-                          return const MyCachedImage.loading();
-                        }),
-                  );
+                  return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(Dimens.sizeExtraSmall),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 4,
+                        crossAxisSpacing: 4,
+                      ),
+                      itemCount: 12,
+                      itemBuilder: (context, _) {
+                        return const MyCachedImage.loading();
+                      });
                 }
 
                 final posts = snapshot.data?.docs.map((e) {
@@ -198,25 +197,24 @@ class ProfileScreen extends GetView<ProfileController> {
                   );
                 }
 
-                return Expanded(
-                  child: GridView.builder(
-                      padding: const EdgeInsets.all(Dimens.sizeExtraSmall),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                      ),
-                      itemCount: posts!.length,
-                      itemBuilder: (context, index) {
-                        final id = snapshot.data?.docs[index].id;
-                        return InkWell(
-                          onTap: () => controller.toPost(id),
-                          splashColor: Colors.black38,
-                          child: Padding(
-                              padding: const EdgeInsets.all(2),
-                              child: MyCachedImage(posts[index].images.first)),
-                        );
-                      }),
-                );
+                return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(Dimens.sizeExtraSmall),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                    ),
+                    itemCount: posts?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () => controller.toPost(context, index: index),
+                        splashColor: Colors.black38,
+                        child: Padding(
+                            padding: const EdgeInsets.all(2),
+                            child: MyCachedImage(posts?[index].images.first)),
+                      );
+                    });
               })
         ],
       ),

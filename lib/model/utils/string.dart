@@ -1,14 +1,4 @@
-import 'package:fluttertoast/fluttertoast.dart';
-
 class StringRes {
-  static const String appName = 'Gigglio';
-  static const String fullAppName = 'Gigglio: Social App';
-  static const String packageName = 'com.samtech.gigglio';
-  // box
-  static const String boxName = 'gigglio';
-  static const String keyTheme = '$boxName:theme';
-  static const String keyUser = '$boxName:user';
-
   static const String signin = 'Sign In';
   static const String signup = 'Sign Up';
   static const String forgotPass = 'Forgot Password';
@@ -21,6 +11,7 @@ class StringRes {
   static const String success = 'Success';
   static const String myPosts = 'My Posts';
   static const String actions = 'Actions';
+  static const String share = 'Share';
   static const String friends = 'Friends';
   static const String addFriends = 'Add Friends';
   static const String viewRequests = 'View Requests';
@@ -116,8 +107,4 @@ class StringRes {
       'to your email. Please check your inbox and click the link'
       ' to confirm your account. Once verified, you\'ll be all '
       'set to enjoy everything Gigglio has to offer!';
-}
-
-showToast(String text, {int? timeInSec}) {
-  Fluttertoast.showToast(msg: text, timeInSecForIosWeb: timeInSec ?? 1);
 }

@@ -5,8 +5,8 @@ class UserDetails {
   final String email;
   final List<String> friends;
   final List<String> requests;
+  final int notiSeen;
   final String? bio;
-  final int? notiSeen;
   final bool? login;
   final bool? verified;
 
@@ -18,7 +18,7 @@ class UserDetails {
     required this.verified,
     required this.login,
     this.bio,
-    this.notiSeen,
+    this.notiSeen = 0,
     this.friends = const [],
     this.requests = const [],
   });
@@ -43,8 +43,8 @@ class UserDetails {
       email: json['email'],
       bio: json['bio'],
       notiSeen: json['noti_seen_count'],
-      friends: List<String>.from(json['friends'] ?? []),
-      requests: List<String>.from(json['requests'] ?? []),
+      friends: List<String>.from(json['friends']),
+      requests: List<String>.from(json['requests']),
       login: json['login'],
       verified: json['verified'],
     );

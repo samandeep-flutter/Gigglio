@@ -110,10 +110,19 @@ class MessagesScreen extends GetView<MessagesController> {
 
                           return ListTile(
                             onTap: () => controller.toChatScreen(user),
-                            leading: MyCachedImage(
-                              user.image,
-                              isAvatar: true,
-                              avatarRadius: 24,
+                            leading: InkWell(
+                              onTap: () => controller.gotoProfile(user.id),
+                              splashColor: scheme.disabled.withOpacity(.7),
+                              borderRadius:
+                                  BorderRadius.circular(Dimens.sizeMidLarge),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: MyCachedImage(
+                                  user.image,
+                                  isAvatar: true,
+                                  avatarRadius: 24,
+                                ),
+                              ),
                             ),
                             title: Text(user.displayName),
                             subtitle: Text(last.text),

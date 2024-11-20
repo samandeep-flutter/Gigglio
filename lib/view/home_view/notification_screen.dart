@@ -8,7 +8,7 @@ import 'package:gigglio/view/widgets/base_widget.dart';
 import 'package:gigglio/view/widgets/shimmer_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 import '../../services/theme_services.dart';
-import '../../view_models/controller/home_controller.dart';
+import '../../view_models/controller/home_controllers/home_controller.dart';
 
 class NotificationScreen extends GetView<HomeController> {
   const NotificationScreen({super.key});
@@ -16,6 +16,7 @@ class NotificationScreen extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeServices.of(context);
+    final user = controller.authServices.user.value;
 
     return BaseWidget(
         appBar: AppBar(
@@ -24,7 +25,7 @@ class NotificationScreen extends GetView<HomeController> {
           titleTextStyle: Utils.defTitleStyle,
         ),
         child: FutureBuilder(
-            future: controller.noti.get(),
+            future: controller.noti.where('to', isEqualTo: user!.id).get(),
             builder: (context, snapshot) {
               if (snapshot.hasError) return const ToolTipWidget();
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -44,8 +45,7 @@ class NotificationScreen extends GetView<HomeController> {
               if (docs?.isEmpty ?? true) {
                 return const ToolTipWidget(title: StringRes.noNoti);
               }
-
-              controller.notiSeen = docs!.length;
+              _saveNotiCount(docs!.length);
               List<NotiModel> noti = docs.map((e) {
                 return NotiModel.fromJson(e.data());
               }).toList();
@@ -55,5 +55,11 @@ class NotificationScreen extends GetView<HomeController> {
                     return ListTile(title: Text(noti[index].category.desc));
                   });
             }));
+  }
+
+  void _saveNotiCount(int count) {
+    final user = controller.authServices.user.value;
+    final doc = controller.users.doc(user!.id);
+    doc.update({'noti_seen_count': count});
   }
 }

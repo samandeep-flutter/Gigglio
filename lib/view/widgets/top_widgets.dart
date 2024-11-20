@@ -156,6 +156,46 @@ class MyAlertDialog extends StatelessWidget {
   }
 }
 
+class MyBottomSheet extends StatelessWidget {
+  final String title;
+  final TickerProvider vsync;
+  final VoidCallback? onClose;
+  final Widget child;
+
+  const MyBottomSheet({
+    super.key,
+    required this.title,
+    required this.vsync,
+    this.onClose,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomSheet(
+        onClosing: onClose ?? () {},
+        animationController: BottomSheet.createAnimationController(vsync),
+        builder: (_) {
+          return SafeArea(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ))
+              ],
+            ),
+            const SizedBox(height: Dimens.sizeSmall),
+            const MyDivider(),
+            const SizedBox(height: Dimens.sizeDefault),
+            child,
+          ]));
+        });
+  }
+}
+
 class MyDivider extends StatelessWidget {
   final double? width;
   final double? thickness;

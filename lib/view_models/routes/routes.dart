@@ -11,6 +11,8 @@ abstract class Routes {
   // static const String home = '/home';
   static const String notifications = '/notifications';
   static const String addPost = '/add-post';
+  static const String myPosts = '/my-post';
+  static const String gotoPost = '/goto-post';
   // messages routes
   // static const String messages = '/messages';
   static const String chatScreen = '/chat-screen';
@@ -21,6 +23,7 @@ abstract class Routes {
   static const String viewRequests = '/view-requests';
   static const String addFriends = '/add-friends';
   static const String editProfile = '/edit-profile';
+  static const String gotoProfile = '/goto-profile';
   static const String changePass = '/change-password';
   static const String privacyPolicy = '/privacy-policy';
 }

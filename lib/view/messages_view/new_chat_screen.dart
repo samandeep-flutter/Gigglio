@@ -81,10 +81,19 @@ class NewChatScreen extends GetView<MessagesController> {
                         horizontal: Dimens.sizeLarge,
                       ),
                       onTap: () => controller.toChatScreen(user, replace: true),
-                      leading: MyCachedImage(
-                        user.image,
-                        isAvatar: true,
-                        avatarRadius: 24,
+                      leading: InkWell(
+                        onTap: () => controller.gotoProfile(user.id),
+                        splashColor: scheme.disabled.withOpacity(.7),
+                        borderRadius:
+                            BorderRadius.circular(Dimens.sizeMidLarge),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: MyCachedImage(
+                            user.image,
+                            isAvatar: true,
+                            avatarRadius: 24,
+                          ),
+                        ),
                       ),
                       title: Text(user.displayName),
                       subtitle: Text(user.bio ?? StringRes.defBio),

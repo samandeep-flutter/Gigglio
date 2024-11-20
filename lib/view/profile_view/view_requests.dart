@@ -7,7 +7,7 @@ import 'package:gigglio/view/widgets/top_widgets.dart';
 import '../../model/utils/dimens.dart';
 import '../../model/utils/string.dart';
 import '../../model/utils/utils.dart';
-import '../../view_models/controller/profile_controller.dart';
+import '../../view_models/controller/profile_controllers/profile_controller.dart';
 import '../widgets/my_cached_image.dart';
 import '../widgets/shimmer_widget.dart';
 
@@ -66,10 +66,19 @@ class ViewRequests extends GetView<ProfileController> {
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: Dimens.sizeLarge,
                         ),
-                        leading: MyCachedImage(
-                          user.image,
-                          isAvatar: true,
-                          avatarRadius: 24,
+                        leading: InkWell(
+                          onTap: () => controller.gotoProfile(user.id),
+                          splashColor: scheme.disabled.withOpacity(.7),
+                          borderRadius:
+                              BorderRadius.circular(Dimens.sizeMidLarge),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: MyCachedImage(
+                              user.image,
+                              isAvatar: true,
+                              avatarRadius: 24,
+                            ),
+                          ),
                         ),
                         title: Text(user.displayName),
                         subtitle: Text(

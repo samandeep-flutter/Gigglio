@@ -20,13 +20,7 @@ class AuthServices extends GetxService {
   @override
   onInit() {
     _theme = boxServices.getTheme();
-    user.listen((value) {
-      if (value == null) return;
-      final doc = _fbFire.collection(FB.users).doc(value.id);
-      doc.set(value.toJson());
-      logPrint('[UserDetails] saved to Firestore');
-      _getVersion();
-    });
+    _getVersion();
 
     super.onInit();
   }
@@ -89,6 +83,8 @@ class AuthServices extends GetxService {
     try {
       UserDetails details = boxServices.getUserDetails()!;
       user.value = details;
+      final doc = await _fbFire.collection(FB.users).doc(details.id).get();
+      user.value = UserDetails.fromJson(doc.data()!);
     } catch (e) {
       logPrint('getDetails: $e');
       logout();

@@ -45,6 +45,8 @@ class MessagesController extends GetxController {
   //   });
   // }
 
+  void gotoProfile(String id) => Get.toNamed(Routes.gotoProfile, arguments: id);
+
   Future<void> onUserSearch() async {
     if (newChatContr.text.isEmpty) {
       usersList.value = allUsers;

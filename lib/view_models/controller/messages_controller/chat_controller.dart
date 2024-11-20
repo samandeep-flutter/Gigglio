@@ -6,6 +6,7 @@ import 'package:gigglio/model/models/user_details.dart';
 import 'package:gigglio/services/extension_services.dart';
 import '../../../model/utils/app_constants.dart';
 import '../../../services/auth_services.dart';
+import '../../routes/routes.dart';
 
 class ChatController extends GetxController {
   final messages = FirebaseFirestore.instance.collection(FB.messages);
@@ -47,6 +48,8 @@ class ChatController extends GetxController {
     scrollContr.addListener(readRecipts);
     super.onReady();
   }
+
+  void gotoProfile(String id) => Get.toNamed(Routes.gotoProfile, arguments: id);
 
   void readRecipts() async {
     final json = await messages.doc(chatId).get();

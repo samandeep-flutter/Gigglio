@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:gigglio/model/utils/app_constants.dart';
-import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/services/theme_services.dart';
 import 'package:gigglio/view_models/routes/app_pages.dart';
@@ -21,7 +20,7 @@ void main() async {
 
 Future<void> initServices() async {
   try {
-    await GetStorage.init(StringRes.boxName);
+    await GetStorage.init(AppConstants.boxName);
     await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
     SystemChrome.setPreferredOrientations([
@@ -51,7 +50,7 @@ class MyApp extends StatelessWidget {
     final theme = Get.find<AuthServices>().theme;
 
     return GetMaterialApp(
-      title: StringRes.appName,
+      title: AppConstants.appName,
       initialRoute: AppPages.initial,
       getPages: AppPages.pages,
       builder: (context, child) => ResponsiveWrapper.builder(

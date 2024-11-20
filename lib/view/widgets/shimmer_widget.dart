@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:gigglio/model/utils/color_resources.dart';
 
 import '../../model/utils/dimens.dart';
@@ -66,6 +67,75 @@ class UserTileShimmer extends StatelessWidget {
         const Spacer(),
         trailing ?? const Icon(Icons.more_vert, color: ColorRes.shimmer),
       ]),
+    );
+  }
+}
+
+class PostTileShimmer extends StatelessWidget {
+  const PostTileShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    double iconSize = 35;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const UserTileShimmer(),
+        SizedBox(
+          height: context.height * .4,
+          width: context.width,
+          child: Shimmer.box,
+        ),
+        const SizedBox(height: Dimens.sizeDefault),
+        Row(
+          children: [
+            const SizedBox(width: Dimens.sizeSmall),
+            Icon(
+              Icons.favorite,
+              size: iconSize,
+              color: ColorRes.shimmer,
+            ),
+            const SizedBox(width: Dimens.sizeMedium),
+            Icon(
+              Icons.comment,
+              size: iconSize,
+              color: ColorRes.shimmer,
+            ),
+            const SizedBox(width: Dimens.sizeMedium),
+            Icon(
+              Icons.ios_share_rounded,
+              size: iconSize - 2,
+              color: ColorRes.shimmer,
+            ),
+          ],
+        ),
+        Padding(
+            padding: const EdgeInsets.all(Dimens.sizeDefault),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 10,
+                  width: double.infinity,
+                  child: Shimmer.box,
+                ),
+                const SizedBox(height: Dimens.sizeSmall),
+                SizedBox(
+                  height: 10,
+                  width: 150,
+                  child: Shimmer.box,
+                ),
+                const SizedBox(height: Dimens.sizeSmall),
+                SizedBox(
+                  height: 10,
+                  width: 50,
+                  child: Shimmer.box,
+                ),
+              ],
+            )),
+        const SizedBox(height: Dimens.sizeLarge)
+      ],
     );
   }
 }

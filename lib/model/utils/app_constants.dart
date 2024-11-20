@@ -1,17 +1,23 @@
 import 'dart:developer' as dev;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:gigglio/services/auth_services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class AppConstants {
-  static final _user = Get.find<AuthServices>().user.value;
+  static const String appName = 'Gigglio';
+  static const String fullAppName = 'Gigglio: Social App';
+  static const String packageName = 'com.samtech.gigglio';
+  static const String appUrl = 'https://gigglio.web.app';
+  // box
+  static const String boxName = 'gigglio';
+  static const String keyTheme = '$boxName:theme';
+  static const String keyUser = '$boxName:user';
 
   static const String messageSearchKey = 'messages-search-key';
   static const String usersSearchKey = 'users-search-key';
-  static String profileImage(String ext) => '${FB.userImage}/${_user!.id}.$ext';
-  static String postImage(String image, {required String time}) =>
-      '${FB.post}/$time/$image';
+  static String profileImage(String image) => '${FB.userImage}/$image';
+  static String share(String id) => '$appUrl/post/$id';
+  static String postImage(String path) => '${FB.post}/$path';
 }
 
 class FB {
@@ -42,4 +48,8 @@ class MyColoredBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return ColoredBox(color: color ?? Colors.black12, child: child);
   }
+}
+
+showToast(String text, {int? timeInSec}) {
+  Fluttertoast.showToast(msg: text, timeInSecForIosWeb: timeInSec ?? 1);
 }

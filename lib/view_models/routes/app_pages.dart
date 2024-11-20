@@ -4,16 +4,20 @@ import 'package:gigglio/view/auth_view/forgot_password.dart';
 import 'package:gigglio/view/auth_view/signin_screen.dart';
 import 'package:gigglio/view/auth_view/signup_screen.dart';
 import 'package:gigglio/view/auth_view/verify_email.dart';
+import 'package:gigglio/view/home_view/goto_post.dart';
 import 'package:gigglio/view/home_view/notification_screen.dart';
 import 'package:gigglio/view/messages_view/chat_screen.dart';
 import 'package:gigglio/view/messages_view/new_chat_screen.dart';
 import 'package:gigglio/view/profile_view/add_friends.dart';
 import 'package:gigglio/view/profile_view/change_password.dart';
 import 'package:gigglio/view/profile_view/edit_profile.dart';
+import 'package:gigglio/view/profile_view/goto_profile.dart';
+import 'package:gigglio/view/profile_view/my_posts.dart';
 import 'package:gigglio/view/profile_view/settings_screen.dart';
 import 'package:gigglio/view/profile_view/view_requests.dart';
 import 'package:gigglio/view/root_view.dart';
 import 'package:gigglio/view/profile_view/privacy_policy.dart';
+import 'package:gigglio/view_models/bindings/home_bindings.dart';
 import 'package:gigglio/view_models/bindings/messages_bindings.dart';
 import 'package:gigglio/view_models/bindings/profile_bindings.dart';
 import 'package:gigglio/view_models/routes/routes.dart';
@@ -58,6 +62,11 @@ class AppPages {
       name: Routes.addPost,
       page: () => const AddPost(),
       transition: Transition.leftToRight,
+      binding: HomeBindings(),
+    ),
+    GetPage(
+      name: Routes.gotoPost,
+      page: () => const GotoPost(),
     ),
     GetPage(
       name: Routes.chatScreen,
@@ -72,6 +81,16 @@ class AppPages {
     GetPage(
       name: Routes.editProfile,
       page: () => const EditProfile(),
+      binding: ProfileBindings(),
+    ),
+    GetPage(
+      name: Routes.gotoProfile,
+      page: () => const GotoProfile(),
+    ),
+    GetPage(
+      name: Routes.myPosts,
+      page: () => const MyPosts(),
+      transition: Transition.zoom,
     ),
     GetPage(
       name: Routes.viewRequests,

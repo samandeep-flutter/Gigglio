@@ -63,16 +63,20 @@ class ChatScreen extends GetView<ChatController> {
         shadowColor: scheme.surface,
         elevation: 5,
         titleSpacing: 0,
-        title: Row(
-          children: [
-            MyCachedImage(
-              controller.otherUser.image,
-              isAvatar: true,
-              avatarRadius: 16,
-            ),
-            const SizedBox(width: Dimens.sizeDefault),
-            Text(controller.otherUser.displayName),
-          ],
+        title: GestureDetector(
+          onTap: () => controller.gotoProfile(controller.otherUser.id),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MyCachedImage(
+                controller.otherUser.image,
+                isAvatar: true,
+                avatarRadius: 16,
+              ),
+              const SizedBox(width: Dimens.sizeDefault),
+              Text(controller.otherUser.displayName),
+            ],
+          ),
         ),
         centerTitle: false,
       ),

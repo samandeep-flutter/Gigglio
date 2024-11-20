@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/services/auth_services.dart';
-import 'package:gigglio/view_models/controller/home_controller.dart';
+import 'package:gigglio/view_models/controller/home_controllers/home_controller.dart';
 
 class RootController extends GetxController with GetTickerProviderStateMixin {
   AuthServices authServices = Get.find();
