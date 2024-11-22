@@ -16,8 +16,10 @@ class StringRes {
   static const String addFriends = 'Add Friends';
   static const String viewRequests = 'View Requests';
   static const String sendRequest = 'Send Request';
+  static const String sendMessage = 'Send Message';
   static const String sendFriendReq = 'Send friend request';
   static const String accept = 'Accept';
+  static const String accepted = 'Accepted';
   static const String send = 'Send';
   static const String requested = 'Requested';
   static const String inReq = 'In Requests';
@@ -25,6 +27,7 @@ class StringRes {
   static const String home = 'Home';
   static const String profile = 'Profile';
   static const String post = 'Post';
+  static const String posts = 'Posts';
   static const String deletePost = 'Delete post';
   static const String editProfile = 'Edit Profile';
   static const String changePass = 'Change Password';

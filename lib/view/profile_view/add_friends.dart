@@ -164,7 +164,7 @@ class AddFriends extends GetView<ProfileController> {
                                         user: cUser,
                                         other: user,
                                         onTap: () =>
-                                            controller.sendRequest(user.id),
+                                            controller.sendReq(user.id),
                                       ));
                                 }),
                           ),
@@ -194,7 +194,6 @@ class _TrailingButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeServices.of(context);
-
     if (user.friends.contains(other.id)) return const SizedBox();
     final enable =
         other.requests.contains(user.id) || user.requests.contains(other.id);
@@ -203,13 +202,10 @@ class _TrailingButton extends StatelessWidget {
         defWidth: true,
         isLoading: false,
         onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: Dimens.sizeSmall),
-            foregroundColor: scheme.primaryContainer,
-            backgroundColor: scheme.onPrimaryContainer,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(Dimens.borderSmall)),
-            visualDensity: VisualDensity.compact),
+        compact: true,
+        border: Dimens.borderSmall,
+        backgroundColor: scheme.onPrimaryContainer,
+        padding: const EdgeInsets.symmetric(horizontal: Dimens.sizeSmall),
         child: Text(other.requests.contains(user.id)
             ? StringRes.requested
             : user.requests.contains(other.id)

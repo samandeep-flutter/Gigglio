@@ -35,6 +35,7 @@ class AuthServices extends GetxService {
   }
 
   Future<void> _getVersion() async {
+    if (_auth.currentUser == null) return;
     try {
       final doc = await _fbFire.collection(FB.about).doc('info').get();
       minVersion = doc.data()!['min_version'];
@@ -58,6 +59,12 @@ class AuthServices extends GetxService {
     final saved = boxServices.getUserDetails();
     final updated = saved?.copyFrom(details: details);
     this.user.value = updated ?? details;
+    final doc = _fbFire.collection(FB.users).doc(user.uid);
+    doc.update({
+      'image': this.user.value?.image,
+      'display_name': this.user.value?.displayName,
+      'bio': this.user.value?.bio,
+    });
     await boxServices.saveUserDetails(updated ?? details);
   }
 

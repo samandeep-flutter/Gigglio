@@ -10,9 +10,9 @@ import '../../../services/auth_services.dart';
 import '../../../view/widgets/top_widgets.dart';
 
 class EditProfileController extends GetxController {
-  AuthServices authServices = Get.find();
+  final AuthServices authServices = Get.find();
   final _user = FirebaseAuth.instance.currentUser;
-  final _storage = FirebaseStorage.instance.ref();
+  final storage = FirebaseStorage.instance.ref();
 
   final nameController = TextEditingController();
   final bioContr = TextEditingController();
@@ -78,10 +78,18 @@ class EditProfileController extends GetxController {
   Future<String?> _savetoFB(XFile xfile) async {
     final user = authServices.user.value;
 
+    File file = File(xfile.path);
+    String ext = xfile.path.split('.').last;
+    if (imageUrl.value != null) {
+      final storage = FirebaseStorage.instance;
+      try {
+        final ref = storage.refFromURL(imageUrl.value!);
+        await ref.delete();
+      } catch (_) {}
+    }
     try {
-      File file = File(xfile.path);
-      String ext = xfile.path.split('.').last;
-      final ref = _storage.child(AppConstants.profileImage('${user!.id}.$ext'));
+      final path = AppConstants.profileImage('${user!.id}.$ext');
+      final ref = storage.child(path);
 
       await ref.putFile(file);
       String url = await ref.getDownloadURL();

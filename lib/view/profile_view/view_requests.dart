@@ -91,7 +91,7 @@ class ViewRequests extends GetView<ProfileController> {
                         ),
                         trailing: Obx(() => _TrailingButton(
                             sent: controller.reqAccepted[index],
-                            onTap: () => controller.acceptRequest(
+                            onTap: () => controller.acceptReq(
                                   user.id,
                                   index: index,
                                 ))));
@@ -115,15 +115,14 @@ class _TrailingButton extends GetView<ProfileController> {
 
     if (sent) return const SizedBox();
 
-    return ElevatedButton(
+    return LoadingButton(
         onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: Dimens.sizeSmall),
-            foregroundColor: scheme.primaryContainer,
-            backgroundColor: scheme.onPrimaryContainer,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(Dimens.borderSmall)),
-            visualDensity: VisualDensity.compact),
+        isLoading: false,
+        defWidth: true,
+        padding: const EdgeInsets.symmetric(horizontal: Dimens.sizeSmall),
+        backgroundColor: scheme.onPrimaryContainer,
+        compact: true,
+        border: Dimens.borderSmall,
         child: const Text(StringRes.accept));
   }
 }

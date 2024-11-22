@@ -100,11 +100,9 @@ class ShareTileSheet extends GetView<HomeController> {
           LoadingButton(
               margin: const EdgeInsets.symmetric(horizontal: Dimens.sizeLarge),
               width: double.infinity,
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: scheme.primary,
-                  foregroundColor: scheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(Dimens.borderSmall))),
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
+              border: Dimens.borderSmall,
               isLoading: false,
               onPressed: () => onTap(''),
               child: const Text(StringRes.share)),

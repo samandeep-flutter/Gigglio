@@ -68,7 +68,7 @@ class MessagesScreen extends GetView<MessagesController> {
               final docs = snapshot.data!.docs.where((e) {
                 return e.id.contains(controller.authServices.user.value!.id);
               }).toList();
-
+              docs.removeWhere((e) => (e['messages'] as List).isEmpty);
               if (docs.isEmpty) {
                 return ToolTipWidget(
                     margin: EdgeInsets.symmetric(
@@ -84,7 +84,10 @@ class MessagesScreen extends GetView<MessagesController> {
                   itemBuilder: (context, index) {
                     final json = docs[index].data();
                     final chat = MessagesModel.fromJson(json);
-                    Messages last = chat.messages.last;
+                    Messages? last;
+                    if (chat.messages.isNotEmpty) {
+                      last = chat.messages.last;
+                    }
                     final otherUser = chat.users.firstWhere((e) {
                       return e.id != controller.authServices.user.value!.id;
                     });
@@ -104,7 +107,6 @@ class MessagesScreen extends GetView<MessagesController> {
                                   height: 10, width: 30, child: Shimmer.box),
                             );
                           }
-                          if (chat.messages.isEmpty) return const SizedBox();
                           final json = snapshot.data?.data();
                           final user = UserDetails.fromJson(json!);
 
@@ -125,13 +127,13 @@ class MessagesScreen extends GetView<MessagesController> {
                               ),
                             ),
                             title: Text(user.displayName),
-                            subtitle: Text(last.text),
+                            subtitle: Text(last?.text ?? ''),
                             subtitleTextStyle: bodyTextStyle?.copyWith(
                               color: scheme.textColorLight,
                             ),
                             trailing: Text(
                               Utils.timeFromNow(
-                                  last.dateTime.toDateTime, DateTime.now()),
+                                  last?.dateTime.toDateTime, DateTime.now()),
                               style: TextStyle(color: scheme.disabled),
                             ),
                           );

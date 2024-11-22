@@ -11,7 +11,7 @@ abstract class Routes {
   // static const String home = '/home';
   static const String notifications = '/notifications';
   static const String addPost = '/add-post';
-  static const String myPosts = '/my-post';
+  static const String allUserPosts = '/all-user-post';
   static const String gotoPost = '/goto-post';
   // messages routes
   // static const String messages = '/messages';

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/model/models/user_details.dart';
-import 'package:gigglio/model/utils/color_resources.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/model/utils/utils.dart';
 import 'package:gigglio/services/auth_services.dart';
@@ -10,6 +9,8 @@ import 'package:gigglio/view/home_view/share_tile.dart';
 import 'package:gigglio/view/widgets/shimmer_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 import '../../model/models/post_model.dart';
+import '../../model/utils/app_constants.dart';
+import '../../model/utils/color_resources.dart';
 import '../../model/utils/dimens.dart';
 import '../../services/theme_services.dart';
 import '../../view_models/controller/home_controllers/home_controller.dart';
@@ -19,14 +20,16 @@ import 'comments_screen.dart';
 
 class PostTile extends GetView<HomeController> {
   final PostModel post;
-  final bool last;
+  final VoidCallback reload;
   final String id;
+  final bool? last;
 
   const PostTile({
     super.key,
     required this.id,
     required this.post,
-    required this.last,
+    required this.reload,
+    this.last,
   });
 
   @override
@@ -50,7 +53,7 @@ class PostTile extends GetView<HomeController> {
               }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const UserTileShimmer();
+                return const UserTileShimmer(avatarRadius: 20);
               }
 
               final json = snapshot.data?.data();
@@ -58,7 +61,9 @@ class PostTile extends GetView<HomeController> {
               return ListTile(
                 contentPadding: const EdgeInsets.only(left: Dimens.sizeDefault),
                 leading: InkWell(
-                  onTap: () => controller.gotoProfile(author.id),
+                  onTap: author.id == user!.id
+                      ? null
+                      : () => controller.gotoProfile(author.id),
                   splashColor: scheme.disabled.withOpacity(.7),
                   borderRadius: BorderRadius.circular(Dimens.sizeMidLarge),
                   child: Padding(
@@ -81,17 +86,22 @@ class PostTile extends GetView<HomeController> {
                   fontSize: Dimens.fontMed,
                 ),
                 trailing: IconButton(
-                  onPressed: () => showMore(
+                  onPressed: () => _showMore(
                     context,
                     author: author,
                     doc: id,
-                    dateTime: post.dateTime,
+                    images: post.images,
                   ),
                   icon: const Icon(Icons.more_vert),
                 ),
               );
             }),
-        ImageCarousel(images: post.images),
+        if (post.images.isNotEmpty)
+          ImageCarousel(images: post.images)
+        else
+          Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Dimens.sizeLarge),
+              child: Text(post.desc ?? '')),
         const SizedBox(height: Dimens.sizeSmall),
         Row(
           children: [
@@ -112,7 +122,17 @@ class PostTile extends GetView<HomeController> {
                   }
 
                   final json = snapshot.data?.data();
-                  final post = PostModel.fromJson(json!);
+                  if (json == null) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Icon(
+                        Icons.favorite_outline,
+                        color: scheme.disabled,
+                        size: bottomIcon,
+                      ),
+                    );
+                  }
+                  final post = PostModel.fromJson(json);
                   return Row(
                     children: [
                       IconButton(
@@ -133,7 +153,7 @@ class PostTile extends GetView<HomeController> {
                 }),
             const SizedBox(width: Dimens.sizeSmall),
             IconButton(
-                onPressed: () => toComments(context),
+                onPressed: () => _toComments(context),
                 style: IconButton.styleFrom(
                     padding: const EdgeInsets.only(top: 2)),
                 iconSize: bottomIcon,
@@ -149,12 +169,13 @@ class PostTile extends GetView<HomeController> {
                     return const SizedBox.shrink();
                   }
                   final json = snapshot.data?.data();
-                  final length = PostModel.fromJson(json!).comments.length;
+                  if (json == null) return const SizedBox();
+                  final length = PostModel.fromJson(json).comments.length;
                   return Text(length > 0 ? '$length' : '');
                 }),
             const SizedBox(width: Dimens.sizeSmall),
             IconButton(
-                onPressed: () => sharePost(context, doc: id),
+                onPressed: () => _sharePost(context, doc: id),
                 style: IconButton.styleFrom(
                     padding: const EdgeInsets.only(bottom: 4)),
                 iconSize: bottomIcon - 2,
@@ -164,7 +185,7 @@ class PostTile extends GetView<HomeController> {
                 )),
           ],
         ),
-        if (post.desc?.isNotEmpty ?? false)
+        if (post.images.isNotEmpty && (post.desc?.isNotEmpty ?? false))
           Container(
               margin: const EdgeInsets.only(
                 top: Dimens.sizeSmall,
@@ -184,10 +205,9 @@ class PostTile extends GetView<HomeController> {
                           }
                           final json = snapshot.data?.data();
                           UserDetails user = UserDetails.fromJson(json!);
-                          return RichText(
-                              text: TextSpan(
-                                  style: TextStyle(color: scheme.textColor),
-                                  children: [
+                          return MyRichText(
+                              style: TextStyle(color: scheme.textColor),
+                              children: [
                                 TextSpan(
                                   text: user.displayName,
                                   style: const TextStyle(
@@ -198,13 +218,13 @@ class PostTile extends GetView<HomeController> {
                                 TextSpan(text: post.desc),
                                 const WidgetSpan(
                                     child: SizedBox(width: Dimens.sizeDefault)),
-                              ]));
+                              ]);
                         }),
                   ),
                 ],
               )),
         TextButton(
-            onPressed: () => toComments(context),
+            onPressed: () => _toComments(context),
             style: TextButton.styleFrom(
                 visualDensity: VisualDensity.compact,
                 splashFactory: NoSplash.splashFactory,
@@ -223,7 +243,7 @@ class PostTile extends GetView<HomeController> {
                 ),
               ],
             )),
-        if (last) ...[
+        if (last ?? false) ...[
           const SizedBox(height: Dimens.sizeDefault),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -240,7 +260,7 @@ class PostTile extends GetView<HomeController> {
     );
   }
 
-  void sharePost(BuildContext context, {required String doc}) {
+  void _sharePost(BuildContext context, {required String doc}) {
     showModalBottomSheet(
         context: context,
         useSafeArea: true,
@@ -257,24 +277,75 @@ class PostTile extends GetView<HomeController> {
         });
   }
 
-  void showMore(BuildContext context,
-      {required UserDetails author,
-      required String doc,
-      required String dateTime}) {
+  void _showMore(
+    BuildContext context, {
+    required UserDetails author,
+    required List images,
+    required String doc,
+  }) {
     showModalBottomSheet(
         context: context,
         useSafeArea: true,
         showDragHandle: true,
         builder: (context) {
+          final user = Get.find<AuthServices>().user.value;
           return MyBottomSheet(
             title: StringRes.actions,
             vsync: controller,
-            child: MoreActions(author: author, doc: doc, dateTime: dateTime),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Dimens.sizeLarge),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (author.friends.contains(user!.id))
+                    CustomListTile(
+                      onTap: () {
+                        Get.back();
+                        controller.unfriend(author.id);
+                      },
+                      leading: Icons.person_remove_outlined,
+                      title: StringRes.unFriend,
+                    )
+                  else
+                    CustomListTile(
+                      enable: !author.requests.contains(user.id),
+                      onTap: () {
+                        Get.back();
+                        controller.sendReq(author.id);
+                      },
+                      leading: Icons.person_add_outlined,
+                      title: StringRes.sendFriendReq,
+                    ),
+                  if (user.id == author.id)
+                    CustomListTile(
+                      onTap: () async {
+                        Get.back();
+                        final storage = controller.storage;
+                        final posts = controller.posts;
+                        try {
+                          for (var image in images) {
+                            final ref = storage.refFromURL(image);
+                            await ref.delete();
+                          }
+                          await posts.doc(doc).delete();
+                        } catch (e) {
+                          logPrint('DELETE POST: $e');
+                        }
+                        reload();
+                      },
+                      title: StringRes.deletePost,
+                      iconColor: ColorRes.onErrorContainer,
+                      splashColor: ColorRes.errorContainer,
+                      leading: Icons.delete_outline,
+                    ),
+                ],
+              ),
+            ),
           );
         });
   }
 
-  void toComments(BuildContext context) {
+  void _toComments(BuildContext context) {
     showModalBottomSheet(
         context: context,
         showDragHandle: true,
@@ -287,51 +358,5 @@ class PostTile extends GetView<HomeController> {
               onClose: () => FocusManager.instance.primaryFocus?.unfocus(),
               child: CommentSheet(id: id, post: post));
         });
-  }
-}
-
-class MoreActions extends GetView<HomeController> {
-  final UserDetails author;
-  final String doc;
-  final String dateTime;
-
-  const MoreActions({
-    super.key,
-    required this.author,
-    required this.doc,
-    required this.dateTime,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final user = Get.find<AuthServices>().user.value;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Dimens.sizeLarge),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (!author.friends.contains(user!.id) && author.id != user.id)
-            CustomListTile(
-              onTap: () => controller.addFriend(author.id),
-              leading: Icons.person_add_outlined,
-              title: StringRes.sendFriendReq,
-            ),
-          if (author.id == user.id)
-            CustomListTile(
-              onTap: () => controller.deletePost(doc, dateTime: dateTime),
-              title: StringRes.deletePost,
-              iconColor: ColorRes.onErrorContainer,
-              splashColor: ColorRes.errorContainer,
-              leading: Icons.delete_outline,
-            ),
-          if (author.friends.contains(user.id))
-            CustomListTile(
-              onTap: () => controller.unfriend(author.id),
-              leading: Icons.person_remove_outlined,
-              title: StringRes.unFriend,
-            )
-        ],
-      ),
-    );
   }
 }

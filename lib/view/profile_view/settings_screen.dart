@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/model/utils/utils.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
-import 'package:gigglio/view_models/controller/settings_controller.dart';
+import 'package:gigglio/view_models/controller/profile_controllers/settings_controller.dart';
 import '../../model/utils/color_resources.dart';
 import '../../model/utils/dimens.dart';
 import '../../services/theme_services.dart';

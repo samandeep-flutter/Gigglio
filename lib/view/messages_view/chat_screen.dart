@@ -37,9 +37,10 @@ class ChatScreen extends GetView<ChatController> {
       if (controller.scrollContr.position.maxScrollExtent > 0) return;
       final user = controller.authServices.user.value;
       final index = model.users.indexWhere((e) => e.id == user!.id);
+      model.users[index].seen = model.messages.length;
       controller.messages
           .doc(controller.chatId)
-          .update({'users.$index.seen': model.messages.length});
+          .update({'users': model.users.map((e) => e.toJson())});
     } catch (_) {}
   }
 

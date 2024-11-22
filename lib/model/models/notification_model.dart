@@ -1,12 +1,14 @@
 class NotiModel {
   final String from;
   final String to;
-  final String postId;
+  final String dateTime;
+  final String? postId;
   final NotiCategory category;
 
   NotiModel({
     required this.from,
     required this.to,
+    required this.dateTime,
     required this.postId,
     required this.category,
   });
@@ -15,6 +17,7 @@ class NotiModel {
     return NotiModel(
       from: json['from'],
       to: json['to'],
+      dateTime: json['date_time'],
       postId: json['post_id'],
       category: NotiCategory.values.firstWhere((e) {
         return e.id == json['category'];
@@ -25,6 +28,7 @@ class NotiModel {
   Map<String, dynamic> toJson() => {
         'from': from,
         'to': to,
+        'date_time': dateTime,
         'post_id': postId,
         'category': category.id,
       };

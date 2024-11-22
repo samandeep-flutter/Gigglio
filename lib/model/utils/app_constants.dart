@@ -18,6 +18,7 @@ class AppConstants {
   static String profileImage(String image) => '${FB.userImage}/$image';
   static String share(String id) => '$appUrl/post/$id';
   static String postImage(String path) => '${FB.post}/$path';
+  static String deletePost(String id) => '${FB.post}/$id';
 }
 
 class FB {
@@ -26,7 +27,7 @@ class FB {
   static const String messages = 'messages';
   static const String noti = 'notifications';
   static const String users = 'users';
-  static const String userImage = '_userImages';
+  static const String userImage = 'userImages';
 }
 
 void logPrint(String? value, {Object? error}) {

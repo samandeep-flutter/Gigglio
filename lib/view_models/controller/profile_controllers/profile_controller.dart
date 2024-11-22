@@ -1,15 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/model/models/user_details.dart';
 import 'package:gigglio/model/utils/app_constants.dart';
 import 'package:gigglio/services/auth_services.dart';
 import '../../routes/routes.dart';
+import '../root_controller.dart';
 
-class ProfileController extends GetxController {
-  AuthServices authServices = Get.find();
+class ProfileController extends GetxController
+    with GetTickerProviderStateMixin {
+  final AuthServices authServices = Get.find();
   final posts = FirebaseFirestore.instance.collection(FB.post);
   final users = FirebaseFirestore.instance.collection(FB.users);
+  final storage = FirebaseStorage.instance;
   final postController = ScrollController();
 
   final friendContr = TextEditingController();
@@ -23,6 +27,10 @@ class ProfileController extends GetxController {
   void toViewRequests() => Get.toNamed(Routes.viewRequests);
   void toEditProfile() => Get.toNamed(Routes.editProfile);
   void gotoProfile(String id) => Get.toNamed(Routes.gotoProfile, arguments: id);
+  void sendReq(String id) => Get.find<RootController>().sendRequest(id);
+  void acceptReq(String id, {int? index}) {
+    Get.find<RootController>().acceptRequest(id, index: index);
+  }
 
   @override
   void onReady() {
@@ -38,7 +46,7 @@ class ProfileController extends GetxController {
   }
 
   void toPost(BuildContext context, {required int index}) {
-    Get.toNamed(Routes.myPosts, arguments: index);
+    Get.toNamed(Routes.allUserPosts, arguments: index);
   }
 
   void fromFriends(bool didPop, [result]) {
@@ -46,27 +54,5 @@ class ProfileController extends GetxController {
     allUsers.clear();
     searchedUsers.clear();
     friendsList.clear();
-  }
-
-  void sendRequest(String id) {
-    final userId = authServices.user.value!.id;
-    final doc = users.doc(id);
-    doc.update({
-      'requests': FieldValue.arrayUnion([userId])
-    });
-  }
-
-  void acceptRequest(String id, {required int index}) async {
-    final userId = authServices.user.value!.id;
-    final otherUser = users.doc(id);
-    final myUser = users.doc(userId);
-    await otherUser.update({
-      'friends': FieldValue.arrayUnion([userId]),
-    });
-    await myUser.update({
-      'friends': FieldValue.arrayUnion([id]),
-      'requests': FieldValue.arrayRemove([id]),
-    });
-    reqAccepted[index] = true;
   }
 }

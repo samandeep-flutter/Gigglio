@@ -10,24 +10,30 @@ class LoadingButton extends StatelessWidget {
   final bool enable;
   final Color? loaderColor;
   final EdgeInsets? padding;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+  final double? border;
   final EdgeInsets? margin;
   final double? width;
   final bool defWidth;
+  final bool compact;
   final VoidCallback onPressed;
-  final ButtonStyle? style;
   const LoadingButton({
     super.key,
-    this.style,
     this.padding,
     this.margin,
     this.width,
     this.enable = true,
     this.defWidth = false,
+    this.compact = false,
+    this.backgroundColor,
+    this.foregroundColor,
     this.loaderColor,
+    this.border,
     required this.isLoading,
     required this.onPressed,
     required this.child,
-  }) : assert(style == null || padding == null);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,12 +42,18 @@ class LoadingButton extends StatelessWidget {
       margin: margin,
       width: defWidth ? null : width ?? 200,
       child: ElevatedButton(
-        style: style ??
-            ElevatedButton.styleFrom(
-                backgroundColor: scheme.primary,
-                foregroundColor: scheme.onPrimary,
-                padding: padding ??
-                    const EdgeInsets.symmetric(vertical: Dimens.sizeDefault)),
+        style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor ?? scheme.primary,
+            foregroundColor: foregroundColor ?? scheme.onPrimary,
+            visualDensity: compact ? VisualDensity.compact : null,
+            shape: border != null
+                ? RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(
+                    Radius.circular(border!),
+                  ))
+                : null,
+            padding: padding ??
+                const EdgeInsets.symmetric(vertical: Dimens.sizeDefault)),
         onPressed: enable && !isLoading ? onPressed : null,
         child: isLoading
             ? SizedBox(
@@ -275,6 +287,117 @@ class ToolTipWidget extends StatelessWidget {
   }
 }
 
+class MyListTile extends StatelessWidget {
+  final VoidCallback? onTap;
+  final EdgeInsets? margin;
+  final Widget? leading;
+  final Widget? title;
+  final TextStyle? titleTestStyle;
+  final double? horizontalTitleGap;
+  final Widget? subtitle;
+  final TextStyle? subtitleTextStyle;
+  final Widget? trailing;
+
+  const MyListTile({
+    super.key,
+    this.onTap,
+    this.margin,
+    this.leading,
+    this.title,
+    this.titleTestStyle,
+    this.horizontalTitleGap,
+    this.subtitle,
+    this.subtitleTextStyle,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: margin ?? EdgeInsets.zero,
+      child: ListTile(
+        onTap: onTap,
+        leading: leading,
+        title: title,
+        titleTextStyle: titleTestStyle,
+        horizontalTitleGap: horizontalTitleGap,
+        subtitle: subtitle,
+        subtitleTextStyle: subtitleTextStyle,
+        trailing: trailing,
+      ),
+    );
+  }
+}
+
+class FriendsTile extends StatelessWidget {
+  final String title;
+  final int count;
+  final bool enable;
+  final VoidCallback? onTap;
+
+  const FriendsTile({
+    super.key,
+    required this.title,
+    required this.count,
+    this.onTap,
+    this.enable = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    String num = _format(count);
+    return InkWell(
+      borderRadius: BorderRadius.circular(Dimens.borderSmall),
+      onTap: enable ? onTap : null,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(num,
+              style: const TextStyle(
+                  fontSize: Dimens.fontExtraTripleLarge,
+                  fontWeight: FontWeight.bold)),
+          Text(title, style: const TextStyle(fontSize: Dimens.fontMed)),
+          const SizedBox(height: Dimens.sizeExtraSmall),
+        ],
+      ),
+    );
+  }
+
+  String _format(int count) {
+    if (count > 999999) {
+      String newCount = (count / 1000000).toStringAsFixed(1);
+      bool isZero = newCount.split('.').last == '0';
+      return '${isZero ? newCount.split('.').first : newCount}M';
+    }
+    if (count > 999) {
+      String newCount = (count / 1000).toStringAsFixed(1);
+      bool isZero = newCount.split('.').last == '0';
+      return '${isZero ? newCount.split('.').first : newCount}K';
+    }
+    return count.toString();
+  }
+}
+
+class MyRichText extends StatelessWidget {
+  final int? maxLines;
+  final TextStyle? style;
+  final List<InlineSpan> children;
+  const MyRichText({
+    super.key,
+    this.maxLines,
+    this.style,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RichText(
+      maxLines: maxLines,
+      text: TextSpan(style: style, children: children),
+    );
+  }
+}
+
 class CustomListTile extends StatelessWidget {
   final String title;
   final Color? foregroundColor;
@@ -282,6 +405,7 @@ class CustomListTile extends StatelessWidget {
   final Widget? trailing;
   final Color? splashColor;
   final EdgeInsets? margin;
+  final bool enable;
   final Color? iconColor;
   final VoidCallback? onTap;
   const CustomListTile({
@@ -291,6 +415,7 @@ class CustomListTile extends StatelessWidget {
     this.trailing,
     this.foregroundColor,
     this.margin,
+    this.enable = true,
     this.splashColor,
     this.iconColor,
     this.onTap,
@@ -298,10 +423,11 @@ class CustomListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = ThemeServices.of(context);
     return Padding(
       padding: margin ?? EdgeInsets.zero,
       child: ListTile(
-        onTap: onTap,
+        onTap: enable ? onTap : null,
         visualDensity: VisualDensity.compact,
         splashColor: splashColor,
         textColor: foregroundColor,
@@ -311,8 +437,13 @@ class CustomListTile extends StatelessWidget {
         ),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(Dimens.borderSmall)),
-        title: Text(title),
-        leading: Icon(leading, size: Dimens.sizeMedium),
+        title: Text(title,
+            style: TextStyle(
+              color: enable ? scheme.textColor : scheme.disabled,
+            )),
+        leading: Icon(leading,
+            size: Dimens.sizeMedium,
+            color: enable ? iconColor ?? foregroundColor : scheme.disabled),
         trailing: trailing,
       ),
     );

@@ -12,7 +12,7 @@ import '../../../services/auth_services.dart';
 class AddPostController extends GetxController {
   final posts = FirebaseFirestore.instance.collection(FB.post);
   final storage = FirebaseStorage.instance.ref();
-  AuthServices authServices = Get.find();
+  final AuthServices authServices = Get.find();
 
   final captionContr = TextEditingController();
   RxList<File> postImages = RxList();
@@ -58,6 +58,10 @@ class AddPostController extends GetxController {
     if (postImages.isEmpty && captionContr.text.isEmpty) {
       showToast('Post discarded');
       Get.back();
+      return;
+    }
+    if (postImages.isEmpty) {
+      showToast('Kindly add photos to continue');
       return;
     }
     isPostLoading.value = true;

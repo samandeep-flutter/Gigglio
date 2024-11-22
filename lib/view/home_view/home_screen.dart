@@ -56,37 +56,34 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
 
                         final docs = snapshot.data?.docs;
-                        return Obx(() {
-                          if ((docs?.length ?? 0) > controller.notiSeen.value) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: scheme.background,
-                              ),
-                              padding: const EdgeInsets.all(2),
-                              child: CircleAvatar(
-                                radius: Dimens.sizeExtraSmall,
-                                backgroundColor: scheme.primary,
-                              ),
-                            );
-                          }
-
-                          return const SizedBox.shrink();
-                        });
+                        return StreamBuilder(
+                            stream: controller.users.doc(user.id).snapshots(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasError ||
+                                  snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                return const SizedBox.shrink();
+                              }
+                              final json = snapshot.data?.data();
+                              if ((docs?.length ?? 0) >
+                                  json!['noti_seen_count']) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: scheme.background,
+                                  ),
+                                  padding: const EdgeInsets.all(2),
+                                  child: CircleAvatar(
+                                    radius: Dimens.sizeExtraSmall,
+                                    backgroundColor: scheme.primary,
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            });
                       })
                 ],
               )),
-          StreamBuilder(
-              stream: controller.users.doc(user.id).snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError ||
-                    snapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox.shrink();
-                }
-                final json = snapshot.data?.data();
-                controller.notiSeen.value = json!['noti_seen_count'];
-                return const SizedBox.shrink();
-              }),
           const SizedBox(width: Dimens.sizeDefault),
         ],
       ),
@@ -102,16 +99,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     children: List.generate(2, (_) => const PostTileShimmer()));
               }
+              final posts = snapshot.data?.docs.map((e) {
+                return PostModel.fromJson(e.data());
+              }).toList();
 
+              posts?.removeWhere((e) => e.author == user.id);
               return ListView.builder(
-                  itemCount: snapshot.data?.docs.length ?? 0,
+                  itemCount: posts?.length ?? 0,
                   padding: EdgeInsets.only(bottom: context.height * .1),
                   itemBuilder: (context, index) {
-                    bool last = snapshot.data?.docs.length == index + 1;
-
+                    final post = posts![index];
                     final doc = snapshot.data?.docs[index];
-                    final post = PostModel.fromJson(doc!.data());
-                    return PostTile(id: doc.id, post: post, last: last);
+                    bool last = posts.length == index + 1;
+
+                    return PostTile(
+                      id: doc!.id,
+                      post: post,
+                      last: last,
+                      reload: reload,
+                    );
                   });
             }),
       ),

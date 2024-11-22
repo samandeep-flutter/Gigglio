@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 
-import '../../model/utils/app_constants.dart';
-import '../../model/utils/color_resources.dart';
-import '../../model/utils/string.dart';
-import '../../services/auth_services.dart';
-import '../../services/theme_services.dart';
-import '../routes/routes.dart';
+import '../../../model/utils/app_constants.dart';
+import '../../../model/utils/color_resources.dart';
+import '../../../model/utils/string.dart';
+import '../../../services/auth_services.dart';
+import '../../../services/theme_services.dart';
+import '../../routes/routes.dart';
 
 class SettingsController extends GetxController {
-  AuthServices authServices = Get.find();
+  final AuthServices authServices = Get.find();
   final _user = FirebaseAuth.instance.currentUser;
 
   final changePassKey = GlobalKey<FormState>();

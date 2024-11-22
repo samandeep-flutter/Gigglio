@@ -12,7 +12,7 @@ import 'package:gigglio/view/profile_view/add_friends.dart';
 import 'package:gigglio/view/profile_view/change_password.dart';
 import 'package:gigglio/view/profile_view/edit_profile.dart';
 import 'package:gigglio/view/profile_view/goto_profile.dart';
-import 'package:gigglio/view/profile_view/my_posts.dart';
+import 'package:gigglio/view/profile_view/all_user_posts.dart';
 import 'package:gigglio/view/profile_view/settings_screen.dart';
 import 'package:gigglio/view/profile_view/view_requests.dart';
 import 'package:gigglio/view/root_view.dart';
@@ -26,8 +26,7 @@ import '../bindings/auth_bindings.dart';
 import '../bindings/root_bindings.dart';
 
 class AppPages {
-  static final AuthServices _auth = Get.find();
-  static String get initial => _auth.verify();
+  static String get initial => Get.find<AuthServices>().verify();
 
   static final List<GetPage> pages = [
     GetPage(
@@ -86,10 +85,11 @@ class AppPages {
     GetPage(
       name: Routes.gotoProfile,
       page: () => const GotoProfile(),
+      binding: RootBindings(),
     ),
     GetPage(
-      name: Routes.myPosts,
-      page: () => const MyPosts(),
+      name: Routes.allUserPosts,
+      page: () => const AllUserPosts(),
       transition: Transition.zoom,
     ),
     GetPage(

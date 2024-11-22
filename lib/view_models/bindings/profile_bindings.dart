@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:gigglio/view_models/controller/profile_controllers/edit_profile_controller.dart';
-import '../controller/settings_controller.dart';
+import '../controller/profile_controllers/settings_controller.dart';
 
 class ProfileBindings extends Bindings {
   @override

@@ -156,9 +156,7 @@ class ProfileScreen extends GetView<ProfileController> {
             title: Text(StringRes.myPosts),
           ),
           StreamBuilder(
-              stream: controller.posts
-                  .where('author', isEqualTo: user.value!.id)
-                  .snapshots(),
+              stream: controller.posts.orderBy('date_time').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) return const ToolTipWidget();
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -182,6 +180,7 @@ class ProfileScreen extends GetView<ProfileController> {
                   return PostModel.fromJson(e.data());
                 }).toList();
 
+                posts?.removeWhere((e) => e.author != user.value!.id);
                 if (posts?.isEmpty ?? true) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -233,54 +232,5 @@ class ProfileScreen extends GetView<ProfileController> {
       )),
       padding: const EdgeInsets.symmetric(vertical: Dimens.sizeMedSmall),
     );
-  }
-}
-
-class FriendsTile extends StatelessWidget {
-  final String title;
-  final int count;
-  final bool enable;
-  final VoidCallback? onTap;
-
-  const FriendsTile({
-    super.key,
-    required this.title,
-    required this.count,
-    this.onTap,
-    this.enable = true,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    String num = _format(count);
-    return InkWell(
-      borderRadius: BorderRadius.circular(Dimens.borderSmall),
-      onTap: enable ? onTap : null,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(num,
-              style: const TextStyle(
-                  fontSize: Dimens.fontExtraTripleLarge,
-                  fontWeight: FontWeight.bold)),
-          Text(title, style: const TextStyle(fontSize: Dimens.fontMed)),
-          const SizedBox(height: Dimens.sizeExtraSmall),
-        ],
-      ),
-    );
-  }
-
-  String _format(int count) {
-    if (count > 999999) {
-      String newCount = (count / 1000000).toStringAsFixed(1);
-      bool isZero = newCount.split('.').last == '0';
-      return '${isZero ? newCount.split('.').first : newCount}M';
-    }
-    if (count > 999) {
-      String newCount = (count / 1000).toStringAsFixed(1);
-      bool isZero = newCount.split('.').last == '0';
-      return '${isZero ? newCount.split('.').first : newCount}K';
-    }
-    return count.toString();
   }
 }
