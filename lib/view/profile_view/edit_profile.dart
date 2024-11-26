@@ -6,9 +6,9 @@ import 'package:gigglio/view_models/controller/profile_controllers/edit_profile_
 import '../../model/utils/dimens.dart';
 import '../../model/utils/utils.dart';
 import '../../services/theme_services.dart';
+import '../widgets/loading_widgets.dart';
 import '../widgets/my_cached_image.dart';
 import '../widgets/my_text_field_widget.dart';
-import '../widgets/top_widgets.dart';
 
 class EditProfile extends GetView<EditProfileController> {
   const EditProfile({super.key});

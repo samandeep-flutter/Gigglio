@@ -3,11 +3,10 @@ import 'package:get/get.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/services/theme_services.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
-import 'package:gigglio/view/widgets/top_widgets.dart';
-import 'package:gigglio/view_models/controller/auth_controller/signin_controller.dart';
 import 'package:gigglio/view_models/routes/routes.dart';
-
 import '../../model/utils/dimens.dart';
+import '../../view_models/controller/auth_controller/signin_controller.dart';
+import '../widgets/loading_widgets.dart';
 
 class VerifyEmail extends GetView<SignInController> {
   const VerifyEmail({super.key});

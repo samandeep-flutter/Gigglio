@@ -1,17 +1,20 @@
 class MessagesModel {
-  final List<UserData> users;
+  final List<String> users;
+  final List<UserData> userData;
   final String? lastUpdated;
   final List<Messages> messages;
 
   MessagesModel({
-    required List<UserData> users,
+    required this.users,
+    required this.userData,
     this.lastUpdated,
     this.messages = const [],
-  }) : users = users.take(2).toList();
+  });
 
   factory MessagesModel.fromJson(Map<String, dynamic> json) {
     return MessagesModel(
-      users: List<UserData>.from(json['users'].map((e) {
+      users: List<String>.from(json['users']),
+      userData: List<UserData>.from(json['user_data'].map((e) {
         return UserData.fromJson(e);
       })),
       lastUpdated: json['last_updated'],
@@ -22,18 +25,20 @@ class MessagesModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'users': users.map((e) => e.toJson()),
+        'users': users,
+        'user_data': userData.map((e) => e.toJson()),
         'last_updated': lastUpdated,
         'messages': messages.map((e) => e.toJson()),
       };
 
   MessagesModel copyWith({
-    List<UserData>? users,
+    List<UserData>? userData,
     String? lastUpdated,
     List<Messages>? messages,
   }) {
     return MessagesModel(
-      users: users ?? this.users,
+      users: users,
+      userData: userData ?? this.userData,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       messages: messages ?? this.messages,
     );

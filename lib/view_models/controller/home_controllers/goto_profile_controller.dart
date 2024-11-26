@@ -21,7 +21,7 @@ class GotoProfileController extends GetxController {
   }
 
   void toChat(UserDetails user) {
-    Get.offNamed(Routes.chatScreen, arguments: user);
+    Get.toNamed(Routes.chatScreen, arguments: user);
   }
 
   void toPost(BuildContext context,

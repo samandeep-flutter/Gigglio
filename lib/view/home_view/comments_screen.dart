@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/services/extension_services.dart';
 import 'package:gigglio/view/widgets/shimmer_widget.dart';
+import 'package:gigglio/view/widgets/top_widgets.dart';
 import '../../model/models/post_model.dart';
 import '../../model/models/user_details.dart';
 import '../../model/utils/dimens.dart';
@@ -9,7 +10,6 @@ import '../../model/utils/string.dart';
 import '../../model/utils/utils.dart';
 import '../../services/theme_services.dart';
 import '../../view_models/controller/home_controllers/home_controller.dart';
-import '../widgets/my_cached_image.dart';
 import '../widgets/my_text_field_widget.dart';
 
 class CommentSheet extends StatefulWidget {
@@ -102,20 +102,11 @@ class _CommentSheetState extends State<CommentSheet> {
                                 vertical: Dimens.sizeSmall),
                             child: Row(
                               children: [
-                                InkWell(
-                                  onTap: () =>
-                                      controller.gotoProfile(author.id),
-                                  splashColor: scheme.disabled.withOpacity(.7),
-                                  borderRadius: BorderRadius.circular(
-                                      Dimens.sizeMidLarge),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: MyCachedImage(
-                                      author.image,
-                                      isAvatar: true,
-                                      avatarRadius: 24,
-                                    ),
-                                  ),
+                                MyAvatar(
+                                  author.image,
+                                  isAvatar: true,
+                                  id: author.id,
+                                  avatarRadius: 24,
                                 ),
                                 const SizedBox(width: Dimens.sizeDefault),
                                 Expanded(

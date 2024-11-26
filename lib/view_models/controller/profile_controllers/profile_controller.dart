@@ -45,8 +45,9 @@ class ProfileController extends GetxController
     }).toList();
   }
 
-  void toPost(BuildContext context, {required int index}) {
-    Get.toNamed(Routes.allUserPosts, arguments: index);
+  void toPost(BuildContext context,
+      {required int index, required String userId}) {
+    Get.toNamed(Routes.allUserPosts, arguments: [index, userId]);
   }
 
   void fromFriends(bool didPop, [result]) {

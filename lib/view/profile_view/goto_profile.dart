@@ -9,6 +9,7 @@ import 'package:gigglio/view_models/controller/home_controllers/goto_profile_con
 import '../../model/models/post_model.dart';
 import '../../model/models/user_details.dart';
 import '../../model/utils/dimens.dart';
+import '../widgets/loading_widgets.dart';
 import '../widgets/my_cached_image.dart';
 import '../widgets/shimmer_widget.dart';
 
@@ -221,7 +222,11 @@ class GotoProfile extends GetView<GotoProfileController> {
               title: Text(StringRes.posts),
             ),
             FutureBuilder(
-                future: controller.posts.orderBy('date_time').get(),
+                future: controller.posts
+                    .where('author', isEqualTo: userId)
+                    .orderBy('author')
+                    .orderBy('date_time', descending: true)
+                    .get(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) return const ToolTipWidget();
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -245,7 +250,6 @@ class GotoProfile extends GetView<GotoProfileController> {
                     return PostModel.fromJson(e.data());
                   }).toList();
 
-                  posts?.removeWhere((e) => e.author != userId);
                   if (posts?.isEmpty ?? true) {
                     return Column(
                       mainAxisSize: MainAxisSize.min,

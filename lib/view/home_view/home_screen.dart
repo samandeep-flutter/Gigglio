@@ -25,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final scheme = ThemeServices.of(context);
     final user = controller.authServices.user.value;
+    if (user == null) return const SizedBox.shrink();
 
     return BaseWidget(
       padding: EdgeInsets.zero,
@@ -46,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Icon(Icons.favorite_border_rounded),
                   StreamBuilder(
                       stream: controller.noti
-                          .where('to', isEqualTo: user!.id)
+                          .where('to', isEqualTo: user.id)
                           .snapshots(),
                       builder: (context, snapshot) {
                         if (snapshot.hasError ||
@@ -90,8 +91,11 @@ class _HomeScreenState extends State<HomeScreen> {
       child: RefreshIndicator(
         onRefresh: reload,
         child: FutureBuilder(
-            future:
-                controller.posts.orderBy('date_time', descending: true).get(),
+            future: controller.posts
+                .where('author', isNotEqualTo: user.id)
+                .orderBy('author')
+                .orderBy('date_time', descending: true)
+                .get(),
             builder: (context, snapshot) {
               if (snapshot.hasError) return NoData(reload);
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -103,7 +107,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 return PostModel.fromJson(e.data());
               }).toList();
 
-              posts?.removeWhere((e) => e.author == user.id);
               return ListView.builder(
                   itemCount: posts?.length ?? 0,
                   padding: EdgeInsets.only(bottom: context.height * .1),

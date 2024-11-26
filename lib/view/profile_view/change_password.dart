@@ -5,8 +5,8 @@ import '../../model/utils/dimens.dart';
 import '../../model/utils/string.dart';
 import '../../services/theme_services.dart';
 import '../widgets/base_widget.dart';
+import '../widgets/loading_widgets.dart';
 import '../widgets/my_text_field_widget.dart';
-import '../widgets/top_widgets.dart';
 
 class ChangePassword extends GetView<SettingsController> {
   const ChangePassword({super.key});

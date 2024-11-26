@@ -9,7 +9,7 @@ import 'package:gigglio/view/widgets/top_widgets.dart';
 import 'package:gigglio/view_models/controller/profile_controllers/profile_controller.dart';
 import '../../services/theme_services.dart';
 import '../widgets/base_widget.dart';
-import '../widgets/my_cached_image.dart';
+import '../widgets/loading_widgets.dart';
 import '../widgets/my_text_field_widget.dart';
 
 class AddFriends extends GetView<ProfileController> {
@@ -35,7 +35,7 @@ class AddFriends extends GetView<ProfileController> {
               margin: const EdgeInsets.symmetric(
                 horizontal: Dimens.sizeDefault,
               ),
-              title: 'Search',
+              title: 'Search by email',
               controller: controller.friendContr,
               showClear: false,
             ),
@@ -134,21 +134,11 @@ class AddFriends extends GetView<ProfileController> {
                                           const EdgeInsets.symmetric(
                                         horizontal: Dimens.sizeLarge,
                                       ),
-                                      leading: InkWell(
-                                        onTap: () =>
-                                            controller.gotoProfile(user.id),
-                                        splashColor:
-                                            scheme.disabled.withOpacity(.7),
-                                        borderRadius: BorderRadius.circular(
-                                            Dimens.sizeMidLarge),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(4),
-                                          child: MyCachedImage(
-                                            user.image,
-                                            isAvatar: true,
-                                            avatarRadius: 24,
-                                          ),
-                                        ),
+                                      leading: MyAvatar(
+                                        user.image,
+                                        isAvatar: true,
+                                        avatarRadius: 24,
+                                        id: user.id,
                                       ),
                                       title: Text(user.displayName),
                                       subtitle: Text(

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/services/theme_services.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
-import 'package:gigglio/view_models/controller/auth_controller/signup_controller.dart';
 import '../../model/utils/dimens.dart';
 import '../../model/utils/string.dart';
+import '../../view_models/controller/auth_controller/signup_controller.dart';
+import '../widgets/loading_widgets.dart';
 import '../widgets/my_text_field_widget.dart';
-import '../widgets/top_widgets.dart';
 
 class SignUpScreen extends GetView<SignUpController> {
   const SignUpScreen({super.key});

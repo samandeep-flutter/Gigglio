@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../model/utils/app_constants.dart';
 import '../../../model/utils/string.dart';
 import '../../../services/auth_services.dart';
-import '../../../view/widgets/top_widgets.dart';
+import '../../../view/widgets/my_alert_dialog.dart';
 
 class EditProfileController extends GetxController {
   final AuthServices authServices = Get.find();

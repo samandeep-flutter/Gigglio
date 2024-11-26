@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:gigglio/model/models/messages_model.dart';
 import 'package:gigglio/model/utils/dimens.dart';
 import 'package:gigglio/model/utils/image_resources.dart';
-import 'package:gigglio/services/extension_services.dart';
 import 'package:gigglio/services/theme_services.dart';
+import 'package:gigglio/view/messages_view/message_tile.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
 import 'package:gigglio/view/widgets/my_cached_image.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
@@ -36,11 +36,11 @@ class ChatScreen extends GetView<ChatController> {
     try {
       if (controller.scrollContr.position.maxScrollExtent > 0) return;
       final user = controller.authServices.user.value;
-      final index = model.users.indexWhere((e) => e.id == user!.id);
-      model.users[index].seen = model.messages.length;
+      final index = model.userData.indexWhere((e) => e.id == user!.id);
+      model.userData[index].seen = model.messages.length;
       controller.messages
           .doc(controller.chatId)
-          .update({'users': model.users.map((e) => e.toJson())});
+          .update({'user_data': model.userData.map((e) => e.toJson())});
     } catch (_) {}
   }
 
@@ -97,14 +97,14 @@ class ChatScreen extends GetView<ChatController> {
                   messages = MessagesModel.fromJson(json!);
 
                   if (!controller.isScrolled) {
-                    _scrollTo(messages!.users.firstWhere((e) {
+                    _scrollTo(messages!.userData.firstWhere((e) {
                       return e.id != user!.id;
                     }).scrollAt);
                   }
                   final index =
-                      messages!.users.indexWhere((e) => e.id == user!.id);
+                      messages!.userData.indexWhere((e) => e.id == user!.id);
 
-                  if (messages!.users[index].seen !=
+                  if (messages!.userData[index].seen !=
                       messages!.messages.length) {
                     _readRecipt(messages);
                   }
@@ -115,8 +115,8 @@ class ChatScreen extends GetView<ChatController> {
                       itemCount: messages!.messages.length,
                       itemBuilder: (context, index) {
                         final message = messages!.messages[index];
-                        final time = message.dateTime.toDateTime;
-                        final otherUser = messages!.users.firstWhere((e) {
+
+                        final otherUser = messages!.userData.firstWhere((e) {
                           return e.id != message.author;
                         });
 
@@ -125,59 +125,9 @@ class ChatScreen extends GetView<ChatController> {
                             ? otherUser.scrollAt! >= message.scrollAt!
                             : otherUser.seen >= message.position;
 
-                        return Row(
-                          mainAxisAlignment: message.author == user!.id
-                              ? MainAxisAlignment.end
-                              : MainAxisAlignment.start,
-                          children: [
-                            const SizedBox(width: Dimens.sizeDefault),
-                            Container(
-                              margin: const EdgeInsets.symmetric(
-                                  vertical: Dimens.sizeSmall),
-                              decoration: BoxDecoration(
-                                  color: message.author == user.id
-                                      ? scheme.primaryContainer
-                                      : scheme.surface,
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(Dimens.borderSmall))),
-                              padding: const EdgeInsets.all(Dimens.sizeSmall),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(message.text),
-                                  Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: Dimens.sizeSmall,
-                                          top: Dimens.sizeSmall),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            time.formatTime,
-                                            style: TextStyle(
-                                                color: scheme.textColorLight,
-                                                fontSize: Dimens.fontMed),
-                                          ),
-                                          if (message.author == user.id) ...[
-                                            const SizedBox(
-                                                width: Dimens.sizeExtraSmall),
-                                            Icon(
-                                              Icons.check_rounded,
-                                              color: isScrolled
-                                                  ? Colors.blue
-                                                  : scheme.disabled
-                                                      .withOpacity(.7),
-                                              size: Dimens.sizeDefault,
-                                            )
-                                          ]
-                                        ],
-                                      )),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: Dimens.sizeDefault),
-                          ],
+                        return MessageTile(
+                          message: message,
+                          isScrolled: isScrolled,
                         );
                       });
                 });

@@ -5,9 +5,9 @@ import 'package:gigglio/model/utils/image_resources.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/services/theme_services.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
-import 'package:gigglio/view/widgets/top_widgets.dart';
-import 'package:gigglio/view_models/controller/auth_controller/signin_controller.dart';
+import '../../view_models/controller/auth_controller/signin_controller.dart';
 import '../../view_models/routes/routes.dart';
+import '../widgets/loading_widgets.dart';
 import '../widgets/my_text_field_widget.dart';
 
 class SignInScreen extends GetView<SignInController> {

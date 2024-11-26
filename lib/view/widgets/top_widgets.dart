@@ -3,210 +3,8 @@ import 'package:get/get.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/services/theme_services.dart';
 import '../../model/utils/dimens.dart';
-
-class LoadingButton extends StatelessWidget {
-  final Widget child;
-  final bool isLoading;
-  final bool enable;
-  final Color? loaderColor;
-  final EdgeInsets? padding;
-  final Color? backgroundColor;
-  final Color? foregroundColor;
-  final double? border;
-  final EdgeInsets? margin;
-  final double? width;
-  final bool defWidth;
-  final bool compact;
-  final VoidCallback onPressed;
-  const LoadingButton({
-    super.key,
-    this.padding,
-    this.margin,
-    this.width,
-    this.enable = true,
-    this.defWidth = false,
-    this.compact = false,
-    this.backgroundColor,
-    this.foregroundColor,
-    this.loaderColor,
-    this.border,
-    required this.isLoading,
-    required this.onPressed,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme scheme = Theme.of(context).colorScheme;
-    return Container(
-      margin: margin,
-      width: defWidth ? null : width ?? 200,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: backgroundColor ?? scheme.primary,
-            foregroundColor: foregroundColor ?? scheme.onPrimary,
-            visualDensity: compact ? VisualDensity.compact : null,
-            shape: border != null
-                ? RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                    Radius.circular(border!),
-                  ))
-                : null,
-            padding: padding ??
-                const EdgeInsets.symmetric(vertical: Dimens.sizeDefault)),
-        onPressed: enable && !isLoading ? onPressed : null,
-        child: isLoading
-            ? SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                    color: loaderColor ?? scheme.onPrimary))
-            : child,
-      ),
-    );
-  }
-}
-
-class LoadingIcon extends StatelessWidget {
-  final IconButtonStyle buttonStyle;
-  final Widget icon;
-  final bool loading;
-  final double? loaderSize;
-  final ButtonStyle? style;
-  final VoidCallback onPressed;
-  const LoadingIcon({
-    super.key,
-    required this.buttonStyle,
-    required this.icon,
-    required this.loading,
-    required this.onPressed,
-    this.loaderSize,
-    this.style,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeServices.of(context);
-
-    switch (buttonStyle) {
-      case IconButtonStyle.outlined:
-        return IconButton.outlined(
-          style: style ??
-              IconButton.styleFrom(
-                side: BorderSide(color: scheme.textColorLight, width: 2),
-                padding: const EdgeInsets.all(Dimens.sizeMedSmall),
-                foregroundColor: scheme.textColor,
-              ),
-          onPressed: onPressed,
-          icon: loading
-              ? SizedBox.square(
-                  dimension: loaderSize ?? 24,
-                  child: const CircularProgressIndicator())
-              : icon,
-        );
-      case IconButtonStyle.filled:
-        return IconButton.filled(
-          style: style ??
-              IconButton.styleFrom(
-                side: BorderSide(color: scheme.textColorLight, width: 2),
-                padding: const EdgeInsets.all(Dimens.sizeMedSmall),
-                foregroundColor: scheme.textColor,
-              ),
-          onPressed: onPressed,
-          icon: loading
-              ? SizedBox.square(
-                  dimension: loaderSize ?? 24,
-                  child: const CircularProgressIndicator())
-              : icon,
-        );
-    }
-  }
-}
-
-enum IconButtonStyle { outlined, filled }
-
-class MyAlertDialog extends StatelessWidget {
-  final String title;
-  final TextStyle? titleTextStyle;
-  final Widget? content;
-  final List<Widget>? actions;
-  final EdgeInsets? actionPadding;
-  final VoidCallback? onTap;
-
-  const MyAlertDialog({
-    super.key,
-    required this.title,
-    this.content,
-    this.actions,
-    this.onTap,
-    this.actionPadding,
-    this.titleTextStyle,
-  }) : assert(
-            (actions != null || onTap != null) &&
-                !(actions != null && onTap != null),
-            'Provide either custom actions or provide onTap');
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeServices.of(context);
-
-    return AlertDialog(
-      backgroundColor: scheme.surface,
-      title: Text(title),
-      titleTextStyle: titleTextStyle,
-      content: content,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Dimens.borderDefault)),
-      buttonPadding: const EdgeInsets.only(right: Dimens.sizeDefault),
-      actionsPadding: actionPadding,
-      actions: actions ??
-          [
-            TextButton(
-                onPressed: Get.back, child: const Text(StringRes.cancel)),
-            TextButton(onPressed: onTap, child: const Text(StringRes.submit)),
-          ],
-    );
-  }
-}
-
-class MyBottomSheet extends StatelessWidget {
-  final String title;
-  final TickerProvider vsync;
-  final VoidCallback? onClose;
-  final Widget child;
-
-  const MyBottomSheet({
-    super.key,
-    required this.title,
-    required this.vsync,
-    this.onClose,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomSheet(
-        onClosing: onClose ?? () {},
-        animationController: BottomSheet.createAnimationController(vsync),
-        builder: (_) {
-          return SafeArea(
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ))
-              ],
-            ),
-            const SizedBox(height: Dimens.sizeSmall),
-            const MyDivider(),
-            const SizedBox(height: Dimens.sizeDefault),
-            child,
-          ]));
-        });
-  }
-}
+import '../../view_models/routes/routes.dart';
+import 'my_cached_image.dart';
 
 class MyDivider extends StatelessWidget {
   final double? width;
@@ -287,43 +85,53 @@ class ToolTipWidget extends StatelessWidget {
   }
 }
 
-class MyListTile extends StatelessWidget {
+class MyAvatar extends StatelessWidget {
+  final String? image;
+  final bool? isAvatar;
+  final EdgeInsets? padding;
+  final double? avatarRadius;
+  final double? borderRadius;
+  final double? height;
+  final double? width;
+  final BoxFit? fit;
+  final String? id;
   final VoidCallback? onTap;
-  final EdgeInsets? margin;
-  final Widget? leading;
-  final Widget? title;
-  final TextStyle? titleTestStyle;
-  final double? horizontalTitleGap;
-  final Widget? subtitle;
-  final TextStyle? subtitleTextStyle;
-  final Widget? trailing;
 
-  const MyListTile({
+  const MyAvatar(
+    this.image, {
     super.key,
     this.onTap,
-    this.margin,
-    this.leading,
-    this.title,
-    this.titleTestStyle,
-    this.horizontalTitleGap,
-    this.subtitle,
-    this.subtitleTextStyle,
-    this.trailing,
-  });
+    this.id,
+    this.padding,
+    this.avatarRadius,
+    this.isAvatar,
+    this.fit,
+    this.borderRadius,
+    this.height,
+    this.width,
+  }) : assert(id != null || onTap != null);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: margin ?? EdgeInsets.zero,
-      child: ListTile(
-        onTap: onTap,
-        leading: leading,
-        title: title,
-        titleTextStyle: titleTestStyle,
-        horizontalTitleGap: horizontalTitleGap,
-        subtitle: subtitle,
-        subtitleTextStyle: subtitleTextStyle,
-        trailing: trailing,
+    final scheme = ThemeServices.of(context);
+
+    return InkWell(
+      onTap: onTap ?? () => Get.toNamed(Routes.gotoProfile, arguments: id),
+      borderRadius: BorderRadius.circular(borderRadius ?? 40),
+      splashColor: scheme.disabled.withOpacity(.5),
+      child: Padding(
+        padding: padding ?? const EdgeInsets.all(4),
+        child: MyCachedImage(
+          image,
+          isAvatar: isAvatar ?? false,
+          height: height,
+          width: width,
+          fit: fit,
+          avatarRadius: avatarRadius,
+          borderRadius: borderRadius != null
+              ? BorderRadius.circular(borderRadius!)
+              : null,
+        ),
       ),
     );
   }

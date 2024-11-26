@@ -3,12 +3,12 @@ import 'package:get/get.dart';
 import 'package:gigglio/model/utils/dimens.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/view/widgets/my_text_field_widget.dart';
-import 'package:gigglio/view/widgets/top_widgets.dart';
-import 'package:gigglio/view_models/controller/home_controllers/add_post_controller.dart';
 import '../../model/utils/color_resources.dart';
 import '../../model/utils/utils.dart';
 import '../../services/theme_services.dart';
+import '../../view_models/controller/home_controllers/add_post_controller.dart';
 import '../widgets/base_widget.dart';
+import '../widgets/loading_widgets.dart';
 
 class AddPost extends GetView<AddPostController> {
   const AddPost({super.key});

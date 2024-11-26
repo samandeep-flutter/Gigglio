@@ -5,8 +5,8 @@ import 'package:gigglio/view_models/controller/auth_controller/signin_controller
 import '../../model/utils/dimens.dart';
 import '../../model/utils/string.dart';
 import '../../services/theme_services.dart';
+import '../widgets/loading_widgets.dart';
 import '../widgets/my_text_field_widget.dart';
-import '../widgets/top_widgets.dart';
 
 class ForgotPassword extends GetView<SignInController> {
   const ForgotPassword({super.key});

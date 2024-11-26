@@ -1,13 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gigglio/view/widgets/top_widgets.dart';
-
 import '../../../model/utils/app_constants.dart';
 import '../../../model/utils/color_resources.dart';
 import '../../../model/utils/string.dart';
 import '../../../services/auth_services.dart';
 import '../../../services/theme_services.dart';
+import '../../../view/widgets/my_alert_dialog.dart';
 import '../../routes/routes.dart';
 
 class SettingsController extends GetxController {

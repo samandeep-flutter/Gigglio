@@ -10,6 +10,7 @@ import '../../routes/routes.dart';
 
 class ChatController extends GetxController {
   final messages = FirebaseFirestore.instance.collection(FB.messages);
+  final posts = FirebaseFirestore.instance.collection(FB.post);
   final users = FirebaseFirestore.instance.collection(FB.users);
   final AuthServices authServices = Get.find();
 
@@ -21,20 +22,24 @@ class ChatController extends GetxController {
   bool isScrolled = false;
 
   late UserDetails otherUser;
-  String chatId = '';
+  String? chatId;
 
   @override
   void onInit() {
     otherUser = Get.arguments;
-    _findDoc().then((id) {
+    _findDoc().then((id) async {
       final user = authServices.user.value!;
-      final chatId = id ?? '${user.id}:${otherUser.id}';
+      String? chatId = id;
       if (id == null) {
-        final message = MessagesModel(users: [
-          UserData.newUser(user.id),
-          UserData.newUser(otherUser.id),
-        ]);
-        messages.doc(chatId).set(message.toJson());
+        final message = MessagesModel(
+          users: [user.id, otherUser.id],
+          userData: [
+            UserData.newUser(user.id),
+            UserData.newUser(otherUser.id),
+          ],
+        );
+        final doc = await messages.add(message.toJson());
+        chatId = doc.id;
       }
       this.chatId = chatId;
       isIdLoading.value = false;
@@ -50,37 +55,42 @@ class ChatController extends GetxController {
   }
 
   void gotoProfile(String id) => Get.toNamed(Routes.gotoProfile, arguments: id);
+  void gotoPost(String id) => Get.toNamed(Routes.gotoPost, arguments: id);
+
+  Future<String?> _findDoc() async {
+    isIdLoading.value = true;
+    final user = authServices.user.value!;
+    try {
+      final snapshot =
+          await messages.where('users', arrayContains: user.id).get();
+      snapshot.docs.removeWhere((e) {
+        return !(e.data()['users'] as List).contains(otherUser.id);
+      });
+      return snapshot.docs.first.id;
+    } catch (_) {
+      return null;
+    }
+  }
 
   void readRecipts() async {
     final json = await messages.doc(chatId).get();
     final model = MessagesModel.fromJson(json.data()!);
     final user = authServices.user.value;
-    final index = model.users.indexWhere((e) => e.id == user!.id);
+    final index = model.userData.indexWhere((e) => e.id == user!.id);
 
     try {
       final position = scrollContr.position;
-      model.users[index]
+      model.userData[index]
         ..scrollAt = position.pixels
         ..seen = model.messages.length;
     } catch (_) {
-      model.users[index].seen = model.messages.length;
+      model.userData[index].seen = model.messages.length;
     }
     messages.doc(chatId).update({
-      'users': model.users.map((e) {
+      'user_data': model.userData.map((e) {
         return e.toJson();
       }).toList()
     });
-  }
-
-  Future<String?> _findDoc() async {
-    isIdLoading.value = true;
-    final user = authServices.user.value!;
-    final snapshot = await messages.get();
-    var doc = snapshot.docs.firstWhereOrNull((e) {
-      List<String> users = e.id.split(':');
-      return users.contains(otherUser.id) && users.contains(user.id);
-    });
-    return doc?.id;
   }
 
   void sendMessage(MessagesModel? model) async {

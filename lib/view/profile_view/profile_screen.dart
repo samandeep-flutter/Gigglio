@@ -156,7 +156,11 @@ class ProfileScreen extends GetView<ProfileController> {
             title: Text(StringRes.myPosts),
           ),
           StreamBuilder(
-              stream: controller.posts.orderBy('date_time').snapshots(),
+              stream: controller.posts
+                  .where('author', isEqualTo: user.value!.id)
+                  .orderBy('author')
+                  .orderBy('date_time', descending: true)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) return const ToolTipWidget();
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -180,7 +184,6 @@ class ProfileScreen extends GetView<ProfileController> {
                   return PostModel.fromJson(e.data());
                 }).toList();
 
-                posts?.removeWhere((e) => e.author != user.value!.id);
                 if (posts?.isEmpty ?? true) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -207,7 +210,8 @@ class ProfileScreen extends GetView<ProfileController> {
                     itemCount: posts?.length ?? 0,
                     itemBuilder: (context, index) {
                       return InkWell(
-                        onTap: () => controller.toPost(context, index: index),
+                        onTap: () => controller.toPost(context,
+                            index: index, userId: posts![index].author),
                         splashColor: Colors.black38,
                         child: Padding(
                             padding: const EdgeInsets.all(2),

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:gigglio/view/widgets/top_widgets.dart';
 import 'package:gigglio/view_models/routes/routes.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../model/utils/app_constants.dart';
 import '../../../model/utils/string.dart';
 import '../../../services/auth_services.dart';
 import '../../../services/theme_services.dart';
+import '../../../view/widgets/my_alert_dialog.dart';
 
 class SignInController extends GetxController {
   final AuthServices authServices = Get.find();

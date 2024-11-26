@@ -4,7 +4,6 @@ import 'package:gigglio/model/models/user_details.dart';
 import 'package:gigglio/model/utils/dimens.dart';
 import 'package:gigglio/services/theme_services.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
-import 'package:gigglio/view/widgets/my_cached_image.dart';
 import 'package:gigglio/view/widgets/shimmer_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 import 'package:gigglio/view_models/controller/messages_controller/messages_controller.dart';
@@ -81,19 +80,11 @@ class NewChatScreen extends GetView<MessagesController> {
                         horizontal: Dimens.sizeLarge,
                       ),
                       onTap: () => controller.toChatScreen(user, replace: true),
-                      leading: InkWell(
-                        onTap: () => controller.gotoProfile(user.id),
-                        splashColor: scheme.disabled.withOpacity(.7),
-                        borderRadius:
-                            BorderRadius.circular(Dimens.sizeMidLarge),
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: MyCachedImage(
-                            user.image,
-                            isAvatar: true,
-                            avatarRadius: 24,
-                          ),
-                        ),
+                      leading: MyAvatar(
+                        user.image,
+                        isAvatar: true,
+                        avatarRadius: 24,
+                        id: user.id,
                       ),
                       title: Text(user.displayName),
                       subtitle: Text(user.bio ?? StringRes.defBio),

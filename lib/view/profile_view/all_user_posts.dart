@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:gigglio/model/utils/app_constants.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/model/utils/utils.dart';
+import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/services/theme_services.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
 import 'package:gigglio/view/widgets/shimmer_widget.dart';
@@ -20,7 +21,9 @@ class AllUserPosts extends StatefulWidget {
 
 class _MyPostsState extends State<AllUserPosts> {
   final posts = FirebaseFirestore.instance.collection(FB.post);
+  final users = FirebaseFirestore.instance.collection(FB.users);
   final postController = ScrollController();
+  final user = Get.find<AuthServices>().user.value;
   late int postIndex;
   late String userId;
 
@@ -39,13 +42,33 @@ class _MyPostsState extends State<AllUserPosts> {
     return BaseWidget(
         appBar: AppBar(
           backgroundColor: scheme.background,
-          title: const Text(StringRes.myPosts),
+          title: user!.id == userId
+              ? const Text(StringRes.myPosts)
+              : FutureBuilder(
+                  future: users.doc(userId).get(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) return const ToolTipWidget();
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return SizedBox(
+                        width: 100,
+                        height: 20,
+                        child: Shimmer.box,
+                      );
+                    }
+                    final json = snapshot.data?.data();
+                    final name = json!['display_name'].split(' ').first;
+                    return Text('$name\'s Posts');
+                  }),
           titleTextStyle: Utils.defTitleStyle,
           centerTitle: false,
         ),
         padding: EdgeInsets.zero,
         child: FutureBuilder(
-            future: posts.orderBy('date_time').get(),
+            future: posts
+                .where('author', isEqualTo: userId)
+                .orderBy('author')
+                .orderBy('date_time', descending: true)
+                .get(),
             builder: (context, snapshot) {
               if (snapshot.hasError) return const ToolTipWidget();
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -56,7 +79,6 @@ class _MyPostsState extends State<AllUserPosts> {
               final posts = snapshot.data?.docs.map((e) {
                 return PostModel.fromJson(e.data());
               }).toList();
-              posts?.removeWhere((e) => e.author != userId);
 
               double height = 0;
               try {

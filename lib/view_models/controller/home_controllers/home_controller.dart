@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gigglio/model/models/messages_model.dart';
 import 'package:gigglio/model/models/post_model.dart';
 import 'package:gigglio/model/models/user_details.dart';
 import 'package:gigglio/model/utils/app_constants.dart';
@@ -15,12 +16,15 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   final AuthServices authServices = Get.find();
   final RootController _rootController = Get.find();
   final posts = FirebaseFirestore.instance.collection(FB.post);
+  final _messages = FirebaseFirestore.instance.collection(FB.messages);
   final users = FirebaseFirestore.instance.collection(FB.users);
   final noti = FirebaseFirestore.instance.collection(FB.noti);
   final storage = FirebaseStorage.instance;
 
   final commentContr = TextEditingController();
   final commentKey = GlobalKey<FormFieldState>();
+  final RxList<String> shareSel = RxList();
+  final RxBool shareLoading = RxBool(false);
 
   void toNotifications() => Get.toNamed(Routes.notifications);
   void toPost() => Get.toNamed(Routes.addPost);
@@ -68,9 +72,33 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
     }
   }
 
-  void sharePost(String id) {
-    //TODO: develop share mechanism.
-
-    // Get.toNamed(Routes.gotoPost, arguments: id);
+  void sharePost(String postId) async {
+    final userId = authServices.user.value!.id;
+    shareLoading.value = true;
+    final ref = await _messages.where('users', arrayContains: userId).get();
+    final List docs = [];
+    for (var e in ref.docs) {
+      final users = e.data()['users'] as List;
+      users.removeWhere((e) => e == userId);
+      docs.addIf(shareSel.contains(users.first), e.id);
+    }
+    for (var id in docs) {
+      final doc = _messages.doc(id);
+      await doc.get().then((e) {
+        final text = '${AppConstants.appUrl}/$postId';
+        final position = (e.data()!['messages'] as List).length;
+        final message = Messages(
+            author: userId,
+            dateTime: DateTime.now().toJson(),
+            text: text,
+            scrollAt: null,
+            position: position + 1);
+        doc.update({
+          'messages': FieldValue.arrayUnion([message.toJson()])
+        });
+      });
+    }
+    shareLoading.value = false;
+    Get.back();
   }
 }

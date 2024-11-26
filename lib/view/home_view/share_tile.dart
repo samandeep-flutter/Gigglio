@@ -9,8 +9,11 @@ import 'package:gigglio/view/widgets/shimmer_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 import 'package:gigglio/view_models/controller/home_controllers/home_controller.dart';
 
+import '../widgets/loading_widgets.dart';
+
 class ShareTileSheet extends GetView<HomeController> {
-  final Function(String id) onTap;
+  final VoidCallback onTap;
+
   const ShareTileSheet({super.key, required this.onTap});
 
   @override
@@ -59,7 +62,6 @@ class ShareTileSheet extends GetView<HomeController> {
                   users.removeWhere((e) {
                     return !cUser!.friends.contains(e.id);
                   });
-
                   return GridView.builder(
                       scrollDirection:
                           users.length < 6 ? Axis.vertical : Axis.horizontal,
@@ -70,42 +72,71 @@ class ShareTileSheet extends GetView<HomeController> {
                           mainAxisSpacing: Dimens.sizeSmall),
                       itemBuilder: (context, index) {
                         final user = users[index];
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            InkWell(
-                              onTap: () {},
-                              borderRadius: BorderRadius.circular(40),
-                              splashColor: scheme.disabled.withOpacity(.5),
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: MyCachedImage(
-                                  user.image,
-                                  isAvatar: true,
-                                  avatarRadius: 38,
+                        return Obx(
+                          () {
+                            final selected =
+                                controller.shareSel.contains(user.id);
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Stack(
+                                  alignment: Alignment.topRight,
+                                  children: [
+                                    MyAvatar(
+                                      user.image,
+                                      isAvatar: true,
+                                      avatarRadius: 38,
+                                      onTap: () {
+                                        if (selected) {
+                                          controller.shareSel.remove(user.id);
+                                          return;
+                                        }
+                                        controller.shareSel.add(user.id);
+                                      },
+                                    ),
+                                    if (selected)
+                                      Container(
+                                        margin: const EdgeInsets.all(
+                                            Dimens.sizeExtraSmall),
+                                        decoration: BoxDecoration(
+                                            color: scheme.background,
+                                            borderRadius: BorderRadius.circular(
+                                                Dimens.borderLarge)),
+                                        child: Icon(
+                                          Icons.check_circle_rounded,
+                                          color: scheme.primary,
+                                          size: Dimens.sizeMedium,
+                                        ),
+                                      )
+                                  ],
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: Dimens.sizeSmall),
-                            Text(
-                              user.displayName,
-                              maxLines: 1,
-                              style: const TextStyle(fontSize: Dimens.fontMed),
-                            )
-                          ],
+                                const SizedBox(height: Dimens.sizeSmall),
+                                Text(
+                                  user.displayName,
+                                  maxLines: 1,
+                                  style: const TextStyle(
+                                    fontSize: Dimens.fontMed,
+                                  ),
+                                )
+                              ],
+                            );
+                          },
                         );
                       });
                 }),
           ),
-          LoadingButton(
-              margin: const EdgeInsets.symmetric(horizontal: Dimens.sizeLarge),
-              width: double.infinity,
-              backgroundColor: scheme.primary,
-              foregroundColor: scheme.onPrimary,
-              border: Dimens.borderSmall,
-              isLoading: false,
-              onPressed: () => onTap(''),
-              child: const Text(StringRes.share)),
+          Obx(() => LoadingButton(
+                width: double.infinity,
+                backgroundColor: scheme.primary,
+                foregroundColor: scheme.onPrimary,
+                border: Dimens.borderSmall,
+                isLoading: controller.shareLoading.value,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: Dimens.sizeLarge,
+                ),
+                onPressed: onTap,
+                child: const Text(StringRes.share),
+              ))
         ],
       ),
     );

@@ -1,13 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gigglio/model/models/messages_model.dart';
 import 'package:gigglio/model/models/user_details.dart';
+import 'package:gigglio/model/utils/app_constants.dart';
 import 'package:gigglio/model/utils/dimens.dart';
 import 'package:gigglio/model/utils/string.dart';
 import 'package:gigglio/model/utils/utils.dart';
 import 'package:gigglio/services/extension_services.dart';
 import 'package:gigglio/view/widgets/base_widget.dart';
-import 'package:gigglio/view/widgets/my_cached_image.dart';
 import 'package:gigglio/view/widgets/shimmer_widget.dart';
 import 'package:gigglio/view/widgets/top_widgets.dart';
 import 'package:gigglio/view_models/controller/messages_controller/messages_controller.dart';
@@ -18,6 +19,7 @@ class MessagesScreen extends GetView<MessagesController> {
 
   @override
   Widget build(BuildContext context) {
+    final user = controller.authServices.user.value!;
     final scheme = ThemeServices.of(context);
     final bodyTextStyle = context.textTheme.bodyMedium;
 
@@ -47,9 +49,19 @@ class MessagesScreen extends GetView<MessagesController> {
           //     )),
         ),
         child: StreamBuilder(
-            stream: controller.messages.orderBy('last_updated').snapshots(),
+            stream: controller.messages
+                .where(Filter.and(
+                  Filter('users', arrayContains: user.id),
+                  Filter('messages', isNotEqualTo: []),
+                ))
+                .orderBy('messages')
+                .orderBy('last_updated', descending: true)
+                .snapshots(),
             builder: (context, snapshot) {
-              if (snapshot.hasError) return const SizedBox();
+              if (snapshot.hasError) {
+                logPrint('chat: ${snapshot.error}');
+                return const SizedBox();
+              }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return ListView(
@@ -57,18 +69,19 @@ class MessagesScreen extends GetView<MessagesController> {
                   padding: const EdgeInsets.only(top: Dimens.sizeDefault),
                   children: List.generate(15, (_) {
                     return UserTileShimmer(
-                      avatarRadius: 24,
-                      trailing:
-                          SizedBox(height: 10, width: 30, child: Shimmer.box),
-                    );
+                        avatarRadius: 24,
+                        trailing: SizedBox(
+                          height: 10,
+                          width: 30,
+                          child: Shimmer.box,
+                        ));
                   }),
                 );
               }
 
-              final docs = snapshot.data!.docs.where((e) {
-                return e.id.contains(controller.authServices.user.value!.id);
+              final docs = snapshot.data!.docs.map((e) {
+                return MessagesModel.fromJson(e.data());
               }).toList();
-              docs.removeWhere((e) => (e['messages'] as List).isEmpty);
               if (docs.isEmpty) {
                 return ToolTipWidget(
                     margin: EdgeInsets.symmetric(
@@ -82,14 +95,15 @@ class MessagesScreen extends GetView<MessagesController> {
                   itemCount: docs.length,
                   padding: const EdgeInsets.only(top: Dimens.sizeDefault),
                   itemBuilder: (context, index) {
-                    final json = docs[index].data();
-                    final chat = MessagesModel.fromJson(json);
+                    final chat = docs[index];
                     Messages? last;
                     if (chat.messages.isNotEmpty) {
                       last = chat.messages.last;
                     }
-                    final otherUser = chat.users.firstWhere((e) {
-                      return e.id != controller.authServices.user.value!.id;
+
+                    final isPost = last?.text.contains(AppConstants.appUrl);
+                    final otherUser = chat.userData.firstWhere((e) {
+                      return e.id != user.id;
                     });
 
                     return StreamBuilder(
@@ -112,22 +126,26 @@ class MessagesScreen extends GetView<MessagesController> {
 
                           return ListTile(
                             onTap: () => controller.toChatScreen(user),
-                            leading: InkWell(
-                              onTap: () => controller.gotoProfile(user.id),
-                              splashColor: scheme.disabled.withOpacity(.7),
-                              borderRadius:
-                                  BorderRadius.circular(Dimens.sizeMidLarge),
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: MyCachedImage(
-                                  user.image,
-                                  isAvatar: true,
-                                  avatarRadius: 24,
-                                ),
-                              ),
+                            leading: MyAvatar(
+                              user.image,
+                              isAvatar: true,
+                              avatarRadius: 24,
+                              id: user.id,
                             ),
                             title: Text(user.displayName),
-                            subtitle: Text(last?.text ?? ''),
+                            subtitle: isPost ?? false
+                                ? Row(
+                                    children: [
+                                      Icon(
+                                        Icons.photo,
+                                        size: Dimens.sizeMedium,
+                                        color: scheme.disabled,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      const Text('Post Shared')
+                                    ],
+                                  )
+                                : Text(last?.text ?? ''),
                             subtitleTextStyle: bodyTextStyle?.copyWith(
                               color: scheme.textColorLight,
                             ),

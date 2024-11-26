@@ -15,10 +15,6 @@ class MessagesController extends GetxController {
   RxList<UserDetails> usersList = RxList();
   RxList<UserDetails> seachedUsers = RxList();
 
-  // RxList<MessagesModel> allMessages = RxList();
-  // RxList<MessagesModel> messageList = RxList();
-  // RxList<MessagesModel> searchedMessages = RxList();
-
   final searchContr = TextEditingController();
   final newChatContr = TextEditingController();
   final searchFoucs = FocusNode();
@@ -26,24 +22,9 @@ class MessagesController extends GetxController {
 
   @override
   void onInit() {
-    // searchContr.addListener(onSearch);
     newChatContr.addListener(onUserSearch);
     super.onInit();
   }
-
-  // Future<void> onSearch() async {
-  //   const duration = Duration(milliseconds: 500);
-  //   EasyDebounce.debounce(AppConstants.messageSearchKey, duration, () {
-  //     if (searchContr.text.isNotEmpty) {
-  //       searchedMessages.value = allMessages.where((e) {
-  //         return e.displayName.toLowerCase().contains(searchContr.text);
-  //       }).toList();
-  //       messageList.value = searchedMessages;
-  //       return;
-  //     }
-  //     messageList.value = allMessages;
-  //   });
-  // }
 
   void gotoProfile(String id) => Get.toNamed(Routes.gotoProfile, arguments: id);
 
@@ -57,16 +38,6 @@ class MessagesController extends GetxController {
     }).toList();
     usersList.value = seachedUsers;
     return;
-  }
-
-  void onClear() async {
-    searchContr.clear();
-    searchFoucs.unfocus();
-  }
-
-  void newChatClear() async {
-    newChatContr.clear();
-    newChatFocus.unfocus();
   }
 
   void toNewChat() => Get.toNamed(Routes.newChat);
