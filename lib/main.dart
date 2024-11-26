@@ -52,6 +52,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: AppConstants.appName,
       initialRoute: AppPages.initial,
+      debugShowCheckedModeBanner: false,
       getPages: AppPages.pages,
       builder: (context, child) => ResponsiveWrapper.builder(
         ClampingScrollWrapper.builder(context, child!),
