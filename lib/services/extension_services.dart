@@ -1,3 +1,57 @@
+import 'package:flutter/material.dart';
+import 'package:gigglio/services/theme_services.dart';
+
+extension MyContext on BuildContext {
+  ThemeServiceState get scheme => ThemeServices.of(this);
+  double get height => MediaQuery.sizeOf(this).height;
+  double get width => MediaQuery.sizeOf(this).width;
+
+  double get bottomInsets => MediaQuery.viewInsetsOf(this).bottom;
+  Orientation get orientation => MediaQuery.orientationOf(this);
+  double get statusBarHeight => MediaQuery.paddingOf(this).top;
+  double get bottomBarHeight => MediaQuery.paddingOf(this).bottom;
+  TextStyle? get subtitleTextStyle =>
+      Theme.of(this).textTheme.bodyMedium?.copyWith(color: scheme.disabled);
+
+  void popUntil(String path) {
+    Navigator.popUntil(this, ModalRoute.withName(path));
+  }
+
+  void close(int count) {
+    int popped = 0;
+    Navigator.of(this).popUntil((route) => popped++ >= count);
+  }
+}
+
+extension MyList on List<String> {
+  String get asString => _removeBraces(this);
+
+  String _removeBraces(List<String> list) {
+    return list.toString().replaceAll(RegExp(r'[\[\]]'), '');
+  }
+}
+
+// extension MusicDuration on Duration {
+//   String format() => _format(this);
+
+//   String _format(Duration time) {
+//     if (time.inMinutes >= 60) {
+//       final min = time.inMinutes - (time.inHours * 60);
+//       return '${time.inHours}:${_formatInt(min)}';
+//     }
+//     if (time.inSeconds >= 60) {
+//       final sec = time.inSeconds - (time.inMinutes * 60);
+//       return '${time.inMinutes}:${_formatInt(sec)}';
+//     }
+//     return '0:${_formatInt(time.inSeconds)}';
+//   }
+
+//   String _formatInt(int num) {
+//     if (num < 10) return '0$num';
+//     return num.toString();
+//   }
+// }
+
 extension MyDateTime on DateTime {
   String toJson() => _dateTime(this);
   String get formatTime => _formatedTime(this);
@@ -30,10 +84,9 @@ extension MyDateTime on DateTime {
   }
 
   String _formatedDate(DateTime time) {
-    String month = _format(time.month);
     String day = _format(time.day);
 
-    return '$month:$day';
+    return '${_formatMonth(time.month)} $day, ${time.year}';
   }
 
   String _format(int number) {
@@ -41,10 +94,48 @@ extension MyDateTime on DateTime {
     String result = int.length > 1 ? int : '0$int';
     return result;
   }
+
+  String _formatMonth(int month) {
+    switch (month) {
+      case 1:
+        return 'January';
+      case 2:
+        return 'February';
+      case 3:
+        return 'March';
+      case 4:
+        return 'April';
+      case 5:
+        return 'May';
+      case 6:
+        return 'June';
+      case 7:
+        return 'July';
+      case 8:
+        return 'August';
+      case 9:
+        return 'September';
+      case 10:
+        return 'October';
+      case 11:
+        return 'November';
+      case 12:
+        return 'December';
+
+      default:
+        return '$month';
+    }
+  }
 }
 
 extension MyString on String {
   DateTime get toDateTime => _formJson(this);
+  bool get isEmail => _emailRegExp(this);
+  bool get isStringPass => _passRegExp(this);
+  String get capitalize => _capitilize(this);
+  // String get unescape => _unescape(this);
+  String get removeCoprights => _removeCopyright(this);
+  int queryMatch(String query) => _calculateMatch(this, query);
 
   DateTime _formJson(String datetime) {
     int year = int.parse(datetime.substring(0, 4));
@@ -55,5 +146,60 @@ extension MyString on String {
     int sec = int.parse(datetime.substring(12, 14));
     int milli = int.parse(datetime.substring(14, 17));
     return DateTime(year, month, day, hour, min, sec, milli);
+  }
+
+  _emailRegExp(String text) {
+    final emailExp =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return emailExp.hasMatch(text);
+  }
+
+  _passRegExp(String text) {
+    final passExp = RegExp(r'^(?=.*[A-Z])(?=.*\d).{6,}$');
+    return passExp.hasMatch(text);
+  }
+
+  String _capitilize(String text) {
+    final RegExp regExp = RegExp(r'[a-zA-Z]');
+    return text.replaceFirstMapped(regExp, (match) {
+      return match.group(0)!.toUpperCase();
+    });
+  }
+
+  // String _unescape(String text) => HtmlUnescape().convert(text);
+
+  String _removeCopyright(String text) {
+    return text.replaceAll(RegExp(r'\b[CcPp]|\([CcPp]\)'), '');
+  }
+
+  int _calculateMatch(String item, String searchText) {
+    item = item.toLowerCase();
+    searchText = searchText.toLowerCase();
+    if (item == searchText) {
+      return 3;
+    } else if (item.startsWith(searchText)) {
+      return 2;
+    } else if (item.contains(searchText)) {
+      return 1;
+    }
+    return 0;
+  }
+}
+
+extension MyInt on int {
+  String get format => _format(this);
+
+  String _format(int count) {
+    if (count > 999999) {
+      String newCount = (count / 1000000).toStringAsFixed(1);
+      bool isZero = newCount.split('.').last == '0';
+      return '${isZero ? newCount.split('.').first : newCount}M';
+    }
+    if (count > 999) {
+      String newCount = (count / 1000).toStringAsFixed(1);
+      bool isZero = newCount.split('.').last == '0';
+      return '${isZero ? newCount.split('.').first : newCount}K';
+    }
+    return count.toString();
   }
 }
