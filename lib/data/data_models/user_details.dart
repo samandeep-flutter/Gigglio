@@ -7,35 +7,34 @@ class UserDetails extends Equatable {
   final String email;
   final List<String> friends;
   final List<String> requests;
-  final int notiSeen;
+  final DateTime notiSeen;
   final String? bio;
   final bool? login;
-  final bool? verified;
+  final String? deviceToken;
 
   const UserDetails({
     required this.id,
     required this.image,
     required this.displayName,
     required this.email,
-    required this.verified,
     required this.login,
+    required this.deviceToken,
     this.bio,
-    this.notiSeen = 0,
+    required this.notiSeen,
     this.friends = const [],
     this.requests = const [],
   });
-
-  const UserDetails.blank()
-      : id = '',
-        image = null,
-        displayName = '',
-        email = '',
-        bio = null,
-        notiSeen = 0,
-        friends = const [],
+  const UserDetails.profile({
+    required this.id,
+    required this.image,
+    required this.displayName,
+    required this.email,
+    required this.notiSeen,
+    this.bio,
+  })  : friends = const [],
         requests = const [],
-        login = false,
-        verified = false;
+        login = true,
+        deviceToken = null;
 
   factory UserDetails.fromJson(Map<String, dynamic> json) {
     return UserDetails(
@@ -44,11 +43,11 @@ class UserDetails extends Equatable {
       displayName: json['display_name'],
       email: json['email'],
       bio: json['bio'],
-      notiSeen: json['noti_seen_count'],
+      notiSeen: DateTime.parse(json['noti_seen']),
       friends: List<String>.from(json['friends']),
       requests: List<String>.from(json['requests']),
+      deviceToken: json['device_token'],
       login: json['login'],
-      verified: json['verified'],
     );
   }
 
@@ -58,11 +57,11 @@ class UserDetails extends Equatable {
         'display_name': displayName,
         'email': email,
         'bio': bio,
-        'noti_seen_count': notiSeen,
+        'noti_seen': notiSeen.toIso8601String(),
         'friends': friends,
         'requests': requests,
         'login': login,
-        'verified': verified,
+        'device_token': deviceToken,
       };
 
   UserDetails copyWith({
@@ -71,11 +70,11 @@ class UserDetails extends Equatable {
     String? image,
     String? email,
     String? bio,
-    int? notiSeen,
+    DateTime? notiSeen,
     List<String>? friends,
     List<String>? requests,
     bool? login,
-    bool? verified,
+    String? deviceToken,
   }) {
     return UserDetails(
       id: id ?? this.id,
@@ -87,7 +86,7 @@ class UserDetails extends Equatable {
       friends: friends ?? this.friends,
       requests: requests ?? this.requests,
       login: login ?? this.login,
-      verified: verified ?? this.verified,
+      deviceToken: deviceToken ?? this.deviceToken,
     );
   }
 
@@ -98,11 +97,11 @@ class UserDetails extends Equatable {
       displayName: details?.displayName ?? displayName,
       email: details?.email ?? email,
       bio: details?.bio ?? bio,
-      notiSeen: details?.notiSeen ?? notiSeen,
       friends: details?.friends ?? friends,
       requests: details?.requests ?? requests,
       login: details?.login ?? login,
-      verified: details?.verified ?? verified,
+      deviceToken: details?.deviceToken ?? deviceToken,
+      notiSeen: details?.notiSeen ?? notiSeen,
     );
   }
 
@@ -117,6 +116,6 @@ class UserDetails extends Equatable {
         friends,
         requests,
         login,
-        verified
+        deviceToken
       ];
 }

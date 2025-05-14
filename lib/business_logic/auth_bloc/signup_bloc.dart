@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,21 +48,34 @@ class SignUpBloc extends Bloc<SignUpEvents, SignupState> {
   }
   final AuthServices auth = getIt();
   final fbAuth = FirebaseAuth.instance;
+  final fbMessaging = FirebaseMessaging.instance;
 
   final formKey = GlobalKey<FormState>();
-  final nameController = TextEditingController();
-  final emailController = TextEditingController();
-  final passController = TextEditingController();
-  final confirmPassController = TextEditingController();
+  final nameContr = TextEditingController();
+  final emailContr = TextEditingController();
+  final passContr = TextEditingController();
+  final confirmPassContr = TextEditingController();
+
+  String? token;
 
   _onInit(SignupInitial event, Emitter<SignupState> emit) {
     if (kDebugMode) _loadDebug();
+    Future(_getTokken);
+  }
+
+  Future<void> _getTokken() async {
+    try {
+      await fbMessaging.requestPermission(provisional: true);
+      token = await fbMessaging.getToken();
+    } catch (e) {
+      logPrint(e, 'Token');
+    }
   }
 
   void _loadDebug() {
-    nameController.text = 'Checkqa';
-    emailController.text = 'checkqa@yopmail.com';
-    confirmPassController.text = passController.text = 'Admin@123';
+    nameContr.text = 'Checkqa';
+    emailContr.text = 'checkqa@yopmail.com';
+    confirmPassContr.text = passContr.text = 'Admin@123';
   }
 
   _onSignUp(SignUpviaEmail event, Emitter<SignupState> emit) async {
@@ -70,9 +84,9 @@ class SignUpBloc extends Bloc<SignUpEvents, SignupState> {
     emit(state.copyWith(loading: true));
     try {
       final credentials = await fbAuth.createUserWithEmailAndPassword(
-          email: emailController.text, password: confirmPassController.text);
-      await fbAuth.currentUser?.updateDisplayName(nameController.text);
-      await auth.createFbUser(credentials, name: nameController.text);
+          email: emailContr.text, password: confirmPassContr.text);
+      await fbAuth.currentUser?.updateDisplayName(nameContr.text);
+      await auth.createFbUser(credentials, name: nameContr.text, token: token);
       emit(state.copyWith(success: true));
     } on FirebaseAuthException catch (e) {
       onFbSignUpException(e);

@@ -42,4 +42,13 @@ class Utils {
   static ShapeBorder roundedRectangle(double border) {
     return RoundedRectangleBorder(borderRadius: BorderRadius.circular(border));
   }
+
+  static SliverGridDelegate gridDelegate(int crossAxisCount,
+      {double? spacing}) {
+    return SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: crossAxisCount,
+      mainAxisSpacing: spacing ?? 0,
+      crossAxisSpacing: spacing ?? 0,
+    );
+  }
 }

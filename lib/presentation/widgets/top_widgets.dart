@@ -67,21 +67,103 @@ class SnapshotLoading extends StatelessWidget {
 
 class ToolTipWidget extends StatelessWidget {
   final EdgeInsets? margin;
+  final TextStyle? textStyle;
+  final dynamic _icon;
+  final bool? _scrolable;
   final Alignment? alignment;
   final String? title;
-  const ToolTipWidget({super.key, this.margin, this.title, this.alignment});
+  final bool _placeHolder;
+
+  const ToolTipWidget({
+    super.key,
+    this.margin,
+    Widget? icon,
+    this.title,
+    this.textStyle,
+    this.alignment,
+  })  : _icon = icon,
+        _scrolable = null,
+        _placeHolder = false;
+
+  const ToolTipWidget.placeHolder({
+    super.key,
+    String? icon,
+    this.textStyle,
+    bool? scrolable,
+    required this.title,
+  })  : _icon = icon,
+        _scrolable = scrolable,
+        _placeHolder = true,
+        margin = null,
+        alignment = null;
 
   @override
   Widget build(BuildContext context) {
     final scheme = context.scheme;
+
+    final text = Text(title ?? StringRes.errorUnknown,
+        textAlign: TextAlign.center,
+        style: textStyle ??
+            TextStyle(
+              color: scheme.textColorLight,
+              fontSize: Dimens.fontLarge,
+            ));
+
+    if (_placeHolder) {
+      final widget = Container(
+        alignment: Alignment.center,
+        margin: EdgeInsets.only(
+          top: context.height * .15,
+          left: Dimens.sizeDefault,
+          right: Dimens.sizeDefault,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_icon != null) ...[
+              Image.asset(
+                _icon,
+                width: context.width * .3,
+                color: scheme.disabled,
+              ),
+              const SizedBox(height: Dimens.sizeDefault),
+            ],
+            text,
+          ],
+        ),
+      );
+
+      if (_scrolable ?? false) {
+        return Expanded(
+          child: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            child: widget,
+          ),
+        );
+      }
+
+      return widget;
+    }
+
     return Container(
-        margin: margin ?? EdgeInsets.only(top: context.height * .1),
-        alignment: alignment ?? Alignment.topCenter,
-        child: Text(
-          title ?? StringRes.errorUnknown,
-          textAlign: TextAlign.center,
-          style: TextStyle(color: scheme.textColorLight),
-        ));
+      margin: margin ??
+          EdgeInsets.only(
+            top: context.height * .1,
+            left: Dimens.sizeDefault,
+            right: Dimens.sizeDefault,
+          ),
+      alignment: alignment ?? Alignment.topCenter,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_icon != null) ...[
+            _icon!,
+            const SizedBox(height: Dimens.sizeDefault),
+          ],
+          text
+        ],
+      ),
+    );
   }
 }
 
@@ -128,7 +210,7 @@ class MyAvatar extends StatelessWidget {
           height: height,
           width: width,
           fit: fit,
-          avatarRadius: avatarRadius,
+          avatarRadius: avatarRadius ?? Dimens.sizeLarge,
           borderRadius: borderRadius != null
               ? BorderRadius.circular(borderRadius!)
               : null,
@@ -140,8 +222,8 @@ class MyAvatar extends StatelessWidget {
 
 class FriendsTile extends StatelessWidget {
   final String title;
-  final int count;
-  final bool enable;
+  final int? count;
+  final bool? enable;
   final VoidCallback? onTap;
 
   const FriendsTile({
@@ -149,15 +231,15 @@ class FriendsTile extends StatelessWidget {
     required this.title,
     required this.count,
     this.onTap,
-    this.enable = true,
+    this.enable,
   });
 
   @override
   Widget build(BuildContext context) {
-    String num = _format(count);
+    String num = _format(count ?? 0);
     return InkWell(
       borderRadius: BorderRadius.circular(Dimens.borderSmall),
-      onTap: enable ? onTap : null,
+      onTap: enable ?? true ? onTap : null,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -165,7 +247,9 @@ class FriendsTile extends StatelessWidget {
               style: const TextStyle(
                   fontSize: Dimens.fontExtraTripleLarge,
                   fontWeight: FontWeight.bold)),
-          Text(title, style: const TextStyle(fontSize: Dimens.fontMed)),
+          Text(title,
+              style: const TextStyle(
+                  fontSize: Dimens.fontMed, fontWeight: FontWeight.w500)),
           const SizedBox(height: Dimens.sizeExtraSmall),
         ],
       ),
@@ -245,7 +329,7 @@ class CustomListTile extends StatelessWidget {
           horizontal: Dimens.sizeSmall,
         ),
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(Dimens.borderSmall)),
+            borderRadius: BorderRadius.circular(Dimens.borderDefault)),
         title: Text(title,
             style: TextStyle(
               color: enable ? scheme.textColor : scheme.disabled,

@@ -1,14 +1,16 @@
 import 'package:equatable/equatable.dart';
 
 class PostModel extends Equatable {
+  final String? id;
   final String author;
   final String? desc;
   final List<String> images;
-  final String dateTime;
+  final DateTime dateTime;
   final List<String> likes;
   final List<CommentModel> comments;
 
   const PostModel({
+    required this.id,
     required this.author,
     required this.desc,
     required this.images,
@@ -20,17 +22,19 @@ class PostModel extends Equatable {
   const PostModel.add({
     required this.author,
     required this.desc,
-    required this.images,
     required this.dateTime,
-  })  : likes = const [],
+  })  : id = null,
+        images = const [],
+        likes = const [],
         comments = const [];
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     return PostModel(
+        id: json['id'],
         author: json['author'],
         desc: json['desc'],
         images: List<String>.from(json['images']),
-        dateTime: json['date_time'],
+        dateTime: DateTime.parse(json['date_time']),
         likes: List<String>.from(json['likes']),
         comments: List.from(json['comments'].map((e) {
           return CommentModel.fromJson(e);
@@ -41,21 +45,22 @@ class PostModel extends Equatable {
         'author': author,
         'desc': desc,
         'images': images,
-        'date_time': dateTime,
+        'date_time': dateTime.toIso8601String(),
         'likes': likes,
         'comments': comments.map((e) => e.toJson()).toList(),
       };
 
   PostModel copyWith({
-    String? author,
+    String? id,
     String? desc,
     List<String>? images,
-    String? dateTime,
+    DateTime? dateTime,
     List<String>? likes,
     List<CommentModel>? comments,
   }) {
     return PostModel(
-        author: author ?? this.author,
+        author: author,
+        id: id ?? this.id,
         desc: desc ?? this.desc,
         images: images ?? this.images,
         dateTime: dateTime ?? this.dateTime,
@@ -64,13 +69,14 @@ class PostModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [author, desc, images, dateTime, likes, comments];
+  List<Object?> get props =>
+      [id, author, desc, images, dateTime, likes, comments];
 }
 
 class CommentModel extends Equatable {
   final String author;
   final String title;
-  final String dateTime;
+  final DateTime dateTime;
 
   const CommentModel({
     required this.author,
@@ -82,10 +88,13 @@ class CommentModel extends Equatable {
     return CommentModel(
         author: json['author'],
         title: json['title'],
-        dateTime: json['date_time']);
+        dateTime: DateTime.parse(json['date_time']));
   }
-  Map<String, dynamic> toJson() =>
-      {'author': author, 'title': title, 'date_time': dateTime};
+  Map<String, dynamic> toJson() => {
+        'author': author,
+        'title': title,
+        'date_time': dateTime.toIso8601String()
+      };
 
   @override
   List<Object?> get props => [author, title, dateTime];

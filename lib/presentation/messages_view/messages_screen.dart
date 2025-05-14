@@ -1,162 +1,112 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:gigglio/data/models/messages_model.dart';
-import 'package:gigglio/data/models/user_details.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gigglio/config/routes/routes.dart';
+import 'package:gigglio/data/data_models/messages_model.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/dimens.dart';
 import 'package:gigglio/data/utils/string.dart';
 import 'package:gigglio/data/utils/utils.dart';
+import 'package:gigglio/presentation/widgets/my_text_field_widget.dart';
 import 'package:gigglio/services/extension_services.dart';
-import 'package:gigglio/presentation/widgets/base_widget.dart';
 import 'package:gigglio/presentation/widgets/shimmer_widget.dart';
 import 'package:gigglio/presentation/widgets/top_widgets.dart';
-import 'package:gigglio/business_logic/messages_controller/messages_controller.dart';
-import '../../services/theme_services.dart';
+import 'package:gigglio/business_logic/messages_bloc/messages_bloc.dart';
+import 'package:go_router/go_router.dart';
 
-class MessagesScreen extends GetView<MessagesController> {
+class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
 
   @override
+  State<MessagesScreen> createState() => _MessagesScreenState();
+}
+
+class _MessagesScreenState extends State<MessagesScreen> {
+  @override
+  void initState() {
+    final bloc = context.read<MessagesBloc>();
+    bloc.add(MessagesInitial());
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = controller.authServices.user.value!;
-    final scheme = ThemeServices.of(context);
-    final bodyTextStyle = context.textTheme.bodyMedium;
+    final bloc = context.read<MessagesBloc>();
+    final scheme = context.scheme;
 
-    return BaseWidget(
-        padding: EdgeInsets.zero,
-        appBar: AppBar(
-          backgroundColor: scheme.background,
-          title: const Text(StringRes.messages),
-          actions: [
-            TextButton.icon(
-              onPressed: controller.toNewChat,
-              label: const Text(StringRes.newChat),
-              icon: const Icon(Icons.add),
-            )
-          ],
-          centerTitle: false,
-          // bottom: PreferredSize(
-          //     preferredSize: const Size.fromHeight(kToolbarHeight),
-          //     child: SearchTextField(
-          //       title: 'Search',
-          //       focusNode: controller.searchFoucs,
-          //       margin: const EdgeInsets.symmetric(
-          //         horizontal: Dimens.sizeDefault,
-          //       ),
-          //       controller: controller.searchContr,
-          //       onClear: controller.onClear,
-          //     )),
-        ),
-        child: StreamBuilder(
-            stream: controller.messages
-                .where(Filter.and(
-                  Filter('users', arrayContains: user.id),
-                  Filter('messages', isNotEqualTo: []),
-                ))
-                .orderBy('messages')
-                .orderBy('last_updated', descending: true)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                logPrint(snapshot.error, 'chat');
-                return const SizedBox();
-              }
+    return Scaffold(
+      backgroundColor: scheme.background,
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        backgroundColor: scheme.background,
+        title: const Text(StringRes.messages),
+        titleTextStyle: Utils.defTitleStyle,
+        actions: [
+          TextButton.icon(
+            onPressed: () => context.pushNamed(AppRoutes.newChat),
+            label: const Text(StringRes.newChat),
+            icon: const Icon(Icons.add),
+          ),
+          const SizedBox(width: Dimens.sizeSmall)
+        ],
+        centerTitle: false,
+        bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight),
+            child: SearchTextField(
+              title: 'Search',
+              compact: true,
+              backgroundColor: scheme.surface,
+              margin: Utils.paddingHoriz(Dimens.sizeDefault),
+              controller: bloc.searchContr,
+            )),
+      ),
+      body: BlocBuilder<MessagesBloc, MessagesState>(
+        buildWhen: (pr, cr) => pr.isLoading != cr.isLoading,
+        builder: (context, state) {
+          if (state.isLoading) return const MessagesShimmer();
+          if (state.messages.isEmpty) {
+            return ToolTipWidget(title: StringRes.noMessages);
+          }
 
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return ListView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(top: Dimens.sizeDefault),
-                  children: List.generate(15, (_) {
-                    return UserTileShimmer(
-                        avatarRadius: 24,
-                        trailing: SizedBox(
-                          height: 10,
-                          width: 30,
-                          child: Shimmer.box,
-                        ));
-                  }),
-                );
-              }
+          return ListView.builder(
+              itemCount: state.messages.length,
+              padding: const EdgeInsets.only(top: Dimens.sizeDefault),
+              itemBuilder: (context, index) {
+                final chat = state.messages[index];
 
-              final docs = snapshot.data!.docs.map((e) {
-                return MessagesModel.fromJson(e.data());
-              }).toList();
-              if (docs.isEmpty) {
-                return ToolTipWidget(
-                    margin: EdgeInsets.symmetric(
-                      vertical: context.height * .08,
-                      horizontal: context.width * .22,
-                    ),
-                    title: StringRes.noMessages);
-              }
-
-              return ListView.builder(
-                  itemCount: docs.length,
-                  padding: const EdgeInsets.only(top: Dimens.sizeDefault),
-                  itemBuilder: (context, index) {
-                    final chat = docs[index];
-                    Messages? last;
-                    if (chat.messages.isNotEmpty) {
-                      last = chat.messages.last;
+                Messages? last;
+                if (chat.messages.isNotEmpty) last = chat.messages.last;
+                return ListTile(
+                  onTap: () => toChat(chat.user),
+                  leading: MyAvatar(chat.user.image,
+                      id: chat.user.id, isAvatar: true),
+                  title: Text(chat.user.displayName),
+                  subtitle: Builder(builder: (context) {
+                    if (last?.text.contains(AppConstants.appUrl) ?? false) {
+                      return Row(
+                        children: [
+                          Icon(Icons.photo,
+                              size: Dimens.sizeMedium, color: scheme.disabled),
+                          const SizedBox(width: Dimens.sizeSmall),
+                          const Text(StringRes.postShared)
+                        ],
+                      );
                     }
+                    return Text(last?.text ?? '');
+                  }),
+                  subtitleTextStyle: context.subtitleTextStyle,
+                  trailing: Text(
+                    Utils.timeFromNow(last?.dateTime, DateTime.now()),
+                    style: TextStyle(color: scheme.disabled),
+                  ),
+                );
+              });
+        },
+      ),
+    );
+  }
 
-                    final isPost = last?.text.contains(AppConstants.appUrl);
-                    final otherUser = chat.userData.firstWhere((e) {
-                      return e.id != user.id;
-                    });
-
-                    return StreamBuilder(
-                        stream: controller.users.doc(otherUser.id).snapshots(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasError) {
-                            return const ToolTipWidget(
-                                title: StringRes.somethingWrong);
-                          }
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return UserTileShimmer(
-                              avatarRadius: 24,
-                              trailing: SizedBox(
-                                  height: 10, width: 30, child: Shimmer.box),
-                            );
-                          }
-                          final json = snapshot.data?.data();
-                          final user = UserDetails.fromJson(json!);
-
-                          return ListTile(
-                            onTap: () => controller.toChatScreen(user),
-                            leading: MyAvatar(
-                              user.image,
-                              isAvatar: true,
-                              avatarRadius: 24,
-                              id: user.id,
-                            ),
-                            title: Text(user.displayName),
-                            subtitle: isPost ?? false
-                                ? Row(
-                                    children: [
-                                      Icon(
-                                        Icons.photo,
-                                        size: Dimens.sizeMedium,
-                                        color: scheme.disabled,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      const Text('Post Shared')
-                                    ],
-                                  )
-                                : Text(last?.text ?? ''),
-                            subtitleTextStyle: bodyTextStyle?.copyWith(
-                              color: scheme.textColorLight,
-                            ),
-                            trailing: Text(
-                              Utils.timeFromNow(
-                                  last?.dateTime.toDateTime, DateTime.now()),
-                              style: TextStyle(color: scheme.disabled),
-                            ),
-                          );
-                        });
-                  });
-            }));
+  void toChat(UserDetails user) {
+    context.pushNamed(AppRoutes.chatScreen, extra: user);
   }
 }

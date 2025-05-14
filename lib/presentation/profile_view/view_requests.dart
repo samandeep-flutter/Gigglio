@@ -1,120 +1,86 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:gigglio/data/models/user_details.dart';
-import 'package:gigglio/services/theme_services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gigglio/business_logic/profile_bloc/view_requests_bloc.dart';
+import 'package:gigglio/services/extension_services.dart';
 import 'package:gigglio/presentation/widgets/base_widget.dart';
 import 'package:gigglio/presentation/widgets/top_widgets.dart';
 import '../../data/utils/dimens.dart';
 import '../../data/utils/string.dart';
 import '../../data/utils/utils.dart';
-import '../../business_logic/profile_controllers/profile_controller.dart';
 import '../widgets/loading_widgets.dart';
 import '../widgets/shimmer_widget.dart';
 
-class ViewRequests extends GetView<ProfileController> {
+class ViewRequests extends StatefulWidget {
   const ViewRequests({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeServices.of(context);
-    final bodyTextStyle = context.textTheme.bodyMedium;
-
-    return BaseWidget(
-        padding: EdgeInsets.zero,
-        appBar: AppBar(
-          backgroundColor: scheme.background,
-          title: const Text(StringRes.viewRequests),
-          titleTextStyle: Utils.defTitleStyle,
-        ),
-        child: FutureBuilder(
-            future: controller.users.get(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) return const ToolTipWidget();
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return ListView.builder(
-                    itemCount: 3,
-                    padding: const EdgeInsets.only(top: Dimens.sizeLarge),
-                    itemBuilder: (context, _) {
-                      return UserTileShimmer(
-                        avatarRadius: 24,
-                        trailing: SizedBox(
-                          height: 30,
-                          width: 40,
-                          child: Shimmer.box,
-                        ),
-                      );
-                    });
-              }
-              final users = snapshot.data?.docs.map((e) {
-                return UserDetails.fromJson(e.data());
-              }).toList();
-              final cUser = users?.firstWhere((e) {
-                return e.id == controller.authServices.user.value!.id;
-              });
-              users!.removeWhere((e) {
-                return !cUser!.requests.contains(e.id);
-              });
-              controller.reqAccepted.value =
-                  List<bool>.generate(users.length, (_) => false);
-
-              return ListView.builder(
-                  padding: const EdgeInsets.only(top: Dimens.sizeLarge),
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    final user = users[index];
-                    return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: Dimens.sizeLarge,
-                        ),
-                        leading: MyAvatar(
-                          user.image,
-                          isAvatar: true,
-                          avatarRadius: 24,
-                          id: user.id,
-                        ),
-                        title: Text(user.displayName),
-                        subtitle: Text(
-                          user.email,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitleTextStyle: bodyTextStyle?.copyWith(
-                          color: scheme.disabled,
-                        ),
-                        trailing: Obx(() => _TrailingButton(
-                            sent: controller.reqAccepted[index],
-                            onTap: () => controller.acceptReq(
-                                  user.id,
-                                  index: index,
-                                ))));
-                  });
-            }));
-  }
+  State<ViewRequests> createState() => _ViewRequestsState();
 }
 
-class _TrailingButton extends GetView<ProfileController> {
-  final VoidCallback onTap;
-  final bool sent;
-
-  const _TrailingButton({
-    required this.onTap,
-    required this.sent,
-  });
+class _ViewRequestsState extends State<ViewRequests> {
+  @override
+  void initState() {
+    final bloc = context.read<ViewRequestsBloc>();
+    bloc.add(ViewRequestInitial());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = ThemeServices.of(context);
+    final scheme = context.scheme;
 
-    if (sent) return const SizedBox();
+    return BaseWidget(
+      padding: EdgeInsets.zero,
+      appBar: AppBar(
+        backgroundColor: scheme.background,
+        title: const Text(StringRes.viewRequests),
+        titleTextStyle: Utils.defTitleStyle,
+      ),
+      child: BlocBuilder<ViewRequestsBloc, ViewRequestState>(
+          buildWhen: (pr, cr) => pr.isLoading != cr.isLoading,
+          builder: (context, state) {
+            if (state.isLoading) return const FriendsRequests();
 
-    return LoadingButton(
-        onPressed: onTap,
-        isLoading: false,
-        defWidth: true,
-        padding: const EdgeInsets.symmetric(horizontal: Dimens.sizeSmall),
-        backgroundColor: scheme.onPrimaryContainer,
-        compact: true,
-        border: Dimens.borderSmall,
-        child: const Text(StringRes.accept));
+            return ListView.builder(
+                padding: const EdgeInsets.only(top: Dimens.sizeLarge),
+                itemCount: state.requests.length,
+                itemBuilder: (context, index) {
+                  final req = state.requests[index];
+                  return ListTile(
+                    contentPadding: Utils.paddingHoriz(Dimens.sizeLarge),
+                    leading: MyAvatar(req.image, isAvatar: true, id: req.id),
+                    title: Text(req.displayName),
+                    subtitle: Text(req.email,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitleTextStyle: context.subtitleTextStyle,
+                    trailing: _TrailingWidget(id: req.id),
+                  );
+                });
+          }),
+    );
+  }
+}
+
+class _TrailingWidget extends StatelessWidget {
+  final String id;
+  const _TrailingWidget({required this.id});
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = context.read<ViewRequestsBloc>();
+
+    return BlocBuilder<ViewRequestsBloc, ViewRequestState>(
+        buildWhen: (pr, cr) => pr.reqAccepted != cr.reqAccepted,
+        builder: (context, state) {
+          return LoadingButton(
+              defWidth: true,
+              compact: true,
+              border: Dimens.borderSmall,
+              enable: !state.reqAccepted.contains(id),
+              onPressed: () => bloc.add(RequestAccepted(id)),
+              child: state.reqAccepted.contains(id)
+                  ? const Text(StringRes.accepted)
+                  : const Text(StringRes.accept));
+        });
   }
 }

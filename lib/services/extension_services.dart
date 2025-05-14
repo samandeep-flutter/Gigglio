@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:gigglio/data/data_models/notification_model.dart';
 import 'package:gigglio/services/theme_services.dart';
 
 extension MyContext on BuildContext {
@@ -23,12 +26,25 @@ extension MyContext on BuildContext {
   }
 }
 
-extension MyList on List<String> {
+extension MyList<T> on List<T> {
   String get asString => _removeBraces(this);
 
-  String _removeBraces(List<String> list) {
-    return list.toString().replaceAll(RegExp(r'[\[\]]'), '');
+  T? firstWhereOrNull(bool Function(T element) test) {
+    for (final element in this) {
+      if (test(element)) return element;
+    }
+    return null;
   }
+
+  String _removeBraces(List<T> list) {
+    final string = list.toString().replaceAll(RegExp(r'[\[\]]'), '');
+    return jsonEncode(string);
+  }
+}
+
+extension CategoryExtensions on NotiCategory {
+  bool get isRequest =>
+      this == NotiCategory.request || this == NotiCategory.reqAccepted;
 }
 
 // extension MusicDuration on Duration {
@@ -53,28 +69,27 @@ extension MyList on List<String> {
 // }
 
 extension MyDateTime on DateTime {
-  String toJson() => _dateTime(this);
   String get formatTime => _formatedTime(this);
   String get formatDate => _formatedDate(this);
 
-  String _dateTime(DateTime now) {
-    String date = '${now.year}${_format(now.month)}${_format(now.day)}';
-    String time = '${_format(now.hour)}${_format(now.minute)}'
-        '${_format(now.second)}${_formatMili(now.millisecond)}';
-    return date + time;
-  }
+  // String _dateTime(DateTime now) {
+  //   String date = '${now.year}${_format(now.month)}${_format(now.day)}';
+  //   String time = '${_format(now.hour)}${_format(now.minute)}'
+  //       '${_format(now.second)}${_formatMili(now.millisecond)}';
+  //   return date + time;
+  // }
 
-  String _formatMili(int number) {
-    String int = number.toString();
-    switch (int.length) {
-      case 2:
-        return '0$int';
-      case 1:
-        return '00$int';
-      default:
-        return int;
-    }
-  }
+  // String _formatMili(int number) {
+  //   String int = number.toString();
+  //   switch (int.length) {
+  //     case 2:
+  //       return '0$int';
+  //     case 1:
+  //       return '00$int';
+  //     default:
+  //       return int;
+  //   }
+  // }
 
   String _formatedTime(DateTime time) {
     String hour = _format(time.hour);
@@ -129,7 +144,6 @@ extension MyDateTime on DateTime {
 }
 
 extension MyString on String {
-  DateTime get toDateTime => _formJson(this);
   bool get isEmail => _emailRegExp(this);
   bool get isStringPass => _passRegExp(this);
   String get capitalize => _capitilize(this);
@@ -137,16 +151,16 @@ extension MyString on String {
   String get removeCoprights => _removeCopyright(this);
   int queryMatch(String query) => _calculateMatch(this, query);
 
-  DateTime _formJson(String datetime) {
-    int year = int.parse(datetime.substring(0, 4));
-    int month = int.parse(datetime.substring(4, 6));
-    int day = int.parse(datetime.substring(6, 8));
-    int hour = int.parse(datetime.substring(8, 10));
-    int min = int.parse(datetime.substring(10, 12));
-    int sec = int.parse(datetime.substring(12, 14));
-    int milli = int.parse(datetime.substring(14, 17));
-    return DateTime(year, month, day, hour, min, sec, milli);
-  }
+  // DateTime _formJson(String datetime) {
+  //   int year = int.parse(datetime.substring(0, 4));
+  //   int month = int.parse(datetime.substring(4, 6));
+  //   int day = int.parse(datetime.substring(6, 8));
+  //   int hour = int.parse(datetime.substring(8, 10));
+  //   int min = int.parse(datetime.substring(10, 12));
+  //   int sec = int.parse(datetime.substring(12, 14));
+  //   int milli = int.parse(datetime.substring(14, 17));
+  //   return DateTime(year, month, day, hour, min, sec, milli);
+  // }
 
   _emailRegExp(String text) {
     final emailExp =

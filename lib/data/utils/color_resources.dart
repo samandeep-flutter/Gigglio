@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 
 class ColorRes {
   static const Color shimmer = Color(0xFFE0E0E0);
-  static const Color secondaryLight = Color(0xFFD6D6D6);
-  static const Color onSucessContainer = Color(0xFF2B722E);
-  static const Color sucessContainer = Color(0xFFD1EFCE);
-  static const Color onErrorContainer = Color(0xFFB71C1C);
-  static const Color errorContainer = Color(0xFFFFEBEE);
-  static const Color tertiaryContainer = Color(0xFFF1E3BE);
-  static const Color onTertiaryContainer = Color(0xFFC68F04);
+  static const Color success = Color(0xFF2B722E);
+  static const Color onSuccess = Color(0xFFD1EFCE);
+  static const Color error = Color(0xFFB71C1C);
+  static const Color onError = Color(0xFFFFEBEE);
+  static const Color onTertiary = Color(0xFFF1E3BE);
+  static const Color tertiary = Color(0xFFC68F04);
 }
 
 enum MyTheme {

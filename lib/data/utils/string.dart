@@ -1,4 +1,7 @@
 class StringRes {
+  static const String appName = 'Gigglio';
+  static const String fullAppName = 'Gigglio: Social App';
+
   static const String signin = 'Sign In';
   static const String signup = 'Sign Up';
   static const String forgotPass = 'Forgot Password';
@@ -22,6 +25,7 @@ class StringRes {
   static const String accept = 'Accept';
   static const String accepted = 'Accepted';
   static const String send = 'Send';
+  static const String remove = 'Remove';
   static const String requested = 'Requested';
   static const String inReq = 'In Requests';
   static const String unFriend = 'Unfriend';
@@ -29,6 +33,9 @@ class StringRes {
   static const String profile = 'Profile';
   static const String post = 'Post';
   static const String posts = 'Posts';
+  static const String pickFrom = 'Pick from';
+  static const String gallery = 'Gallery';
+  static const String camera = 'Camera';
   static const String deletePost = 'Delete post';
   static const String editProfile = 'Edit Profile';
   static const String changePass = 'Change Password';
@@ -36,6 +43,7 @@ class StringRes {
   static const String notVerified = 'Not Verified';
   static const String logout = 'Logout';
   static const String cancel = 'Cancel';
+  static const String close = 'Close';
   static const String settings = 'Settings';
   static const String messages = 'Messages';
   static const String newChat = 'New Chat';
@@ -44,6 +52,7 @@ class StringRes {
   static const String noti = 'Notifications';
   static const String newPost = 'New Post';
   static const String addPhotos = 'New Photos';
+  static const String postShared = 'Post Shared';
   static const String comments = 'Comments';
   static const String goBack = 'go back';
   static const String somethingWrong = 'Something went wrong';

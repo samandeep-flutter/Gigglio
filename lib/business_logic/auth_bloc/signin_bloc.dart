@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -69,18 +70,31 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
 
   final AuthServices auth = getIt();
   final FirebaseAuth fbAuth = FirebaseAuth.instance;
+  final fbMessaging = FirebaseMessaging.instance;
 
   final formKey = GlobalKey<FormState>();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final emailContr = TextEditingController();
+  final passwordContr = TextEditingController();
+
+  String? token;
 
   _onInit(SignInInitial event, Emitter<SignInState> emit) {
     if (kDebugMode) _loadDebug();
+    Future(_getTokken);
   }
 
   void _loadDebug() {
-    emailController.text = 'morh@yopmail.com';
-    passwordController.text = 'Admin@123';
+    emailContr.text = 'morh@yopmail.com';
+    passwordContr.text = 'Admin@123';
+  }
+
+  Future<void> _getTokken() async {
+    try {
+      await fbMessaging.requestPermission(provisional: true);
+      token = await fbMessaging.getToken();
+    } catch (e) {
+      logPrint(e, 'Token');
+    }
   }
 
   _emailSignin(SignInviaEmail event, Emitter<SignInState> emit) async {
@@ -89,8 +103,8 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
     emit(state.copyWith(emailLoading: true));
     try {
       final credentials = await fbAuth.signInWithEmailAndPassword(
-          email: emailController.text, password: passwordController.text);
-      await auth.fetchFbUser(credentials);
+          email: emailContr.text, password: passwordContr.text);
+      await auth.fetchFbUser(credentials, token: token);
       emit(state.copyWith(success: true));
     } on FirebaseAuthException catch (e) {
       onFbSignInException(e);
@@ -112,7 +126,7 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
       final oAuth = GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
       final credentials = await fbAuth.signInWithCredential(oAuth);
-      await auth.fetchFbUser(credentials);
+      await auth.fetchFbUser(credentials, token: token);
       emit(state.copyWith(success: true));
     } catch (e) {
       logPrint(e, 'Google');
@@ -127,7 +141,7 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
     try {
       TwitterAuthProvider twitterProvider = TwitterAuthProvider();
       final credentials = await fbAuth.signInWithProvider(twitterProvider);
-      await auth.fetchFbUser(credentials);
+      await auth.fetchFbUser(credentials, token: token);
       emit(state.copyWith(success: true));
     } on FirebaseAuthException catch (e) {
       onFbSignInException(e);

@@ -3,6 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/business_logic/auth_bloc/forgot_pass_bloc.dart';
 import 'package:gigglio/business_logic/auth_bloc/signin_bloc.dart';
 import 'package:gigglio/business_logic/auth_bloc/signup_bloc.dart';
+import 'package:gigglio/business_logic/home_bloc/new_post_bloc.dart';
+import 'package:gigglio/business_logic/home_bloc/notification_bloc.dart';
+import 'package:gigglio/business_logic/messages_bloc/new_chat_bloc.dart';
+import 'package:gigglio/business_logic/profile_bloc/add_friends_bloc.dart';
+import 'package:gigglio/business_logic/profile_bloc/edit_profile_bloc.dart';
+import 'package:gigglio/business_logic/profile_bloc/settings_bloc.dart';
+import 'package:gigglio/business_logic/profile_bloc/view_requests_bloc.dart';
+import 'package:gigglio/presentation/home_view/new_post.dart';
+import 'package:gigglio/presentation/profile_view/user_posts.dart';
 import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/presentation/auth_view/forgot_password.dart';
 import 'package:gigglio/presentation/auth_view/signin_screen.dart';
@@ -15,7 +24,6 @@ import 'package:gigglio/presentation/profile_view/add_friends.dart';
 import 'package:gigglio/presentation/profile_view/change_password.dart';
 import 'package:gigglio/presentation/profile_view/edit_profile.dart';
 import 'package:gigglio/presentation/profile_view/goto_profile.dart';
-import 'package:gigglio/presentation/profile_view/all_user_posts.dart';
 import 'package:gigglio/presentation/profile_view/settings_screen.dart';
 import 'package:gigglio/presentation/profile_view/view_requests.dart';
 import 'package:gigglio/presentation/root_view.dart';
@@ -70,7 +78,21 @@ sealed class AppPages {
         GoRoute(
           name: AppRoutes.notifications,
           path: AppRoutePaths.notifications,
-          builder: (_, state) => const NotificationScreen(),
+          builder: (_, state) {
+            return BlocProvider(
+                create: (_) => NotificationBloc(),
+                child: const NotificationScreen());
+          },
+        ),
+        GoRoute(
+          name: AppRoutes.newPost,
+          path: AppRoutePaths.newPost,
+          builder: (_, state) {
+            return BlocProvider(
+              create: (_) => NewPostBloc(),
+              child: const NewPost(),
+            );
+          },
         ),
         GoRoute(
           name: AppRoutes.gotoPost,
@@ -85,45 +107,73 @@ sealed class AppPages {
         GoRoute(
           name: AppRoutes.newChat,
           path: AppRoutePaths.newChat,
-          builder: (_, state) => const NewChatScreen(),
-          // transition: Transition.downToUp,
+          builder: (_, state) {
+            return BlocProvider(
+              create: (_) => NewChatBloc(),
+              child: const NewChatScreen(),
+            );
+          },
         ),
         GoRoute(
           name: AppRoutes.editProfile,
           path: AppRoutePaths.editProfile,
-          builder: (_, state) => const EditProfile(),
+          builder: (_, state) {
+            return BlocProvider(
+              create: (_) => EditProfileBloc(),
+              child: const EditProfile(),
+            );
+          },
         ),
         GoRoute(
           name: AppRoutes.gotoProfile,
           path: AppRoutePaths.gotoProfile,
-          builder: (_, state) => const GotoProfile(),
+          builder: (_, state) {
+            final id = state.extra as String;
+            return GotoProfile(userId: id);
+          },
         ),
         GoRoute(
-          name: AppRoutes.allUserPosts,
-          path: AppRoutePaths.allUserPosts,
-          builder: (_, state) => const AllUserPosts(),
-          // transition: Transition.zoom,
+          name: AppRoutes.userPosts,
+          path: AppRoutePaths.userPosts,
+          builder: (_, state) {
+            final index = state.extra as int;
+            return UserPosts(index);
+          },
         ),
         GoRoute(
           name: AppRoutes.viewRequests,
           path: AppRoutePaths.viewRequests,
-          builder: (_, state) => const ViewRequests(),
+          builder: (_, state) {
+            return BlocProvider(
+              create: (_) => ViewRequestsBloc(),
+              child: const ViewRequests(),
+            );
+          },
         ),
         GoRoute(
           name: AppRoutes.addFriends,
           path: AppRoutePaths.addFriends,
-          builder: (_, state) => const AddFriends(),
+          builder: (_, state) {
+            return BlocProvider(
+              create: (_) => AddFriendsBloc(),
+              child: const AddFriends(),
+            );
+          },
         ),
         GoRoute(
           name: AppRoutes.settings,
           path: AppRoutePaths.settings,
           builder: (_, state) => const SettingsScreen(),
-          // transition: Transition.rightToLeft,
         ),
         GoRoute(
           name: AppRoutes.changePass,
           path: AppRoutePaths.changePass,
-          builder: (_, state) => const ChangePassword(),
+          builder: (context, state) {
+            return BlocProvider(
+              create: (_) => SettingsBloc(),
+              child: const ChangePassword(),
+            );
+          },
         ),
         GoRoute(
           name: AppRoutes.privacyPolicy,

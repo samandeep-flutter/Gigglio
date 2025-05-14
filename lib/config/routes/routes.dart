@@ -10,8 +10,9 @@ sealed class AppRoutes {
 
   //  home routes
   static const String home = 'home';
+  static const String newPost = 'new-post';
   static const String notifications = 'notifications';
-  static const String allUserPosts = 'all-user-post';
+  static const String userPosts = 'user-post';
   static const String gotoPost = 'goto-post';
 
   //  messages routes
@@ -41,9 +42,10 @@ sealed class AppRoutePaths {
   static const String settings = '/${AppRoutes.settings}';
 
   // home routes
+  static const String newPost = '/${AppRoutes.newPost}';
   static const String notifications = '/${AppRoutes.notifications}';
-  static const String allUserPosts = '/${AppRoutes.allUserPosts}';
   static const String gotoPost = '/${AppRoutes.gotoPost}';
+  static const String userPosts = '/${AppRoutes.userPosts}';
 
   // messages routes
   static const String chatScreen = '/${AppRoutes.chatScreen}';

@@ -1,24 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:gigglio/data/models/user_details.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gigglio/business_logic/profile_bloc/add_friends_bloc.dart';
+import 'package:gigglio/config/routes/routes.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
+import 'package:gigglio/data/utils/color_resources.dart';
 import 'package:gigglio/data/utils/dimens.dart';
 import 'package:gigglio/data/utils/string.dart';
 import 'package:gigglio/data/utils/utils.dart';
-import 'package:gigglio/presentation/widgets/shimmer_widget.dart';
 import 'package:gigglio/presentation/widgets/top_widgets.dart';
-import 'package:gigglio/business_logic/profile_controllers/profile_controller.dart';
-import '../../services/theme_services.dart';
+import 'package:gigglio/services/extension_services.dart';
+import 'package:go_router/go_router.dart';
 import '../widgets/base_widget.dart';
 import '../widgets/loading_widgets.dart';
 import '../widgets/my_text_field_widget.dart';
 
-class AddFriends extends GetView<ProfileController> {
+class AddFriends extends StatefulWidget {
   const AddFriends({super.key});
 
   @override
+  State<AddFriends> createState() => _AddFriendsState();
+}
+
+class _AddFriendsState extends State<AddFriends> {
+  @override
+  void initState() {
+    final bloc = context.read<AddFriendsBloc>();
+    bloc.add(AddFriendsInitial());
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final scheme = ThemeServices.of(context);
-    final bodyTextStyle = context.textTheme.bodyMedium;
+    final bloc = context.read<AddFriendsBloc>();
+    final scheme = context.scheme;
 
     return BaseWidget(
       padding: EdgeInsets.zero,
@@ -26,180 +40,120 @@ class AddFriends extends GetView<ProfileController> {
         backgroundColor: scheme.background,
         title: const Text(StringRes.addFriends),
         titleTextStyle: Utils.defTitleStyle,
-      ),
-      child: PopScope(
-        onPopInvokedWithResult: controller.fromFriends,
-        child: Column(
-          children: [
-            SearchTextField(
-              margin: const EdgeInsets.symmetric(
-                horizontal: Dimens.sizeDefault,
+        bottom: PreferredSize(
+            preferredSize: Size.fromHeight(kTextTabBarHeight),
+            child: PopScope(
+              onPopInvokedWithResult: bloc.onPop,
+              child: SearchTextField(
+                backgroundColor: scheme.surface,
+                margin: Utils.paddingHoriz(Dimens.sizeDefault),
+                title: 'Search by email',
+                controller: bloc.friendContr,
               ),
-              title: 'Search by email',
-              controller: controller.friendContr,
-              showClear: false,
-            ),
-            Expanded(
-              child: StreamBuilder(
-                  stream: controller.users.snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) return const SizedBox.shrink();
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Column(
-                        children: [
-                          const SizedBox(height: Dimens.sizeLarge),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              SizedBox(
-                                height: 20,
-                                width: 100,
-                                child: Shimmer.box,
-                              ),
-                              const SizedBox(width: Dimens.sizeDefault)
-                            ],
-                          ),
-                          Expanded(
-                            child: ListView.builder(
-                                padding: const EdgeInsets.only(
-                                    top: Dimens.sizeDefault),
-                                itemCount: 3,
-                                itemBuilder: (context, _) {
-                                  return UserTileShimmer(
-                                    avatarRadius: 24,
-                                    trailing: SizedBox(
-                                      height: 30,
-                                      width: 40,
-                                      child: Shimmer.box,
-                                    ),
-                                  );
-                                }),
-                          ),
-                        ],
-                      );
-                    }
-
-                    controller.allUsers.value = snapshot.data!.docs.map((e) {
-                      return UserDetails.fromJson(e.data());
-                    }).toList();
-                    final cUser = controller.allUsers.firstWhere((e) {
-                      return e.id == controller.authServices.user.value!.id;
-                    });
-                    final requests = controller.allUsers
-                        .firstWhere((e) {
-                          return e.id == cUser.id;
-                        })
-                        .requests
-                        .length;
-                    controller.allUsers.removeWhere((e) {
-                      return e.id == cUser.id;
-                    });
-
-                    controller.friendsList.value =
-                        controller.allUsers.where((e) {
-                      return cUser.friends.contains(e.id);
-                    }).toList();
-
-                    controller.onSearch();
-
-                    return Obx(() {
-                      return Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                  onPressed: controller.toViewRequests,
-                                  child: Text('${StringRes.viewRequests} '
-                                      '($requests)'))
-                            ],
-                          ),
-                          if (controller.searchedUsers.isEmpty)
-                            ToolTipWidget(
-                              title: controller.friendContr.text.isEmpty
-                                  ? StringRes.addFriendsDesc
-                                  : StringRes.noResults,
-                              margin: EdgeInsets.symmetric(
-                                vertical: context.height * .1,
-                                horizontal: Dimens.sizeLarge,
-                              ),
-                            ),
-                          Expanded(
-                            child: ListView.builder(
-                                itemCount: controller.searchedUsers.length,
-                                itemBuilder: (context, index) {
-                                  final user = controller.searchedUsers[index];
-                                  return ListTile(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                        horizontal: Dimens.sizeLarge,
-                                      ),
-                                      leading: MyAvatar(
-                                        user.image,
-                                        isAvatar: true,
-                                        avatarRadius: 24,
-                                        id: user.id,
-                                      ),
-                                      title: Text(user.displayName),
-                                      subtitle: Text(
-                                        user.email,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      subtitleTextStyle:
-                                          bodyTextStyle?.copyWith(
-                                        color: scheme.disabled,
-                                      ),
-                                      trailing: _TrailingButton(
-                                        user: cUser,
-                                        other: user,
-                                        onTap: () =>
-                                            controller.sendReq(user.id),
-                                      ));
-                                }),
-                          ),
-                        ],
-                      );
-                    });
-                  }),
-            ),
-          ],
-        ),
+            )),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              BlocBuilder<AddFriendsBloc, AddFriendsState>(
+                  buildWhen: (pr, cr) => pr.requests != cr.requests,
+                  builder: (context, state) {
+                    return TextButton(
+                        onPressed: () =>
+                            context.pushNamed(AppRoutes.viewRequests),
+                        child: Text('${StringRes.viewRequests} '
+                            '(${state.requests})'));
+                  })
+            ],
+          ),
+          BlocBuilder<AddFriendsBloc, AddFriendsState>(
+              buildWhen: (pr, cr) => pr.users != cr.users,
+              builder: (context, state) {
+                if (state.users.isEmpty) {
+                  return ToolTipWidget(
+                    title: bloc.friendContr.text.isEmpty
+                        ? StringRes.addFriendsDesc
+                        : StringRes.noResults,
+                    margin: EdgeInsets.symmetric(
+                      vertical: context.height * .1,
+                      horizontal: Dimens.sizeLarge,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
+          Expanded(
+            child: BlocBuilder<AddFriendsBloc, AddFriendsState>(
+                buildWhen: (pr, cr) => pr.users != cr.users,
+                builder: (context, state) {
+                  return ListView.builder(
+                      itemCount: state.users.length,
+                      itemBuilder: (context, index) {
+                        final user = state.users[index];
+                        return ListTile(
+                          onTap: () => toProfile(user.id),
+                          contentPadding: Utils.paddingHoriz(Dimens.sizeLarge),
+                          leading: MyAvatar(user.image,
+                              isAvatar: true, avatarRadius: 24, id: user.id),
+                          title: Text(user.displayName),
+                          subtitle: Text(user.email,
+                              maxLines: 1, overflow: TextOverflow.ellipsis),
+                          subtitleTextStyle: context.subtitleTextStyle,
+                          trailing:
+                              _TrailingButton(user.id, user: state.profile!),
+                        );
+                      });
+                }),
+          )
+        ],
       ),
     );
+  }
+
+  void toProfile(String id) {
+    context.pushNamed(AppRoutes.gotoProfile, extra: id);
   }
 }
 
 class _TrailingButton extends StatelessWidget {
   final UserDetails user;
-  final UserDetails other;
-  final VoidCallback onTap;
+  final String id;
 
-  const _TrailingButton({
-    required this.user,
-    required this.other,
-    required this.onTap,
-  });
+  const _TrailingButton(this.id, {required this.user});
 
   @override
   Widget build(BuildContext context) {
-    final scheme = ThemeServices.of(context);
-    if (user.friends.contains(other.id)) return const SizedBox();
-    final enable =
-        other.requests.contains(user.id) || user.requests.contains(other.id);
-    return LoadingButton(
-        enable: !enable,
-        defWidth: true,
-        isLoading: false,
-        onPressed: onTap,
-        compact: true,
-        border: Dimens.borderSmall,
-        backgroundColor: scheme.onPrimaryContainer,
-        padding: const EdgeInsets.symmetric(horizontal: Dimens.sizeSmall),
-        child: Text(other.requests.contains(user.id)
-            ? StringRes.requested
-            : user.requests.contains(other.id)
-                ? StringRes.inReq
-                : StringRes.send));
+    final bloc = context.read<AddFriendsBloc>();
+    final scheme = context.scheme;
+
+    return BlocBuilder<AddFriendsBloc, AddFriendsState>(
+        buildWhen: (pr, cr) => pr.requested != cr.requested,
+        builder: (context, state) {
+          if (user.friends.contains(id)) {
+            return LoadingButton(
+                defWidth: true,
+                compact: true,
+                onPressed: () => bloc.add(RemoveAddedRFriend(id)),
+                border: Dimens.borderSmall,
+                backgroundColor: scheme.backgroundDark,
+                foregroundColor: ColorRes.error,
+                child: const Text(StringRes.remove));
+          }
+          final requested = state.requested.contains(id);
+          final iContain = user.requests.contains(id);
+          return LoadingButton(
+              defWidth: true,
+              compact: true,
+              onPressed: () => bloc.add(AddFriendRequest(id)),
+              enable: !(iContain || requested),
+              border: Dimens.borderSmall,
+              child: state.requested.contains(id)
+                  ? const Text(StringRes.requested)
+                  : user.requests.contains(id)
+                      ? const Text(StringRes.inReq)
+                      : const Text(StringRes.send));
+        });
   }
 }

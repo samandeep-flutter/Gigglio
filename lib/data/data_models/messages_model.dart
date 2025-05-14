@@ -1,25 +1,26 @@
 import 'package:equatable/equatable.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
 
-class MessagesModel extends Equatable {
+class MessagesDbModel extends Equatable {
   final List<String> users;
   final List<UserData> userData;
-  final String? lastUpdated;
+  final DateTime? lastUpdated;
   final List<Messages> messages;
 
-  const MessagesModel({
+  const MessagesDbModel({
     required this.users,
     required this.userData,
     this.lastUpdated,
     this.messages = const [],
   });
 
-  factory MessagesModel.fromJson(Map<String, dynamic> json) {
-    return MessagesModel(
+  factory MessagesDbModel.fromJson(Map<String, dynamic> json) {
+    return MessagesDbModel(
       users: List<String>.from(json['users']),
       userData: List<UserData>.from(json['user_data'].map((e) {
         return UserData.fromJson(e);
       })),
-      lastUpdated: json['last_updated'],
+      lastUpdated: DateTime.tryParse(json['last_updated'] ?? ''),
       messages: List<Messages>.from(json['messages'].map((e) {
         return Messages.fromJson(e);
       })),
@@ -28,17 +29,17 @@ class MessagesModel extends Equatable {
 
   Map<String, dynamic> toJson() => {
         'users': users,
-        'last_updated': lastUpdated,
+        'last_updated': lastUpdated?.toIso8601String(),
         'user_data': userData.map((e) => e.toJson()),
         'messages': messages.map((e) => e.toJson()),
       };
 
-  MessagesModel copyWith({
+  MessagesDbModel copyWith({
     List<UserData>? userData,
-    String? lastUpdated,
+    DateTime? lastUpdated,
     List<Messages>? messages,
   }) {
-    return MessagesModel(
+    return MessagesDbModel(
       users: users,
       userData: userData ?? this.userData,
       lastUpdated: lastUpdated ?? this.lastUpdated,
@@ -50,9 +51,26 @@ class MessagesModel extends Equatable {
   List<Object?> get props => [users, userData, lastUpdated, messages];
 }
 
+class MessagesModel extends Equatable {
+  final UserDetails user;
+  final List<UserData> userData;
+  final DateTime? lastUpdated;
+  final List<Messages> messages;
+
+  const MessagesModel({
+    required this.user,
+    required this.userData,
+    required this.lastUpdated,
+    required this.messages,
+  });
+
+  @override
+  List<Object?> get props => [user, userData, lastUpdated, messages];
+}
+
 class Messages extends Equatable {
   final String author;
-  final String dateTime;
+  final DateTime dateTime;
   final String text;
   final double? scrollAt;
   final int position;
@@ -68,7 +86,7 @@ class Messages extends Equatable {
   factory Messages.fromJson(Map<String, dynamic> json) {
     return Messages(
         author: json['author'],
-        dateTime: json['date_time'],
+        dateTime: DateTime.parse(json['date_time']),
         text: json['text'],
         scrollAt: json['scroll_at']?.toDouble(),
         position: json['position']);
@@ -76,7 +94,7 @@ class Messages extends Equatable {
 
   Map<String, dynamic> toJson() => {
         'author': author,
-        'date_time': dateTime,
+        'date_time': dateTime.toIso8601String(),
         'text': text,
         'position': position,
         'scroll_at': scrollAt?.toDouble(),
@@ -84,7 +102,7 @@ class Messages extends Equatable {
 
   Messages copyWith({
     String? author,
-    String? dateTime,
+    DateTime? dateTime,
     String? text,
     int? position,
     double? scrollAt,
@@ -104,26 +122,29 @@ class Messages extends Equatable {
 
 class UserData {
   final String id;
-  int seen;
+  DateTime? seen;
   double? scrollAt;
 
   UserData({required this.id, required this.seen, required this.scrollAt});
 
   UserData.newUser(this.id)
-      : seen = 0,
+      : seen = null,
         scrollAt = null;
 
   factory UserData.fromJson(Map<String, dynamic> json) {
     return UserData(
         id: json['id'],
-        seen: json['seen'],
+        seen: DateTime.tryParse(json['seen'] ?? ''),
         scrollAt: json['scroll_at']?.toDouble());
   }
 
-  Map<String, dynamic> toJson() =>
-      {'id': id, 'seen': seen, 'scroll_at': scrollAt?.toDouble()};
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'seen': seen?.toIso8601String(),
+        'scroll_at': scrollAt?.toDouble()
+      };
 
-  UserData copyWith({String? id, int? seen, double? scrollAt}) {
+  UserData copyWith({String? id, DateTime? seen, double? scrollAt}) {
     return UserData(
       id: id ?? this.id,
       seen: seen ?? this.seen,

@@ -1,10 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:gigglio/data/models/user_details.dart';
+import 'package:gigglio/data/data_models/notification_model.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
+import 'package:gigglio/data/repository/auth_repo.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/services/box_services.dart';
 import 'package:gigglio/config/routes/routes.dart';
+import 'package:gigglio/services/getit_instance.dart';
 import 'package:go_router/go_router.dart';
 import '../data/utils/color_resources.dart';
 
@@ -14,9 +17,12 @@ class AuthServices {
   static AuthServices get to => _to ??= AuthServices._init();
 
   final _auth = FirebaseAuth.instance;
-  final _users = FirebaseFirestore.instance.collection(FB.users);
-  final _about = FirebaseFirestore.instance.collection(FB.about);
   final box = BoxServices.instance;
+  final AuthRepo repo = getIt();
+
+  final _users = FirebaseFirestore.instance.collection(FBKeys.users);
+  final _about = FirebaseFirestore.instance.collection(FBKeys.about);
+  final _noti = FirebaseFirestore.instance.collection(FBKeys.noti);
 
   final navigationKey = GlobalKey<NavigatorState>();
   BuildContext? get context => navigationKey.currentContext;
@@ -27,6 +33,7 @@ class AuthServices {
   UserDetails? _user;
   UserDetails? get user => _user;
   set user(UserDetails? value) {
+    if (value == null) return;
     _user = value;
   }
 
@@ -34,13 +41,19 @@ class AuthServices {
 
   Future<AuthServices> init() async {
     _theme = box.getTheme();
-    _getVersion();
+    user = box.getUserDetails();
+    Future(_getVersion);
+    Future(getUserDetails);
     return this;
   }
 
   String get initialRoute {
-    if (_auth.currentUser == null) return AppRoutes.signIn;
-    return AppRoutes.rootView;
+    try {
+      _auth.currentUser as User;
+      return AppRoutes.rootView;
+    } catch (_) {
+      return AppRoutes.signIn;
+    }
   }
 
   Future<void> _getVersion() async {
@@ -53,17 +66,24 @@ class AuthServices {
     }
   }
 
+  Future<void> sendNotification(NotiDbModel noti) async {
+    _noti.add(noti.toJson());
+    final json = await _users.doc(noti.to).get();
+    final user = UserDetails.fromJson(json.data()!);
+    repo.sendNotification(user.deviceToken, sender: user, noti: noti.category);
+  }
+
   Future<void> saveProfile(String? bio) async {
     final user = _auth.currentUser;
     if (user == null) return;
-    var details = UserDetails(
-        id: user.uid,
-        displayName: user.displayName ?? '',
-        email: user.email!,
-        image: user.photoURL,
-        bio: bio?.isNotEmpty ?? false ? bio : null,
-        login: true,
-        verified: user.emailVerified);
+    var details = UserDetails.profile(
+      id: user.uid,
+      displayName: user.displayName ?? '',
+      email: user.email!,
+      image: user.photoURL,
+      notiSeen: DateTime.now(),
+      bio: bio?.isNotEmpty ?? false ? bio : null,
+    );
 
     final saved = box.getUserDetails();
     final updated = saved?.copyFrom(details: details);
@@ -77,18 +97,18 @@ class AuthServices {
   }
 
   Future<void> createFbUser(UserCredential credentials,
-      {required String name}) async {
+      {required String name, String? token}) async {
     if (credentials.user == null) return;
-    var details = UserDetails(
+    try {
+      var details = UserDetails(
         id: credentials.user!.uid,
         displayName: name,
         email: credentials.user!.email!,
         image: credentials.user?.photoURL,
-        notiSeen: 0,
+        notiSeen: DateTime.now(),
+        deviceToken: token,
         login: true,
-        verified: credentials.user?.emailVerified);
-
-    try {
+      );
       await _users.doc(details.id).set(details.toJson());
       await box.saveUserDetails(details);
       user = details;
@@ -108,22 +128,28 @@ class AuthServices {
     }
   }
 
-  Future<void> fetchFbUser(UserCredential credentials) async {
+  Future<void> fetchFbUser(UserCredential credentials, {String? token}) async {
     final user = credentials.user;
     if (user == null) return;
     try {
       final json = await _users.doc(user.uid).get();
-      this.user = UserDetails.fromJson(json.data()!)
-          .copyWith(login: true, verified: user.emailVerified);
+      if (!json.exists) throw Exception();
+      this.user = UserDetails.fromJson(json.data()!);
+      _users.doc(user.uid).update({'login': true});
+      if (this.user?.deviceToken != token) {
+        _users.doc(user.uid).update({'device_token': token});
+      }
+      this.user = this.user?.copyWith(login: true, deviceToken: token);
     } catch (_) {
       var details = UserDetails(
-          id: user.uid,
-          displayName: user.displayName ?? '',
-          email: user.email!,
-          image: user.photoURL,
-          login: true,
-          notiSeen: 0,
-          verified: user.emailVerified);
+        id: user.uid,
+        displayName: user.displayName ?? '',
+        email: user.email!,
+        image: user.photoURL,
+        notiSeen: DateTime.now(),
+        deviceToken: token,
+        login: true,
+      );
       await _users.doc(details.id).set(details.toJson());
       this.user = details;
     }
@@ -156,7 +182,7 @@ class AuthServices {
   //       Get.offAllNamed(AppRoutes.signIn);
   //     }
   //   } catch (e) {
-  //     logPrint(e.toString());
+  //     logPrint(e, 'FbDelete');
   //   }
   // }
 }

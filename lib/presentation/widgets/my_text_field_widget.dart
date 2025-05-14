@@ -46,11 +46,11 @@ class MyTextField extends StatefulWidget {
     this.controller,
     this.keyboardType,
     this.focusNode,
-    this.capitalization,
     this.customValidator,
     this.inputFormatters,
     this.decoration,
-  })  : maxLength = null,
+  })  : capitalization = null,
+        maxLength = null,
         expands = false,
         obscureText = false,
         isEmail = false,
@@ -96,7 +96,6 @@ class _MyTextFieldState extends State<MyTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = context.scheme;
     return TextFormField(
       key: widget.fieldKey,
       controller: widget.controller,
@@ -107,31 +106,32 @@ class _MyTextFieldState extends State<MyTextField> {
       maxLength: widget.maxLength,
       maxLines: widget.maxLines,
       autocorrect: false,
-      textAlignVertical: widget.expands ?? false ? TextAlignVertical.top : null,
+      textAlignVertical: (widget.expands ?? false || (widget.maxLines ?? 1) > 1)
+          ? TextAlignVertical.top
+          : null,
       textCapitalization: widget.capitalization ?? TextCapitalization.none,
       decoration: widget.decoration ??
           InputDecoration(
-              suffixIcon: widget.obscureText
-                  ? IconButton(
-                      style: IconButton.styleFrom(
-                          fixedSize: const Size.square(10)),
-                      padding: EdgeInsets.zero,
-                      splashRadius: 10,
-                      selectedIcon: const Icon(Icons.visibility),
-                      isSelected: isSelected,
-                      onPressed: () {
-                        setState(() {
-                          isSelected = !isSelected;
-                          obscureText = !obscureText;
-                        });
-                      },
-                      icon: const Icon(Icons.visibility_off))
-                  : null,
-              label: Text(widget.title),
-              border: const OutlineInputBorder(),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: scheme.primary),
-              )),
+            contentPadding: EdgeInsets.all(Dimens.sizeDefault),
+            suffixIcon: widget.obscureText
+                ? IconButton(
+                    padding: EdgeInsets.zero,
+                    splashRadius: Dimens.sizeSmall,
+                    color: context.scheme.textColorLight,
+                    selectedIcon: const Icon(Icons.visibility),
+                    isSelected: isSelected,
+                    onPressed: () {
+                      setState(() {
+                        isSelected = !isSelected;
+                        obscureText = !obscureText;
+                      });
+                    },
+                    icon: const Icon(Icons.visibility_off))
+                : null,
+            label: Text(widget.title),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(Dimens.borderDefault)),
+          ),
       inputFormatters: widget.inputFormatters,
       validator: widget.customValidator ??
           (value) {
@@ -156,10 +156,10 @@ class SearchTextField extends StatefulWidget {
   final EdgeInsets? margin;
   final String title;
   final Key? fieldKey;
+  final bool compact;
   final TextInputType? keyboardType;
   final TextEditingController? controller;
   final FocusNode? focusNode;
-  final TextCapitalization? capitalization;
   final String? Function(String? value)? customValidator;
   final List<TextInputFormatter>? inputFormatters;
   final Color? backgroundColor;
@@ -172,8 +172,8 @@ class SearchTextField extends StatefulWidget {
       this.fieldKey,
       this.keyboardType,
       this.controller,
+      this.compact = false,
       this.focusNode,
-      this.capitalization,
       this.customValidator,
       this.backgroundColor,
       this.onClear,
@@ -185,11 +185,16 @@ class SearchTextField extends StatefulWidget {
 }
 
 class _SearchTextFieldState extends State<SearchTextField> {
+  late TextEditingController _controller;
+  late double vertPadding;
+
   @override
   void initState() {
+    _controller = widget.controller ?? TextEditingController();
     if (widget.showClear) {
-      widget.controller?.addListener(onChange);
+      _controller.addListener(onChange);
     }
+    vertPadding = widget.compact ? Dimens.sizeSmall : Dimens.sizeDefault;
     super.initState();
   }
 
@@ -198,50 +203,52 @@ class _SearchTextFieldState extends State<SearchTextField> {
   }
 
   @override
+  void dispose() {
+    _controller.removeListener(onChange);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final scheme = context.scheme;
-    final borderRadius = BorderRadius.circular(Dimens.borderLarge);
-
-    InputBorder border() {
-      return OutlineInputBorder(
-        borderRadius: borderRadius,
-        borderSide: BorderSide(color: Colors.grey[200]!),
-      );
-    }
 
     return Container(
       margin: widget.margin,
-      decoration: BoxDecoration(
-        color: widget.backgroundColor ?? Colors.white,
-        borderRadius: borderRadius,
-      ),
+      height: widget.compact ? Dimens.sizeExtraDoubleLarge : null,
+      alignment: Alignment.center,
       child: MyTextField._search(
         title: widget.title,
         fieldKey: widget.fieldKey,
-        controller: widget.controller,
+        controller: _controller,
         keyboardType: widget.keyboardType,
         focusNode: widget.focusNode,
-        capitalization: widget.capitalization,
         inputFormatters: widget.inputFormatters,
         customValidator: (value) {
           return null;
         },
         decoration: InputDecoration(
             hintText: widget.title,
+            contentPadding: EdgeInsets.symmetric(
+                horizontal: Dimens.sizeDefault, vertical: vertPadding),
             hintStyle: TextStyle(color: scheme.disabled),
-            focusedBorder: border(),
-            enabledBorder: border(),
+            focusedBorder: border,
+            enabledBorder: border,
+            fillColor: widget.backgroundColor,
+            filled: widget.backgroundColor != null,
             prefixIcon: Icon(Icons.search, color: scheme.disabled),
-            suffixIcon: widget.showClear &&
-                    (widget.controller?.text.isNotEmpty ?? false)
+            suffixIcon: widget.showClear && _controller.text.isNotEmpty
                 ? IconButton(
                     onPressed: widget.onClear ?? widget.controller?.clear,
-                    icon: Icon(
-                      Icons.clear,
-                      color: scheme.disabled,
-                    ))
+                    icon: Icon(Icons.clear, color: scheme.disabled))
                 : null),
       ),
+    );
+  }
+
+  InputBorder get border {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(Dimens.borderDefault),
+      borderSide: BorderSide(color: context.scheme.backgroundDark),
     );
   }
 }
@@ -310,18 +317,20 @@ class CustomTextField extends StatelessWidget {
         inputFormatters: inputFormatters,
         decoration: InputDecoration(
           hintText: title,
-          hintStyle: TextStyle(color: scheme.disabled),
+          contentPadding: EdgeInsets.all(Dimens.sizeDefault),
           focusedBorder: defaultBorder ?? false
               ? OutlineInputBorder(
+                  borderRadius: radius,
                   borderSide: BorderSide(color: scheme.primary),
                 )
               : inputBorder(),
           enabledBorder: defaultBorder ?? false
               ? OutlineInputBorder(
+                  borderRadius: radius,
                   borderSide: BorderSide(
-                  color: scheme.disabled,
-                  width: 1.5,
-                ))
+                    color: scheme.disabled,
+                    width: 1.5,
+                  ))
               : inputBorder(),
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/image_resources.dart';
 import 'package:gigglio/presentation/widgets/shimmer_widget.dart';
+import 'package:gigglio/services/extension_services.dart';
 
 class MyCachedImage extends StatelessWidget {
   final String? image;
@@ -50,10 +51,11 @@ class MyCachedImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = context.scheme;
     if (loading) {
       if (isAvatar) {
         return CircleAvatar(
-            backgroundColor: Colors.grey[300],
+            backgroundColor: scheme.backgroundDark,
             radius: avatarRadius,
             child: Shimmer.avatar);
       }
@@ -70,7 +72,10 @@ class MyCachedImage extends StatelessWidget {
     if (image == null) {
       final image = AssetImage(ImageRes.userThumbnail);
       if (isAvatar) {
-        return CircleAvatar(backgroundImage: image, radius: avatarRadius);
+        return CircleAvatar(
+            backgroundColor: scheme.backgroundDark,
+            backgroundImage: image,
+            radius: avatarRadius);
       }
       return ClipRRect(
           borderRadius: borderRadius ?? BorderRadius.zero,
@@ -90,7 +95,9 @@ class MyCachedImage extends StatelessWidget {
         imageBuilder: (context, imageProvider) {
           if (isAvatar) {
             return CircleAvatar(
-                backgroundImage: imageProvider, radius: avatarRadius);
+                backgroundColor: scheme.backgroundDark,
+                backgroundImage: imageProvider,
+                radius: avatarRadius);
           }
 
           return ClipRRect(
@@ -105,7 +112,7 @@ class MyCachedImage extends StatelessWidget {
         placeholder: (context, url) {
           if (isAvatar) {
             return CircleAvatar(
-                backgroundColor: Colors.grey[300],
+                backgroundColor: scheme.backgroundDark,
                 radius: avatarRadius,
                 child: Shimmer.avatar);
           }
@@ -124,7 +131,10 @@ class MyCachedImage extends StatelessWidget {
           final image = AssetImage(ImageRes.userThumbnail);
 
           if (isAvatar) {
-            return CircleAvatar(backgroundImage: image, radius: avatarRadius);
+            return CircleAvatar(
+                backgroundImage: image,
+                backgroundColor: scheme.backgroundDark,
+                radius: avatarRadius);
           }
           return ClipRRect(
               borderRadius: borderRadius ?? BorderRadius.zero,

@@ -2,28 +2,26 @@ import 'dart:developer' as dev;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:gigglio/data/utils/string.dart';
 
 class AppConstants {
-  static const String appName = 'Gigglio';
-  static const String fullAppName = 'Gigglio: Social App';
   static const String packageName = 'com.samtech.gigglio';
   static const String appUrl = 'https://gigglio.web.app';
 
   static const String messageSearchKey = 'messages-search-key';
   static const String usersSearchKey = 'users-search-key';
-  static String profileImage(String image) => '${FB.userImage}/$image';
-  static String share(String id) => '$appUrl/post/$id';
-  static String postImage(String path) => '${FB.post}/$path';
-  static String deletePost(String id) => '${FB.post}/$id';
+  static String profileImage(String image) => 'user-images/$image';
+  static String share(String id) => '$appUrl/posts/$id';
+  static String postImage(String path) => 'posts/$path';
+  static String deletePost(String id) => 'posts/$id';
 }
 
-class FB {
+class FBKeys {
   static const String about = 'about';
   static const String post = 'posts';
   static const String messages = 'messages';
   static const String noti = 'notifications';
   static const String users = 'users';
-  static const String userImage = 'userImages';
 }
 
 class BoxKeys {
@@ -35,13 +33,15 @@ class BoxKeys {
 void logPrint(Object? object, [String? name]) {
   if (kReleaseMode) return;
   final log = object is String? ? object : object.toString();
-  dev.log(log ?? 'null', name: name ?? AppConstants.appName);
+  dev.log(log ?? 'null', name: (name ?? StringRes.appName).toUpperCase());
 }
 
-void dprint(Object? object) {
+void dprint(Object? object, {bool toString = true}) {
   if (kReleaseMode) return;
-  final log = object is String? ? object : object.toString();
-  debugPrint(log ?? 'null');
+  final obj = toString ? object.toString() : object;
+  final log = object is String? ? object : obj;
+  // ignore: avoid_print
+  print(log ?? 'null');
 }
 
 class MyColoredBox extends StatelessWidget {

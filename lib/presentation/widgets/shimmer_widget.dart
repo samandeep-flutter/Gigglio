@@ -23,6 +23,22 @@ class _Shimmer extends StatelessWidget {
   }
 }
 
+class ShimmerButton extends StatelessWidget {
+  final double? borderRadius;
+  final double? height;
+  final double? width;
+
+  const ShimmerButton({super.key, this.borderRadius, this.height, this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius ?? 0),
+      child: SizedBox(height: height, width: width, child: Shimmer.box),
+    );
+  }
+}
+
 class UserTileShimmer extends StatelessWidget {
   final double? avatarRadius;
   final double? title;
@@ -44,7 +60,8 @@ class UserTileShimmer extends StatelessWidget {
         horizontal: Dimens.sizeDefault,
       ),
       child: Row(children: [
-        MyCachedImage.loading(isAvatar: true, avatarRadius: avatarRadius),
+        MyCachedImage.loading(
+            isAvatar: true, avatarRadius: avatarRadius ?? Dimens.sizeLarge),
         const SizedBox(width: Dimens.sizeDefault),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,6 +176,68 @@ class CountShimmer extends StatelessWidget {
                 child: Shimmer.box),
           ],
         ));
+      }),
+    );
+  }
+}
+
+class NotificationShimmer extends StatelessWidget {
+  const NotificationShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(top: Dimens.sizeDefault),
+      children: List.generate(3, (_) {
+        return UserTileShimmer(
+          title: context.width * .5,
+          trailing: SizedBox.square(
+            dimension: Dimens.sizeExtraLarge,
+            child: Shimmer.box,
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class FriendsRequests extends StatelessWidget {
+  const FriendsRequests({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+        itemCount: 3,
+        padding: const EdgeInsets.only(top: Dimens.sizeLarge),
+        itemBuilder: (context, _) {
+          return UserTileShimmer(
+            trailing: ShimmerButton(
+              height: Dimens.sizeMidLarge,
+              width: Dimens.sizeExtraLarge,
+              borderRadius: Dimens.borderDefault,
+            ),
+          );
+        });
+  }
+}
+
+class MessagesShimmer extends StatelessWidget {
+  const MessagesShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(top: Dimens.sizeDefault),
+      children: List.generate(15, (_) {
+        return UserTileShimmer(
+          trailing: SizedBox(
+            height: Dimens.sizeMedSmall,
+            width: Dimens.sizeLarge,
+            child: Shimmer.box,
+          ),
+        );
       }),
     );
   }

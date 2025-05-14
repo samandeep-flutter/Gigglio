@@ -1,6 +1,6 @@
 import 'package:get_storage/get_storage.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
-import '../data/models/user_details.dart';
+import '../data/data_models/user_details.dart';
 import '../data/utils/color_resources.dart';
 
 class BoxServices {
