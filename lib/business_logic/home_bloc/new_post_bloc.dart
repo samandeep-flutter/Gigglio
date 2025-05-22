@@ -1,14 +1,13 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/post_model.dart';
-import 'package:gigglio/services/getit_instance.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../data/utils/app_constants.dart';
-import '../../services/auth_services.dart';
 
 class NewPostEvent extends Equatable {
   const NewPostEvent();
@@ -78,7 +77,7 @@ class NewPostBloc extends Bloc<NewPostEvent, NewPostState> {
 
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
   final storage = FirebaseStorage.instance.ref();
-  final AuthServices auth = getIt();
+  final userId = FirebaseAuth.instance.currentUser!.uid;
 
   final captionContr = TextEditingController();
   final picker = ImagePicker();
@@ -127,7 +126,7 @@ class NewPostBloc extends Bloc<NewPostEvent, NewPostState> {
     try {
       emit(state.copyWith(postLoading: true));
       final post = PostModel.add(
-        author: auth.user!.id,
+        author: userId,
         desc: captionContr.text,
         dateTime: DateTime.now(),
       );

@@ -25,25 +25,16 @@ class AuthServices {
   final _noti = FirebaseFirestore.instance.collection(FBKeys.noti);
 
   final navigationKey = GlobalKey<NavigatorState>();
-  BuildContext? get context => navigationKey.currentContext;
+  BuildContext? get navContext => navigationKey.currentContext;
 
   late MyTheme _theme;
   MyTheme get theme => _theme;
-
-  UserDetails? _user;
-  UserDetails? get user => _user;
-  set user(UserDetails? value) {
-    if (value == null) return;
-    _user = value;
-  }
 
   late String minVersion;
 
   Future<AuthServices> init() async {
     _theme = box.getTheme();
-    user = box.getUserDetails();
     Future(_getVersion);
-    Future(getUserDetails);
     return this;
   }
 
@@ -70,96 +61,14 @@ class AuthServices {
     _noti.add(noti.toJson());
     final json = await _users.doc(noti.to).get();
     final user = UserDetails.fromJson(json.data()!);
+    if (!(user.login ?? false)) return;
     repo.sendNotification(user.deviceToken, sender: user, noti: noti.category);
-  }
-
-  Future<void> saveProfile(String? bio) async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-    var details = UserDetails.profile(
-      id: user.uid,
-      displayName: user.displayName ?? '',
-      email: user.email!,
-      image: user.photoURL,
-      notiSeen: DateTime.now(),
-      bio: bio?.isNotEmpty ?? false ? bio : null,
-    );
-
-    final saved = box.getUserDetails();
-    final updated = saved?.copyFrom(details: details);
-    this.user = updated ?? details;
-    await _users.doc(user.uid).update({
-      'image': this.user?.image,
-      'display_name': this.user?.displayName,
-      'bio': this.user?.bio,
-    });
-    await box.saveUserDetails(updated ?? details);
-  }
-
-  Future<void> createFbUser(UserCredential credentials,
-      {required String name, String? token}) async {
-    if (credentials.user == null) return;
-    try {
-      var details = UserDetails(
-        id: credentials.user!.uid,
-        displayName: name,
-        email: credentials.user!.email!,
-        image: credentials.user?.photoURL,
-        notiSeen: DateTime.now(),
-        deviceToken: token,
-        login: true,
-      );
-      await _users.doc(details.id).set(details.toJson());
-      await box.saveUserDetails(details);
-      user = details;
-    } catch (e) {
-      logPrint(e, 'createFbUser');
-    }
-  }
-
-  Future<void> getUserDetails() async {
-    try {
-      final doc = await _users.doc(_auth.currentUser!.uid).get();
-      user = UserDetails.fromJson(doc.data()!);
-    } catch (e) {
-      logPrint(e, 'getDetails');
-      // ignore: use_build_context_synchronously
-      logout();
-    }
-  }
-
-  Future<void> fetchFbUser(UserCredential credentials, {String? token}) async {
-    final user = credentials.user;
-    if (user == null) return;
-    try {
-      final json = await _users.doc(user.uid).get();
-      if (!json.exists) throw Exception();
-      this.user = UserDetails.fromJson(json.data()!);
-      _users.doc(user.uid).update({'login': true});
-      if (this.user?.deviceToken != token) {
-        _users.doc(user.uid).update({'device_token': token});
-      }
-      this.user = this.user?.copyWith(login: true, deviceToken: token);
-    } catch (_) {
-      var details = UserDetails(
-        id: user.uid,
-        displayName: user.displayName ?? '',
-        email: user.email!,
-        image: user.photoURL,
-        notiSeen: DateTime.now(),
-        deviceToken: token,
-        login: true,
-      );
-      await _users.doc(details.id).set(details.toJson());
-      this.user = details;
-    }
-    await box.saveUserDetails(this.user!);
   }
 
   void logout() async {
     try {
-      if (user != null) {
-        final doc = _users.doc(user!.id);
+      if (_auth.currentUser != null) {
+        final doc = _users.doc(_auth.currentUser!.uid);
         doc.update({'login': false});
       }
       await _auth.signOut();
@@ -167,7 +76,7 @@ class AuthServices {
     } catch (e) {
       logPrint(e, 'LOGOUT');
     }
-    context?.goNamed(AppRoutes.signIn);
+    navContext?.goNamed(AppRoutes.signIn);
   }
 
   /// Currently disalbed through firebase

@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/services/getit_instance.dart';
@@ -46,9 +48,10 @@ class SignUpBloc extends Bloc<SignUpEvents, SignupState> {
     on<SignupInitial>(_onInit);
     on<SignUpviaEmail>(_onSignUp);
   }
-  final AuthServices auth = getIt();
   final fbAuth = FirebaseAuth.instance;
   final fbMessaging = FirebaseMessaging.instance;
+  final users = FirebaseFirestore.instance.collection(FBKeys.users);
+  final AuthServices auth = getIt();
 
   final formKey = GlobalKey<FormState>();
   final nameContr = TextEditingController();
@@ -86,7 +89,7 @@ class SignUpBloc extends Bloc<SignUpEvents, SignupState> {
       final credentials = await fbAuth.createUserWithEmailAndPassword(
           email: emailContr.text, password: confirmPassContr.text);
       await fbAuth.currentUser?.updateDisplayName(nameContr.text);
-      await auth.createFbUser(credentials, name: nameContr.text, token: token);
+      await createFbUser(credentials, name: nameContr.text, token: token);
       emit(state.copyWith(success: true));
     } on FirebaseAuthException catch (e) {
       onFbSignUpException(e);
@@ -94,6 +97,25 @@ class SignUpBloc extends Bloc<SignUpEvents, SignupState> {
       logPrint(e, 'FbLogin');
     } finally {
       emit(state.copyWith(loading: false));
+    }
+  }
+
+  Future<void> createFbUser(UserCredential credentials,
+      {required String name, String? token}) async {
+    if (credentials.user == null) return;
+    try {
+      var details = UserDetails(
+        id: credentials.user!.uid,
+        displayName: name,
+        email: credentials.user!.email!,
+        image: credentials.user?.photoURL,
+        notiSeen: DateTime.now(),
+        deviceToken: token,
+        login: true,
+      );
+      await users.doc(details.id).set(details.toJson());
+    } catch (e) {
+      logPrint(e, 'createFbUser');
     }
   }
 

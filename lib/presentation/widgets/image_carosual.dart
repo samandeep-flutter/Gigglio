@@ -29,11 +29,8 @@ class _ImageCarouselState extends State<ImageCarousel> {
     if (images.length == 1) {
       return ConstrainedBox(
           constraints: BoxConstraints(maxHeight: context.height * .6),
-          child: MyCachedImage(
-            images.first,
-            width: context.width,
-            fit: BoxFit.fitWidth,
-          ));
+          child: MyCachedImage(images.first,
+              width: context.width, fit: BoxFit.fitHeight));
     }
 
     return Column(
@@ -45,11 +42,8 @@ class _ImageCarouselState extends State<ImageCarousel> {
               onPageChanged: (value) => setState(() => current = value),
               itemCount: images.length,
               itemBuilder: (context, index) {
-                return MyCachedImage(
-                  images[index],
-                  width: context.width,
-                  fit: BoxFit.fitHeight,
-                );
+                return MyCachedImage(images[index],
+                    width: context.width, fit: BoxFit.fitHeight);
               }),
         ),
         const SizedBox(height: Dimens.sizeMedSmall),

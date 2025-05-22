@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:gigglio/data/data_models/notification_model.dart';
 import 'package:gigglio/services/theme_services.dart';

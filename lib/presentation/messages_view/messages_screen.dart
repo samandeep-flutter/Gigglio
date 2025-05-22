@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/config/routes/routes.dart';
 import 'package:gigglio/data/data_models/messages_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
-import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/dimens.dart';
 import 'package:gigglio/data/utils/string.dart';
 import 'package:gigglio/data/utils/utils.dart';
@@ -61,7 +60,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
             )),
       ),
       body: BlocBuilder<MessagesBloc, MessagesState>(
-        buildWhen: (pr, cr) => pr.isLoading != cr.isLoading,
+        buildWhen: (pr, cr) {
+          final loading = pr.isLoading != cr.isLoading;
+          final messages = pr.messages != cr.messages;
+          return loading || messages;
+        },
         builder: (context, state) {
           if (state.isLoading) return const MessagesShimmer();
           if (state.messages.isEmpty) {
@@ -70,7 +73,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
           return ListView.builder(
               itemCount: state.messages.length,
-              padding: const EdgeInsets.only(top: Dimens.sizeDefault),
+              padding: const EdgeInsets.only(top: Dimens.sizeLarge),
               itemBuilder: (context, index) {
                 final chat = state.messages[index];
 
@@ -82,7 +85,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                       id: chat.user.id, isAvatar: true),
                   title: Text(chat.user.displayName),
                   subtitle: Builder(builder: (context) {
-                    if (last?.text.contains(AppConstants.appUrl) ?? false) {
+                    if (last?.post?.isNotEmpty ?? false) {
                       return Row(
                         children: [
                           Icon(Icons.photo,
@@ -92,11 +95,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         ],
                       );
                     }
-                    return Text(last?.text ?? '');
+                    return Text(last?.text ?? '',
+                        maxLines: 1, overflow: TextOverflow.ellipsis);
                   }),
                   subtitleTextStyle: context.subtitleTextStyle,
                   trailing: Text(
-                    Utils.timeFromNow(last?.dateTime, DateTime.now()),
+                    Utils.timeFromNow(last?.dateTime),
                     style: TextStyle(color: scheme.disabled),
                   ),
                 );

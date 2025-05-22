@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/edit_profile_bloc.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/string.dart';
 import 'package:gigglio/presentation/widgets/base_widget.dart';
 import 'package:gigglio/presentation/widgets/loading_widgets.dart';
@@ -14,7 +15,8 @@ import '../../data/utils/utils.dart';
 import '../widgets/my_text_field_widget.dart';
 
 class EditProfile extends StatefulWidget {
-  const EditProfile({super.key});
+  final UserDetails profile;
+  const EditProfile({super.key, required this.profile});
 
   @override
   State<EditProfile> createState() => _EditProfileState();
@@ -24,8 +26,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   void initState() {
     final bloc = context.read<EditProfileBloc>();
-    bloc.add(EditProfileInitial());
-
+    bloc.add(EditProfileInitial(widget.profile));
     super.initState();
   }
 
@@ -83,11 +84,11 @@ class _EditProfileState extends State<EditProfile> {
                               shape: BoxShape.circle, color: scheme.background),
                           child: Container(
                             decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: scheme.textColor),
+                                shape: BoxShape.circle, color: scheme.primary),
                             padding: const EdgeInsets.all(Dimens.sizeSmall),
                             margin: const EdgeInsets.all(Dimens.sizeExtraSmall),
-                            child: Icon(Icons.edit, color: scheme.onPrimary),
+                            child:
+                                Icon(Icons.camera_alt, color: scheme.onPrimary),
                           ),
                         )
                       ],

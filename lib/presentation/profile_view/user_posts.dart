@@ -38,7 +38,7 @@ class _UserPostsState extends State<UserPosts> {
           builder: (context, state) {
             if (state.loading) {
               return SizedBox(width: 100, height: 20, child: Shimmer.box);
-            } else if (bloc.auth.user!.id == state.other!.id) {
+            } else if (bloc.userId == state.other!.id) {
               return const Text(StringRes.myPosts);
             }
             return Text('${state.other!.displayName}\'s Posts');

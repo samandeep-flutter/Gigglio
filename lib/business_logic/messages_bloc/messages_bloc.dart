@@ -2,14 +2,13 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/messages_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
-import 'package:gigglio/services/auth_services.dart';
-import 'package:gigglio/services/getit_instance.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:gigglio/data/utils/utils.dart';
 
 class MessagesEvent extends Equatable {
   const MessagesEvent();
@@ -55,21 +54,18 @@ class MessagesState extends Equatable {
   List<Object?> get props => [isLoading, messages];
 }
 
-EventTransformer<T> _debounce<T>(Duration duration) {
-  return (events, mapper) => events.debounceTime(duration).flatMap(mapper);
-}
-
 class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
   MessagesBloc() : super(const MessagesState.init()) {
     on<MessagesInitial>(_onInit);
-    on<MessagesSearched>(_onSearch, transformer: _debounce(Durations.medium4));
+    on<MessagesSearched>(_onSearch,
+        transformer: Utils.debounce(Durations.medium4));
     on<MessagesStream>(_onMessagesRefresh,
-        transformer: _debounce(Durations.medium1));
+        transformer: Utils.debounce(Durations.medium1));
   }
 
-  final AuthServices auth = getIt();
   final messages = FirebaseFirestore.instance.collection(FBKeys.messages);
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
+  final userId = FirebaseAuth.instance.currentUser!.uid;
 
   final searchContr = TextEditingController();
   List<MessagesModel> _allMessages = [];
@@ -96,18 +92,15 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
 
   Future<void> _getMessages() async {
     try {
-      final id = auth.user!.id;
-      final query = messages
-          .where(Filter.and(Filter('users', arrayContains: id),
-              Filter('messages', isNotEqualTo: [])))
-          .orderBy('messages');
-      final _query = query.orderBy('last_updated', descending: true);
-      _query.snapshots().listen((event) async {
+      final filter = Filter('users', arrayContains: userId);
+      final _query = messages.where(filter);
+      final query = _query.orderBy('last_updated', descending: true);
+      query.snapshots().listen((event) async {
         if (isClosed) return;
-        final messages =
-            event.docs.map((e) => MessagesDbModel.fromJson(e.data()));
-
-        add(MessagesStream(messages.toList()));
+        final _chats =
+            event.docs.map((e) => MessagesDbModel.fromJson(e.data())).toList();
+        final chats = _chats.where((e) => e.messages.isNotEmpty).toList();
+        add(MessagesStream(chats));
       });
     } catch (e) {
       logPrint(e, 'Messages');
@@ -117,9 +110,8 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
   _onMessagesRefresh(MessagesStream event, Emitter<MessagesState> emit) async {
     final List<MessagesModel> messages = [];
     try {
-      final id = auth.user!.id;
       for (final message in event.messages) {
-        final _id = message.users.firstWhere((element) => element != id);
+        final _id = message.users.firstWhere((element) => element != userId);
         final _user = await users.doc(_id).get();
 
         messages.add(MessagesModel(
@@ -137,27 +129,4 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
       emit(state.copyWith(isLoading: false));
     }
   }
-
-  // void gotoProfile(String id) =>
-  //     Get.toNamed(AppRoutes.gotoProfile, arguments: id);
-
-  // Future<void> onUserSearch() async {
-  //   if (newChatContr.text.isEmpty) {
-  //     usersList.value = allUsers;
-  //     return;
-  //   }
-  //   seachedUsers.value = allUsers.where((e) {
-  //     return e.displayName.toLowerCase().contains(newChatContr.text);
-  //   }).toList();
-  //   usersList.value = seachedUsers;
-  //   return;
-  // }
-
-  // void toChatScreen(UserDetails otherUser, {bool replace = false}) {
-  //   if (replace) {
-  //     Get.offNamed(AppRoutes.chatScreen, arguments: otherUser);
-  //     return;
-  //   }
-  //   Get.toNamed(AppRoutes.chatScreen, arguments: otherUser);
-  // }
 }

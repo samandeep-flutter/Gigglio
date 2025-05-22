@@ -1,11 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/post_model.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
-import 'package:gigglio/services/auth_services.dart';
-import 'package:gigglio/services/getit_instance.dart';
 
 class HomeEvent extends Equatable {
   @override
@@ -65,10 +64,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<HomeNotiRefresh>(_onNotiRefresh);
     on<HomeRefresh>(_onRefresh);
   }
-  final AuthServices auth = getIt();
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final noti = FirebaseFirestore.instance.collection(FBKeys.noti);
+
+  final userId = FirebaseAuth.instance.currentUser!.uid;
   final storage = FirebaseStorage.instance;
 
   // final commentContr = TextEditingController();
@@ -77,7 +77,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   // final RxBool shareLoading = RxBool(false);
 
   void _notiStream() {
-    noti.where('to', isEqualTo: auth.user!.id).snapshots().listen((event) {
+    noti.where('to', isEqualTo: userId).snapshots().listen((event) {
       try {
         if (isClosed || event.docs.isEmpty) return;
         add(HomeNotiRefresh(noti: event.docs.first.data()));
@@ -94,8 +94,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(state.copyWith(loading: true));
     try {
       _notiStream();
-      final id = auth.user!.id;
-      final query = this.posts.where('author', isNotEqualTo: id);
+      final query = this.posts.where('author', isNotEqualTo: userId);
       final page = query.orderBy('author');
       final snap = await page.orderBy('date_time', descending: true).get();
       final posts = snap.docs.map((e) {

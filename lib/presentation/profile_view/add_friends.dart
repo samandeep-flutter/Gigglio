@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gigglio/business_logic/profile_bloc/add_friends_bloc.dart';
+import 'package:gigglio/business_logic/root_bloc.dart';
 import 'package:gigglio/config/routes/routes.dart';
-import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/color_resources.dart';
 import 'package:gigglio/data/utils/dimens.dart';
 import 'package:gigglio/data/utils/string.dart';
@@ -10,6 +9,7 @@ import 'package:gigglio/data/utils/utils.dart';
 import 'package:gigglio/presentation/widgets/top_widgets.dart';
 import 'package:gigglio/services/extension_services.dart';
 import 'package:go_router/go_router.dart';
+import '../../business_logic/profile_bloc/add_friends_bloc.dart';
 import '../widgets/base_widget.dart';
 import '../widgets/loading_widgets.dart';
 import '../widgets/my_text_field_widget.dart';
@@ -42,14 +42,12 @@ class _AddFriendsState extends State<AddFriends> {
         titleTextStyle: Utils.defTitleStyle,
         bottom: PreferredSize(
             preferredSize: Size.fromHeight(kTextTabBarHeight),
-            child: PopScope(
-              onPopInvokedWithResult: bloc.onPop,
-              child: SearchTextField(
-                backgroundColor: scheme.surface,
-                margin: Utils.paddingHoriz(Dimens.sizeDefault),
-                title: 'Search by email',
-                controller: bloc.friendContr,
-              ),
+            child: SearchTextField(
+              compact: true,
+              backgroundColor: scheme.surface,
+              margin: Utils.paddingHoriz(Dimens.sizeDefault),
+              title: 'Search by email',
+              controller: bloc.friendContr,
             )),
       ),
       child: Column(
@@ -57,14 +55,15 @@ class _AddFriendsState extends State<AddFriends> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              BlocBuilder<AddFriendsBloc, AddFriendsState>(
-                  buildWhen: (pr, cr) => pr.requests != cr.requests,
+              BlocBuilder<RootBloc, RootState>(
+                  buildWhen: (pr, cr) =>
+                      pr.profile?.requests != cr.profile?.requests,
                   builder: (context, state) {
                     return TextButton(
                         onPressed: () =>
                             context.pushNamed(AppRoutes.viewRequests),
                         child: Text('${StringRes.viewRequests} '
-                            '(${state.requests})'));
+                            '(${state.profile?.requests.length})'));
                   })
             ],
           ),
@@ -86,7 +85,7 @@ class _AddFriendsState extends State<AddFriends> {
               }),
           Expanded(
             child: BlocBuilder<AddFriendsBloc, AddFriendsState>(
-                buildWhen: (pr, cr) => pr.users != cr.users,
+                buildWhen: (pr, cr) => pr.isLoading != cr.isLoading,
                 builder: (context, state) {
                   return ListView.builder(
                       itemCount: state.users.length,
@@ -95,14 +94,19 @@ class _AddFriendsState extends State<AddFriends> {
                         return ListTile(
                           onTap: () => toProfile(user.id),
                           contentPadding: Utils.paddingHoriz(Dimens.sizeLarge),
-                          leading: MyAvatar(user.image,
-                              isAvatar: true, avatarRadius: 24, id: user.id),
+                          leading:
+                              MyAvatar(user.image, isAvatar: true, id: user.id),
                           title: Text(user.displayName),
                           subtitle: Text(user.email,
                               maxLines: 1, overflow: TextOverflow.ellipsis),
                           subtitleTextStyle: context.subtitleTextStyle,
                           trailing:
-                              _TrailingButton(user.id, user: state.profile!),
+                              BlocBuilder<AddFriendsBloc, AddFriendsState>(
+                            buildWhen: (pr, cr) => pr.requested != cr.requested,
+                            builder: (context, state) {
+                              return _TrailingButton(user.id, state.requested);
+                            },
+                          ),
                         );
                       });
                 }),
@@ -118,20 +122,20 @@ class _AddFriendsState extends State<AddFriends> {
 }
 
 class _TrailingButton extends StatelessWidget {
-  final UserDetails user;
   final String id;
+  final List<String> requested;
 
-  const _TrailingButton(this.id, {required this.user});
+  const _TrailingButton(this.id, this.requested);
 
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<AddFriendsBloc>();
     final scheme = context.scheme;
 
-    return BlocBuilder<AddFriendsBloc, AddFriendsState>(
-        buildWhen: (pr, cr) => pr.requested != cr.requested,
+    return BlocBuilder<RootBloc, RootState>(
+        buildWhen: (pr, cr) => pr.profile != cr.profile,
         builder: (context, state) {
-          if (user.friends.contains(id)) {
+          if (state.profile!.friends.contains(id)) {
             return LoadingButton(
                 defWidth: true,
                 compact: true,
@@ -141,17 +145,17 @@ class _TrailingButton extends StatelessWidget {
                 foregroundColor: ColorRes.error,
                 child: const Text(StringRes.remove));
           }
-          final requested = state.requested.contains(id);
-          final iContain = user.requests.contains(id);
+          final _requested = requested.contains(id);
+          final iContain = state.profile!.requests.contains(id);
           return LoadingButton(
               defWidth: true,
               compact: true,
               onPressed: () => bloc.add(AddFriendRequest(id)),
-              enable: !(iContain || requested),
+              enable: !(iContain || _requested),
               border: Dimens.borderSmall,
-              child: state.requested.contains(id)
+              child: requested.contains(id)
                   ? const Text(StringRes.requested)
-                  : user.requests.contains(id)
+                  : state.profile!.requests.contains(id)
                       ? const Text(StringRes.inReq)
                       : const Text(StringRes.send));
         });

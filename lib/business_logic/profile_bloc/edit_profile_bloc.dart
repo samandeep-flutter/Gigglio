@@ -1,14 +1,14 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gigglio/services/getit_instance.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../data/utils/app_constants.dart';
 import '../../data/utils/string.dart';
-import '../../services/auth_services.dart';
 
 class EditProfileEvent extends Equatable {
   const EditProfileEvent();
@@ -17,7 +17,13 @@ class EditProfileEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class EditProfileInitial extends EditProfileEvent {}
+class EditProfileInitial extends EditProfileEvent {
+  final UserDetails profile;
+  const EditProfileInitial(this.profile);
+
+  @override
+  List<Object?> get props => [profile, ...super.props];
+}
 
 class EditProfileImage extends EditProfileEvent {
   final ImageSource source;
@@ -30,12 +36,14 @@ class EditProfileImage extends EditProfileEvent {
 class EditProfileSubmit extends EditProfileEvent {}
 
 class EditProfileState extends Equatable {
+  final UserDetails? profile;
   final String? imageUrl;
   final bool profileLoading;
   final bool imageLoading;
   final bool success;
 
   const EditProfileState({
+    required this.profile,
     required this.imageUrl,
     required this.profileLoading,
     required this.imageLoading,
@@ -45,16 +53,19 @@ class EditProfileState extends Equatable {
   const EditProfileState.init()
       : imageUrl = null,
         success = false,
+        profile = null,
         profileLoading = false,
         imageLoading = false;
 
   EditProfileState copyWith({
+    UserDetails? profile,
     String? imageUrl,
     bool? profileLoading,
     bool? imageLoading,
     bool? success,
   }) {
     return EditProfileState(
+      profile: profile ?? this.profile,
       imageUrl: imageUrl ?? this.imageUrl,
       profileLoading: profileLoading ?? this.profileLoading,
       imageLoading: imageLoading ?? this.imageLoading,
@@ -63,7 +74,8 @@ class EditProfileState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [imageUrl, profileLoading, imageLoading, success];
+  List<Object?> get props =>
+      [profile, imageUrl, profileLoading, imageLoading, success];
 }
 
 class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
@@ -73,9 +85,9 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
     on<EditProfileSubmit>(_onSubmit);
   }
 
+  final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final _user = FirebaseAuth.instance.currentUser;
   final storage = FirebaseStorage.instance.ref();
-  final AuthServices auth = getIt();
   final picker = ImagePicker();
 
   final nameController = TextEditingController();
@@ -83,9 +95,9 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
   final editFormKey = GlobalKey<FormState>();
 
   _onInit(EditProfileInitial event, Emitter<EditProfileState> emit) {
-    nameController.text = auth.user?.displayName ?? '';
-    bioContr.text = auth.user?.bio ?? '';
-    emit(state.copyWith(imageUrl: auth.user?.image));
+    nameController.text = event.profile.displayName;
+    bioContr.text = event.profile.bio ?? '';
+    emit(state.copyWith(imageUrl: event.profile.image));
   }
 
   void _onPickImage(
@@ -115,7 +127,7 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
       } catch (_) {}
     }
     try {
-      final path = '${auth.user!.id}.$ext';
+      final path = '${_user!.uid}.$ext';
       final ref = storage.child(AppConstants.profileImage(path));
       await ref.putFile(file);
       String url = await ref.getDownloadURL();
@@ -132,13 +144,17 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
     if (!(editFormKey.currentState?.validate() ?? false)) return;
     emit(state.copyWith(profileLoading: true));
     try {
-      if (state.imageUrl != auth.user?.image) {
+      if (state.imageUrl != state.profile?.image) {
         await _user!.updatePhotoURL(state.imageUrl);
       }
-      if (nameController.text != auth.user?.displayName) {
+      if (nameController.text != state.profile?.displayName) {
         await _user!.updateDisplayName(nameController.text);
       }
-      await auth.saveProfile(bioContr.text.trim());
+      await users.doc(_user!.uid).update({
+        'image': _user.photoURL,
+        'display_name': _user.displayName,
+        'bio': bioContr.text.trim()
+      });
       emit(state.copyWith(success: true));
     } catch (e) {
       logPrint(e, 'EditProfile');

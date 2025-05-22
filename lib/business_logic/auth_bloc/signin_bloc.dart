@@ -1,13 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
+import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/services/getit_instance.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/utils/app_constants.dart';
-import '../../services/auth_services.dart';
 
 class SignInEvents extends Equatable {
   const SignInEvents();
@@ -68,9 +70,10 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
     on<SignInviaTwitter>(_twitterSignin);
   }
 
-  final AuthServices auth = getIt();
-  final FirebaseAuth fbAuth = FirebaseAuth.instance;
+  final fbAuth = FirebaseAuth.instance;
   final fbMessaging = FirebaseMessaging.instance;
+  final users = FirebaseFirestore.instance.collection(FBKeys.users);
+  final AuthServices auth = getIt();
 
   final formKey = GlobalKey<FormState>();
   final emailContr = TextEditingController();
@@ -104,7 +107,7 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
     try {
       final credentials = await fbAuth.signInWithEmailAndPassword(
           email: emailContr.text, password: passwordContr.text);
-      await auth.fetchFbUser(credentials, token: token);
+      await fetchFbUser(credentials, token: token);
       emit(state.copyWith(success: true));
     } on FirebaseAuthException catch (e) {
       onFbSignInException(e);
@@ -126,7 +129,7 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
       final oAuth = GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
       final credentials = await fbAuth.signInWithCredential(oAuth);
-      await auth.fetchFbUser(credentials, token: token);
+      await fetchFbUser(credentials, token: token);
       emit(state.copyWith(success: true));
     } catch (e) {
       logPrint(e, 'Google');
@@ -141,7 +144,7 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
     try {
       TwitterAuthProvider twitterProvider = TwitterAuthProvider();
       final credentials = await fbAuth.signInWithProvider(twitterProvider);
-      await auth.fetchFbUser(credentials, token: token);
+      await fetchFbUser(credentials, token: token);
       emit(state.copyWith(success: true));
     } on FirebaseAuthException catch (e) {
       onFbSignInException(e);
@@ -149,6 +152,31 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
       logPrint(e, 'Twitter');
     } finally {
       emit(state.copyWith(twitterLoading: false));
+    }
+  }
+
+  Future<void> fetchFbUser(UserCredential credentials, {String? token}) async {
+    final user = credentials.user;
+    if (user == null) return;
+    try {
+      final json = await users.doc(user.uid).get();
+      if (!json.exists) throw Exception();
+      final _user = UserDetails.fromJson(json.data()!);
+      users.doc(user.uid).update({'login': true});
+      if (_user.deviceToken != token) {
+        users.doc(user.uid).update({'device_token': token});
+      }
+    } catch (_) {
+      var details = UserDetails(
+        id: user.uid,
+        displayName: user.displayName ?? '',
+        email: user.email!,
+        image: user.photoURL,
+        notiSeen: DateTime.now(),
+        deviceToken: token,
+        login: true,
+      );
+      await users.doc(details.id).set(details.toJson());
     }
   }
 

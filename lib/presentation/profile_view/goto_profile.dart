@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/user_profile_bloc.dart';
 import 'package:gigglio/config/routes/routes.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/string.dart';
 import 'package:gigglio/data/utils/utils.dart';
 import 'package:gigglio/services/extension_services.dart';
@@ -174,7 +175,7 @@ class _GotoProfileState extends State<GotoProfile> {
                     Expanded(
                       child: LoadingButton(
                           enable: friend,
-                          onPressed: () => toChat(state.other?.id),
+                          onPressed: () => toChat(state.other),
                           isLoading: false,
                           width: double.infinity,
                           border: Dimens.borderDefault,
@@ -244,7 +245,7 @@ class _GotoProfileState extends State<GotoProfile> {
     context.pushNamed(AppRoutes.userPosts, extra: index);
   }
 
-  void toChat(String? id) {
-    context.pushNamed(AppRoutes.chatScreen, extra: id);
+  void toChat(UserDetails? user) {
+    context.pushNamed(AppRoutes.chatScreen, extra: user);
   }
 }

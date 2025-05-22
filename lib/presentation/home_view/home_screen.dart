@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gigglio/business_logic/profile_bloc/profile_bloc.dart';
+import 'package:gigglio/business_logic/root_bloc.dart';
 import 'package:gigglio/config/routes/routes.dart';
 import 'package:gigglio/data/utils/dimens.dart';
 import 'package:gigglio/data/utils/string.dart';
@@ -52,10 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context, state) {
                       final noti = state.notiFetch;
 
-                      return BlocBuilder<ProfileBloc, ProfileState>(
-                          buildWhen: (pr, cr) => pr.user != cr.user,
+                      return BlocBuilder<RootBloc, RootState>(
+                          buildWhen: (pr, cr) => pr.profile != cr.profile,
                           builder: (context, state) {
-                            final date = state.user?.notiSeen;
+                            final date = state.profile?.notiSeen;
 
                             if (date == null) return const SizedBox.shrink();
                             if ((noti?.isAfter(date) ?? false)) {
@@ -91,9 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: state.posts.length,
                   padding: EdgeInsets.only(bottom: context.height * .1),
                   itemBuilder: (context, index) {
-                    final post = state.posts[index];
-                    bool last = state.posts.length == index + 1;
-                    return PostTile(post, last: last, reload: reload);
+                    return PostTile(state.posts[index], reload: reload);
                   });
             }),
       ),

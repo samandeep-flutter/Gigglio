@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/notification_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
@@ -63,6 +64,7 @@ class ViewRequestsBloc extends Bloc<ViewRequestEvents, ViewRequestState> {
   }
 
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
+  final userId = FirebaseAuth.instance.currentUser!.uid;
   final AuthServices auth = getIt();
 
   void _onInit(ViewRequestInitial event, Emitter<ViewRequestState> emit) async {
@@ -71,7 +73,7 @@ class ViewRequestsBloc extends Bloc<ViewRequestEvents, ViewRequestState> {
       final query = await this.users.get();
       var users =
           query.docs.map((e) => UserDetails.fromJson(e.data())).toList();
-      final cUser = users.firstWhere((e) => e.id == auth.user!.id);
+      final cUser = users.firstWhere((e) => e.id == userId);
       users.removeWhere((e) => !(cUser.requests.contains(e.id)));
       emit(state.copyWith(requests: users));
     } catch (e) {
@@ -84,9 +86,9 @@ class ViewRequestsBloc extends Bloc<ViewRequestEvents, ViewRequestState> {
   _onAccepted(RequestAccepted event, Emitter<ViewRequestState> emit) async {
     try {
       final otherUser = users.doc(event.id);
-      final myUser = users.doc(auth.user!.id);
+      final myUser = users.doc(userId);
       otherUser.update({
-        'friends': FieldValue.arrayUnion([auth.user!.id]),
+        'friends': FieldValue.arrayUnion([userId]),
       });
       myUser.update({
         'friends': FieldValue.arrayUnion([event.id]),
@@ -96,7 +98,7 @@ class ViewRequestsBloc extends Bloc<ViewRequestEvents, ViewRequestState> {
       accepted.add(event.id);
       emit(state.copyWith(reqAccepted: accepted));
       final noti = NotiDbModel(
-        from: auth.user!.id,
+        from: userId,
         to: event.id,
         dateTime: DateTime.now(),
         category: NotiCategory.reqAccepted,

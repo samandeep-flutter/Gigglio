@@ -8,6 +8,7 @@ class BaseWidget extends StatelessWidget {
   final EdgeInsets? margin;
   final Color? color;
   final BoxDecoration? decoration;
+  final Widget? bottom;
   final Widget? child;
   final bool? resizeBottom;
   final bool safeAreaBottom;
@@ -19,6 +20,7 @@ class BaseWidget extends StatelessWidget {
     this.margin,
     this.color,
     this.decoration,
+    this.bottom,
     this.resizeBottom,
     this.safeAreaBottom = false,
     this.child,
@@ -32,6 +34,7 @@ class BaseWidget extends StatelessWidget {
       appBar: appBar,
       resizeToAvoidBottomInset: resizeBottom,
       backgroundColor: color ?? scheme.background,
+      bottomNavigationBar: bottom,
       body: Container(
         decoration: decoration,
         child: SafeArea(

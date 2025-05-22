@@ -2,14 +2,13 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/post_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
-import 'package:gigglio/services/auth_services.dart';
-import 'package:gigglio/services/getit_instance.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:gigglio/data/utils/utils.dart';
 
 class UserProfileEvent extends Equatable {
   const UserProfileEvent();
@@ -97,24 +96,20 @@ class UserProfileState extends Equatable {
   List<Object?> get props => [loading, profile, other, posts];
 }
 
-EventTransformer<T> _debounce<T>(Duration duration) {
-  return (events, mapper) => events.debounceTime(duration).flatMap(mapper);
-}
-
 class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   UserProfileBloc() : super(UserProfileState.init()) {
     on<UserProfileInitial>(_onInit);
     on<UserProfileRefresh>(_onRefresh);
     on<UserPostsRefresh>(_onPostsRefresh);
     on<UserProfileRequest>(_onRequest);
-    on<UserProfileScrollTo>(_scrollTo, transformer: _debounce(duration));
+    on<UserProfileScrollTo>(_scrollTo, transformer: Utils.debounce(duration));
   }
 
   final duration = const Duration(milliseconds: 300);
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final postController = ScrollController();
-  final AuthServices auth = getIt();
+  final userId = FirebaseAuth.instance.currentUser!.uid;
 
   _onInit(UserProfileInitial event, Emitter<UserProfileState> emit) async {
     emit(UserProfileState.init());
@@ -138,9 +133,9 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     try {
       final profile = Completer<UserDetails>();
       final other = Completer<UserDetails>();
-      final onlyMe = auth.user!.id == event.userId;
+      final onlyMe = userId == event.userId;
       if (!onlyMe) {
-        users.doc(auth.user!.id).get().then((snap) {
+        users.doc(userId).get().then((snap) {
           profile.complete(UserDetails.fromJson(snap.data()!));
         });
       }
@@ -175,8 +170,17 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
 
   _onRequest(UserProfileRequest event, Emitter<UserProfileState> emit) async {
     emit(state.copyWith(reqLoading: true));
-    // TODO: insert request logic.
-    add(UserProfileRefresh(state.other!.id));
+    try {
+      final doc = users.doc(event.id);
+      doc.update({
+        'requests': FieldValue.arrayUnion([userId])
+      });
+    } catch (e) {
+      logPrint(e, 'onRequest');
+    }
+    final request = [...state.other!.requests, event.id];
+    final other = state.other!.copyWith(requests: request);
+    emit(state.copyWith(other: other));
   }
 
   _scrollTo(UserProfileScrollTo event, Emitter<UserProfileState> emit) async {

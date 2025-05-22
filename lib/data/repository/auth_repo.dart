@@ -17,7 +17,7 @@ class AuthRepo {
     Function(Map<String, dynamic> json)? onSuccess,
     Function(Map<String, dynamic> error)? onError,
   }) async {
-    if (token == null) return;
+    if (token?.isEmpty ?? true) return;
     final body = {
       'to': token,
       'notification': {

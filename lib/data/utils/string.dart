@@ -55,6 +55,8 @@ class StringRes {
   static const String postShared = 'Post Shared';
   static const String comments = 'Comments';
   static const String goBack = 'go back';
+  static const String today = 'Today';
+  static const String yesterday = 'Yesterday';
   static const String somethingWrong = 'Something went wrong';
   static const String viewComments = 'View all comments';
   static const String noComments = 'Be the first one to comment..';

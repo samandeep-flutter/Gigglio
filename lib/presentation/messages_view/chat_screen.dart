@@ -1,169 +1,189 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:gigglio/data/models/messages_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gigglio/config/routes/routes.dart';
+import 'package:gigglio/data/data_models/messages_model.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/dimens.dart';
 import 'package:gigglio/data/utils/image_resources.dart';
-import 'package:gigglio/services/theme_services.dart';
+import 'package:gigglio/data/utils/utils.dart';
 import 'package:gigglio/presentation/messages_view/message_tile.dart';
 import 'package:gigglio/presentation/widgets/base_widget.dart';
 import 'package:gigglio/presentation/widgets/my_cached_image.dart';
 import 'package:gigglio/presentation/widgets/top_widgets.dart';
-import '../../business_logic/messages_controller/chat_controller.dart';
+import 'package:gigglio/services/extension_services.dart';
+import 'package:go_router/go_router.dart';
+import '../../business_logic/messages_bloc/chat_bloc.dart';
 import '../widgets/my_text_field_widget.dart';
 
-class ChatScreen extends GetView<ChatController> {
-  const ChatScreen({super.key});
+class ChatScreen extends StatefulWidget {
+  final UserDetails user;
+  const ChatScreen({super.key, required this.user});
 
-  void _scrollTo(double? to) {
-    if (to == null) return;
-    if (controller.isScrolled) return;
-    const duration = Duration(milliseconds: 500);
-    Future.delayed(duration, () {
-      if (controller.scrollContr.position.haveDimensions) {
-        controller.scrollContr.animateTo(
-          to,
-          duration: duration,
-          curve: Curves.easeOut,
-        );
-        controller.isScrolled = true;
-      }
-    });
-  }
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
 
-  _readRecipt(MessagesModel? model) async {
-    if (model == null) return;
-    await Future.delayed(const Duration(milliseconds: 200));
-    try {
-      if (controller.scrollContr.position.maxScrollExtent > 0) return;
-      final user = controller.authServices.user.value;
-      final index = model.userData.indexWhere((e) => e.id == user!.id);
-      model.userData[index].seen = model.messages.length;
-      controller.messages
-          .doc(controller.chatId)
-          .update({'user_data': model.userData.map((e) => e.toJson())});
-    } catch (_) {}
+class _ChatScreenState extends State<ChatScreen> {
+  @override
+  void initState() {
+    final bloc = context.read<ChatBloc>();
+    bloc.add(ChatInitial(widget.user));
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = ThemeServices.of(context);
-    final user = controller.authServices.user.value;
+    final bloc = context.read<ChatBloc>();
+    final scheme = context.scheme;
 
-    MessagesModel? messages;
     return BaseWidget(
       padding: EdgeInsets.zero,
       resizeBottom: false,
       decoration: BoxDecoration(
-          image: DecorationImage(
-        image: AssetImage(ImageRes.chatBackground),
-        fit: BoxFit.cover,
-      )),
+        image: DecorationImage(
+          image: AssetImage(ImageRes.chatBackground),
+          fit: BoxFit.cover,
+        ),
+      ),
       appBar: AppBar(
         backgroundColor: scheme.surface,
-        surfaceTintColor: scheme.surface,
-        shadowColor: scheme.surface,
-        elevation: 5,
-        titleSpacing: 0,
-        title: GestureDetector(
-          onTap: () => controller.gotoProfile(controller.otherUser.id),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              MyCachedImage(
-                controller.otherUser.image,
-                isAvatar: true,
-                avatarRadius: 16,
-              ),
-              const SizedBox(width: Dimens.sizeDefault),
-              Text(controller.otherUser.displayName),
-            ],
-          ),
-        ),
         centerTitle: false,
+        titleSpacing: Dimens.zero,
+        title: BlocBuilder<ChatBloc, ChatState>(
+            buildWhen: (pr, cr) => pr.profile != cr.profile,
+            builder: (context, state) {
+              return GestureDetector(
+                onTap: () => toProfile(state.profile?.id),
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: MyCachedImage(state.profile?.image,
+                      isAvatar: true, avatarRadius: Dimens.sizeMedium),
+                  title: Text(state.profile?.displayName ?? ''),
+                  titleTextStyle: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: scheme.textColor,
+                      fontSize: Dimens.fontExtraDoubleLarge),
+                  subtitle: state.profile?.bio != null
+                      ? Text(state.profile?.bio ?? '',
+                          maxLines: 1, overflow: TextOverflow.ellipsis)
+                      : null,
+                  subtitleTextStyle: TextStyle(
+                      color: scheme.textColorLight, fontSize: Dimens.fontMed),
+                  trailing: const SizedBox.shrink(),
+                ),
+              );
+            }),
+        actions: [const SizedBox(width: Dimens.sizeDefault)],
       ),
-      child: Column(
-        children: [
-          Expanded(child: Obx(() {
-            if (controller.isIdLoading.value) return const SnapshotLoading();
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        bottomNavigationBar: _BottomBar(),
+        body: BlocBuilder<ChatBloc, ChatState>(
+          builder: (context, state) {
+            if (state.isLoading) return const SnapshotLoading();
+            final other =
+                state.userData.firstWhere((e) => e.id == state.profile!.id);
+            // final index = messages!.userData.indexWhere((e) => e.id == user!.id);
+            // if (messages!.userData[index].seen != messages!.messages.length) {
+            //   _readRecipt(messages);
+            // }
+            return ListView.builder(
+                padding: EdgeInsets.zero,
+                controller: bloc.scrollContr,
+                itemCount: state.messages.length,
+                itemBuilder: (context, index) {
+                  final message = state.messages[index];
+                  final notNull = message.scrollAt != null;
+                  bool isSeen = notNull
+                      ? other.scrollAt! >= message.scrollAt!
+                      : other.seen?.isAfter(message.dateTime) ?? false;
 
-            return StreamBuilder(
-                stream: controller.messages.doc(controller.chatId).snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) return const ToolTipWidget();
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const SnapshotLoading();
-                  }
-                  final json = snapshot.data!.data();
-                  messages = MessagesModel.fromJson(json!);
+                  Messages? _above;
+                  try {
+                    _above = state.messages[index - 1];
+                  } catch (_) {}
+                  Messages? _below;
+                  try {
+                    _below = state.messages[index + 1];
+                  } catch (_) {}
 
-                  if (!controller.isScrolled) {
-                    _scrollTo(messages!.userData.firstWhere((e) {
-                      return e.id != user!.id;
-                    }).scrollAt);
-                  }
-                  final index =
-                      messages!.userData.indexWhere((e) => e.id == user!.id);
+                  final sameAbove = message.author == _above?.author;
+                  final sameBelow = message.author == _below?.author;
 
-                  if (messages!.userData[index].seen !=
-                      messages!.messages.length) {
-                    _readRecipt(messages);
-                  }
+                  final _now = message.dateTime.subtract(Duration(days: 1));
+                  final diff =
+                      message.dateTime.difference(_above?.dateTime ?? _now);
 
-                  return ListView.builder(
-                      padding: const EdgeInsets.only(top: Dimens.sizeDefault),
-                      controller: controller.scrollContr,
-                      itemCount: messages!.messages.length,
-                      itemBuilder: (context, index) {
-                        final message = messages!.messages[index];
-
-                        final otherUser = messages!.userData.firstWhere((e) {
-                          return e.id != message.author;
-                        });
-
-                        bool isScrolled = otherUser.scrollAt != null &&
-                                message.scrollAt != null
-                            ? otherUser.scrollAt! >= message.scrollAt!
-                            : otherUser.seen >= message.position;
-
-                        return MessageTile(
-                          message: message,
-                          isScrolled: isScrolled,
-                        );
-                      });
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (diff.inDays > 0)
+                        Container(
+                          margin: EdgeInsets.all(Dimens.sizeSmall),
+                          padding: EdgeInsets.symmetric(
+                              vertical: Dimens.sizeExtraSmall,
+                              horizontal: Dimens.sizeMedSmall),
+                          decoration: BoxDecoration(
+                            color: scheme.background.withAlpha(150),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(Utils.formatDate(message.dateTime)),
+                        ),
+                      MessageTile(message,
+                          seen: isSeen,
+                          sameUserAbove: sameAbove,
+                          sameUserBelow: sameBelow),
+                    ],
+                  );
                 });
-          })),
-          SafeArea(
-              minimum: EdgeInsets.only(
-                bottom: context.mediaQuery.viewInsets.bottom,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: CustomTextField(
-                      fieldKey: controller.messageKey,
-                      maxLines: 1,
-                      backgroundColor: scheme.surface,
-                      borderRadius: BorderRadius.circular(Dimens.borderLarge),
-                      margin: const EdgeInsets.only(left: Dimens.sizeSmall),
-                      title: 'Message',
-                      capitalization: TextCapitalization.sentences,
-                      controller: controller.messageContr,
-                    ),
-                  ),
-                  const SizedBox(width: Dimens.sizeSmall),
-                  IconButton.filled(
-                    constraints: const BoxConstraints.expand(
-                      height: 52,
-                      width: 52,
-                    ),
-                    onPressed: () => controller.sendMessage(messages),
-                    icon: const Icon(Icons.send),
-                  ),
-                  const SizedBox(width: Dimens.sizeSmall),
-                ],
-              ))
-        ],
+          },
+        ),
       ),
+    );
+  }
+
+  void toProfile(String? id) {
+    context.pushNamed(AppRoutes.gotoProfile, extra: id);
+  }
+}
+
+class _BottomBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final bloc = context.read<ChatBloc>();
+    final scheme = context.scheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: CustomTextField(
+                fieldKey: bloc.messageKey,
+                maxLines: 1,
+                title: 'Message',
+                backgroundColor: scheme.surface,
+                borderRadius: BorderRadius.circular(Dimens.borderDefault),
+                margin: const EdgeInsets.only(left: Dimens.sizeSmall),
+                capitalization: TextCapitalization.sentences,
+                controller: bloc.messageContr,
+              ),
+            ),
+            const SizedBox(width: Dimens.sizeSmall),
+            SizedBox.square(
+              dimension: Dimens.sizeExtraDoubleLarge,
+              child: IconButton.filled(
+                onPressed: () => bloc.add(ChatSendMessage()),
+                icon: const Icon(Icons.send),
+              ),
+            ),
+            const SizedBox(width: Dimens.sizeSmall),
+          ],
+        ),
+        const SizedBox(height: Dimens.sizeSmall),
+        SafeArea(child: SizedBox(height: context.bottomInsets))
+      ],
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/user_profile_bloc.dart';
+import 'package:gigglio/business_logic/root_bloc.dart';
 import 'package:gigglio/config/routes/routes.dart';
 import 'package:gigglio/data/utils/dimens.dart';
 import 'package:gigglio/data/utils/string.dart';
@@ -44,10 +45,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(width: Dimens.sizeLarge),
-              BlocBuilder<ProfileBloc, ProfileState>(
-                buildWhen: (pr, cr) => pr.user?.image != cr.user?.image,
+              BlocBuilder<RootBloc, RootState>(
+                buildWhen: (pr, cr) => pr.profile?.image != cr.profile?.image,
                 builder: (context, state) {
-                  return MyCachedImage(state.user?.image,
+                  return MyCachedImage(state.profile?.image,
                       isAvatar: true, avatarRadius: 50);
                 },
               ),
@@ -57,12 +58,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: Dimens.sizeSmall),
-                  BlocBuilder<ProfileBloc, ProfileState>(
+                  BlocBuilder<RootBloc, RootState>(
                       buildWhen: (pr, cr) =>
-                          pr.user?.displayName != cr.user?.displayName,
+                          pr.profile?.displayName != cr.profile?.displayName,
                       builder: (context, state) {
                         return Text(
-                          state.user?.displayName ?? '',
+                          state.profile?.displayName ?? '',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -71,11 +72,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fontWeight: FontWeight.w600),
                         );
                       }),
-                  BlocBuilder<ProfileBloc, ProfileState>(
-                      buildWhen: (pr, cr) => pr.user?.email != cr.user?.email,
+                  BlocBuilder<RootBloc, RootState>(
+                      buildWhen: (pr, cr) =>
+                          pr.profile?.email != cr.profile?.email,
                       builder: (context, state) {
                         return Text(
-                          state.user?.email ?? '',
+                          state.profile?.email ?? '',
                           maxLines: 4,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -84,11 +86,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       }),
                   const SizedBox(height: Dimens.sizeSmall + 2),
-                  BlocBuilder<ProfileBloc, ProfileState>(
-                      buildWhen: (pr, cr) => pr.user?.bio != cr.user?.bio,
+                  BlocBuilder<RootBloc, RootState>(
+                      buildWhen: (pr, cr) => pr.profile?.bio != cr.profile?.bio,
                       builder: (context, state) {
                         return Text(
-                          state.user?.bio ?? '',
+                          state.profile?.bio ?? '',
                           maxLines: 4,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -97,22 +99,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       }),
                   const SizedBox(height: Dimens.sizeDefault),
-                  BlocBuilder<ProfileBloc, ProfileState>(
+                  BlocBuilder<RootBloc, RootState>(
                     buildWhen: (pr, cr) {
-                      final friends = pr.user?.friends != cr.user?.friends;
-                      final requests = pr.user?.requests != cr.user?.requests;
+                      final friends =
+                          pr.profile?.friends != cr.profile?.friends;
+                      final requests =
+                          pr.profile?.requests != cr.profile?.requests;
                       return friends || requests;
                     },
                     builder: (context, state) {
-                      if (state.user == null) return const CountShimmer();
-                      bool singleFriend = state.user!.friends.length == 1;
-                      bool singleRequest = state.user!.requests.length == 1;
+                      if (state.profile == null) return const CountShimmer();
+                      bool singleFriend = state.profile!.friends.length == 1;
+                      bool singleRequest = state.profile!.requests.length == 1;
                       return Row(
                         children: [
                           Expanded(
                             child: FriendsTile(
                               title: singleFriend ? 'Friend' : 'Friends',
-                              count: state.user?.friends.length,
+                              count: state.profile?.friends.length,
                               onTap: () =>
                                   context.pushNamed(AppRoutes.addFriends),
                             ),
@@ -120,8 +124,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Expanded(
                             child: FriendsTile(
                               title: singleRequest ? 'Request' : 'Requests',
-                              count: state.user?.requests.length,
-                              enable: state.user?.requests.isNotEmpty ?? false,
+                              count: state.profile?.requests.length,
+                              enable: state.profile!.requests.isNotEmpty,
                               onTap: () =>
                                   context.pushNamed(AppRoutes.viewRequests),
                             ),
@@ -186,7 +190,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     itemBuilder: (context, index) {
                       final item = state.posts[index];
                       return InkWell(
-                        onTap: () => toPost(index, userId: state.user!.id),
+                        onTap: () => toPost(index),
                         splashColor: Colors.black38,
                         child: Padding(
                             padding: const EdgeInsets.all(2),
@@ -199,9 +203,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void toPost(int index, {required String userId}) {
+  void toPost(int index) {
     final bloc = context.read<UserProfileBloc>();
-    bloc.add(UserProfileInitial(userId));
+    bloc.add(UserProfileInitial(bloc.userId));
     context.pushNamed(AppRoutes.userPosts, extra: index);
   }
 

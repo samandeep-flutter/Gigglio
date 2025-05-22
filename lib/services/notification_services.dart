@@ -20,6 +20,7 @@ class MyNotifications {
       logPrint(e, 'fb init');
     }
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // TODO: show notification manually
       logPrint(message.toMap(), 'noti map');
     });
 

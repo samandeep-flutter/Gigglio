@@ -5,11 +5,14 @@ import 'package:gigglio/business_logic/auth_bloc/signin_bloc.dart';
 import 'package:gigglio/business_logic/auth_bloc/signup_bloc.dart';
 import 'package:gigglio/business_logic/home_bloc/new_post_bloc.dart';
 import 'package:gigglio/business_logic/home_bloc/notification_bloc.dart';
+import 'package:gigglio/business_logic/messages_bloc/chat_bloc.dart';
 import 'package:gigglio/business_logic/messages_bloc/new_chat_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/add_friends_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/edit_profile_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/settings_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/view_requests_bloc.dart';
+import 'package:gigglio/business_logic/root_bloc.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/presentation/home_view/new_post.dart';
 import 'package:gigglio/presentation/profile_view/user_posts.dart';
 import 'package:gigglio/services/auth_services.dart';
@@ -102,7 +105,13 @@ sealed class AppPages {
         GoRoute(
           name: AppRoutes.chatScreen,
           path: AppRoutePaths.chatScreen,
-          builder: (_, state) => const ChatScreen(),
+          builder: (_, state) {
+            final user = state.extra as UserDetails;
+            return BlocProvider(
+              create: (_) => ChatBloc(),
+              child: ChatScreen(user: user),
+            );
+          },
         ),
         GoRoute(
           name: AppRoutes.newChat,
@@ -117,10 +126,16 @@ sealed class AppPages {
         GoRoute(
           name: AppRoutes.editProfile,
           path: AppRoutePaths.editProfile,
-          builder: (_, state) {
-            return BlocProvider(
-              create: (_) => EditProfileBloc(),
-              child: const EditProfile(),
+          builder: (context, state) {
+            return BlocBuilder<RootBloc, RootState>(
+              bloc: context.read<RootBloc>(),
+              buildWhen: (_, __) => false,
+              builder: (context, state) {
+                return BlocProvider(
+                  create: (_) => EditProfileBloc(),
+                  child: EditProfile(profile: state.profile!),
+                );
+              },
             );
           },
         ),

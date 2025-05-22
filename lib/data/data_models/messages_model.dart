@@ -71,7 +71,8 @@ class MessagesModel extends Equatable {
 class Messages extends Equatable {
   final String author;
   final DateTime dateTime;
-  final String text;
+  final String? text;
+  final String? post;
   final double? scrollAt;
   final int position;
 
@@ -79,23 +80,35 @@ class Messages extends Equatable {
     required this.author,
     required this.dateTime,
     required this.text,
+    required this.post,
     required this.scrollAt,
     required this.position,
   });
 
+  const Messages.text({
+    required this.author,
+    required this.dateTime,
+    required this.text,
+    required this.scrollAt,
+    required this.position,
+  }) : post = null;
+
   factory Messages.fromJson(Map<String, dynamic> json) {
     return Messages(
-        author: json['author'],
-        dateTime: DateTime.parse(json['date_time']),
-        text: json['text'],
-        scrollAt: json['scroll_at']?.toDouble(),
-        position: json['position']);
+      author: json['author'],
+      dateTime: DateTime.parse(json['date_time']),
+      text: json['text'],
+      post: json['post'],
+      scrollAt: json['scroll_at']?.toDouble(),
+      position: json['position'],
+    );
   }
 
   Map<String, dynamic> toJson() => {
         'author': author,
         'date_time': dateTime.toIso8601String(),
         'text': text,
+        'post': post,
         'position': position,
         'scroll_at': scrollAt?.toDouble(),
       };
@@ -104,6 +117,7 @@ class Messages extends Equatable {
     String? author,
     DateTime? dateTime,
     String? text,
+    String? post,
     int? position,
     double? scrollAt,
   }) {
@@ -111,23 +125,25 @@ class Messages extends Equatable {
       author: author ?? this.author,
       dateTime: dateTime ?? this.dateTime,
       text: text ?? this.text,
+      post: post ?? this.post,
       position: position ?? this.position,
       scrollAt: scrollAt ?? this.scrollAt,
     );
   }
 
   @override
-  List<Object?> get props => [author, dateTime, text, scrollAt, position];
+  List<Object?> get props => [author, dateTime, text, post, scrollAt, position];
 }
 
-class UserData {
+class UserData extends Equatable {
   final String id;
-  DateTime? seen;
-  double? scrollAt;
+  final DateTime? seen;
+  final double? scrollAt;
 
-  UserData({required this.id, required this.seen, required this.scrollAt});
+  const UserData(
+      {required this.id, required this.seen, required this.scrollAt});
 
-  UserData.newUser(this.id)
+  const UserData.newUser(this.id)
       : seen = null,
         scrollAt = null;
 
@@ -151,4 +167,7 @@ class UserData {
       scrollAt: scrollAt ?? this.scrollAt,
     );
   }
+
+  @override
+  List<Object?> get props => [id, seen, scrollAt];
 }

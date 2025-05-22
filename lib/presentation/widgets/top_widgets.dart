@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gigglio/data/utils/string.dart';
+import 'package:gigglio/data/utils/utils.dart';
 import 'package:gigglio/services/extension_services.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/utils/dimens.dart';
@@ -14,11 +15,12 @@ class MyDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = context.scheme;
     return Container(
-        margin: EdgeInsets.symmetric(horizontal: margin ?? 0),
+        margin: Utils.paddingHoriz(margin ?? 0),
         width: width,
         child: Divider(
-          color: Colors.grey[300],
+          color: scheme.backgroundDark,
           thickness: thickness,
         ));
   }
@@ -33,7 +35,7 @@ class PaginationDots extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = context.scheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3),
+      padding: Utils.paddingHoriz(3),
       child: InkWell(
         borderRadius: BorderRadius.circular(Dimens.borderDefault),
         onTap: onTap,
