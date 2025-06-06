@@ -1,143 +1,139 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:gigglio/data/models/user_details.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gigglio/business_logic/home_bloc/share_bloc.dart';
 import 'package:gigglio/data/utils/dimens.dart';
 import 'package:gigglio/data/utils/string.dart';
-import 'package:gigglio/services/theme_services.dart';
-import 'package:gigglio/presentation/widgets/my_cached_image.dart';
+import 'package:gigglio/data/utils/utils.dart';
+import 'package:gigglio/presentation/widgets/base_widget.dart';
+import 'package:gigglio/presentation/widgets/my_alert_dialog.dart';
 import 'package:gigglio/presentation/widgets/shimmer_widget.dart';
 import 'package:gigglio/presentation/widgets/top_widgets.dart';
-import 'package:gigglio/business_logic/home_controllers/home_controller.dart';
-
+import 'package:gigglio/services/extension_services.dart';
+import 'package:go_router/go_router.dart';
 import '../widgets/loading_widgets.dart';
 
-class ShareTileSheet extends GetView<HomeController> {
-  final VoidCallback onTap;
+class ShareTileSheet extends StatefulWidget {
+  final String postId;
+  const ShareTileSheet(this.postId, {super.key});
 
-  const ShareTileSheet({super.key, required this.onTap});
+  @override
+  State<ShareTileSheet> createState() => _ShareTileSheetState();
+}
+
+class _ShareTileSheetState extends State<ShareTileSheet>
+    with TickerProviderStateMixin {
+  @override
+  void initState() {
+    final bloc = context.read<ShareBloc>();
+    bloc.add(ShareInitial());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = ThemeServices.of(context);
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: FutureBuilder(
-                future: controller.users.get(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) return const ToolTipWidget();
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return GridView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: 6,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: Dimens.sizeSmall,
-                                mainAxisSpacing: Dimens.sizeSmall),
-                        itemBuilder: (context, index) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const MyCachedImage.loading(
-                                isAvatar: true,
-                                avatarRadius: 40,
-                              ),
-                              const SizedBox(height: Dimens.sizeSmall),
-                              SizedBox(
-                                  height: 10, width: 50, child: Shimmer.box)
-                            ],
-                          );
-                        });
-                  }
-                  final users = snapshot.data!.docs.map((e) {
-                    return UserDetails.fromJson(e.data());
-                  }).toList();
-                  final cUser = users.firstWhereOrNull((e) {
-                    return e.id == controller.authServices.user.value!.id;
-                  });
+    final bloc = context.read<ShareBloc>();
+    final scheme = context.scheme;
 
-                  users.removeWhere((e) {
-                    return !cUser!.friends.contains(e.id);
-                  });
-                  return GridView.builder(
-                      scrollDirection:
-                          users.length < 6 ? Axis.vertical : Axis.horizontal,
-                      itemCount: users.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: users.length < 6 ? 3 : 2,
-                          crossAxisSpacing: Dimens.sizeSmall,
-                          mainAxisSpacing: Dimens.sizeSmall),
-                      itemBuilder: (context, index) {
-                        final user = users[index];
-                        return Obx(
-                          () {
-                            final selected =
-                                controller.shareSel.contains(user.id);
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Stack(
-                                  alignment: Alignment.topRight,
-                                  children: [
-                                    MyAvatar(
-                                      user.image,
-                                      isAvatar: true,
-                                      avatarRadius: 38,
-                                      onTap: () {
-                                        if (selected) {
-                                          controller.shareSel.remove(user.id);
-                                          return;
-                                        }
-                                        controller.shareSel.add(user.id);
-                                      },
-                                    ),
-                                    if (selected)
-                                      Container(
-                                        margin: const EdgeInsets.all(
-                                            Dimens.sizeExtraSmall),
-                                        decoration: BoxDecoration(
-                                            color: scheme.background,
-                                            borderRadius: BorderRadius.circular(
-                                                Dimens.borderLarge)),
-                                        child: Icon(
-                                          Icons.check_circle_rounded,
-                                          color: scheme.primary,
-                                          size: Dimens.sizeMedium,
-                                        ),
-                                      )
-                                  ],
-                                ),
-                                const SizedBox(height: Dimens.sizeSmall),
-                                Text(
-                                  user.displayName,
-                                  maxLines: 1,
-                                  style: const TextStyle(
-                                    fontSize: Dimens.fontMed,
-                                  ),
-                                )
-                              ],
-                            );
-                          },
-                        );
-                      });
-                }),
-          ),
-          Obx(() => LoadingButton(
-                width: double.infinity,
-                backgroundColor: scheme.primary,
-                foregroundColor: scheme.onPrimary,
-                border: Dimens.borderSmall,
-                isLoading: controller.shareLoading.value,
-                margin: const EdgeInsets.symmetric(
-                  horizontal: Dimens.sizeLarge,
+    return SizedBox(
+      height: context.height * .55,
+      child: MyBottomSheet(
+        title: StringRes.share,
+        vsync: this,
+        isExpanded: true,
+        bottomPadding: Dimens.sizeSmall,
+        child: BaseWidget(
+          padding: EdgeInsets.zero,
+          bottom: Row(
+            children: [
+              BlocListener<ShareBloc, ShareState>(
+                listenWhen: (pr, cr) => pr.success != cr.success,
+                listener: (context, state) {
+                  if (state.success) context.pop();
+                },
+                child: SizedBox.shrink(),
+              ),
+              Expanded(
+                child: BlocBuilder<ShareBloc, ShareState>(
+                  buildWhen: (pr, cr) {
+                    final loading = pr.shareLoading != cr.shareLoading;
+                    final selected = pr.selected != cr.selected;
+                    return loading || selected;
+                  },
+                  builder: (context, state) {
+                    return LoadingButton(
+                      width: double.infinity,
+                      enable: state.selected.isNotEmpty,
+                      border: Dimens.borderDefault,
+                      isLoading: state.shareLoading,
+                      margin: Utils.paddingHoriz(Dimens.sizeLarge),
+                      onPressed: () => bloc.add(ShareTrigger(widget.postId)),
+                      child: const Text(StringRes.share),
+                    );
+                  },
                 ),
-                onPressed: onTap,
-                child: const Text(StringRes.share),
-              ))
-        ],
+              ),
+            ],
+          ),
+          child: BlocBuilder<ShareBloc, ShareState>(
+            buildWhen: (pr, cr) {
+              final friends = pr.friends != cr.friends;
+              final selected = pr.selected != cr.selected;
+              final loading = pr.loading != cr.loading;
+              return friends || selected || loading;
+            },
+            builder: (context, state) {
+              if (state.loading) return const ShareShimmer();
+
+              return GridView.builder(
+                scrollDirection:
+                    state.friends.length < 6 ? Axis.vertical : Axis.horizontal,
+                padding: EdgeInsets.only(bottom: Dimens.sizeDefault),
+                itemCount: state.friends.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: state.friends.length < 6 ? 3 : 2,
+                    crossAxisSpacing: Dimens.sizeSmall,
+                    mainAxisSpacing: Dimens.sizeSmall),
+                itemBuilder: (context, index) {
+                  final user = state.friends[index];
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          MyAvatar(
+                            user.image,
+                            isAvatar: true,
+                            avatarRadius: Dimens.sizeExtraLarge,
+                            onTap: () => bloc.add(ShareSelected(user.id)),
+                          ),
+                          if (state.selected.contains(user.id))
+                            Container(
+                              margin:
+                                  const EdgeInsets.all(Dimens.sizeExtraSmall),
+                              decoration: BoxDecoration(
+                                  color: scheme.background,
+                                  borderRadius: BorderRadius.circular(
+                                      Dimens.borderLarge)),
+                              child: Icon(Icons.check_circle_rounded,
+                                  color: scheme.primary,
+                                  size: Dimens.sizeMedium),
+                            )
+                        ],
+                      ),
+                      const SizedBox(height: Dimens.sizeSmall),
+                      Text(
+                        user.displayName,
+                        maxLines: 1,
+                        style: const TextStyle(fontSize: Dimens.fontMed),
+                      )
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ),
       ),
     );
   }

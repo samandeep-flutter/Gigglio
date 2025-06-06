@@ -4,18 +4,29 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/post_model.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 
 class HomeEvent extends Equatable {
+  const HomeEvent();
+
   @override
   List<Object?> get props => [];
 }
 
 class HomeInitial extends HomeEvent {}
 
+class HomePostsFetch extends HomeEvent {
+  final List<PostDbModel> posts;
+  const HomePostsFetch(this.posts);
+
+  @override
+  List<Object?> get props => [posts, ...super.props];
+}
+
 class HomeNotiRefresh extends HomeEvent {
   final Map<String, dynamic>? noti;
-  HomeNotiRefresh({required this.noti});
+  const HomeNotiRefresh({required this.noti});
 
   @override
   List<Object?> get props => [noti, ...super.props];
@@ -23,7 +34,7 @@ class HomeNotiRefresh extends HomeEvent {
 
 class HomeRefresh extends HomeEvent {
   final bool loading;
-  HomeRefresh({this.loading = true});
+  const HomeRefresh({this.loading = true});
 
   @override
   List<Object?> get props => [loading, ...super.props];
@@ -61,6 +72,7 @@ class HomeState extends Equatable {
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc() : super(const HomeState.init()) {
     on<HomeInitial>(_onInit);
+    on<HomePostsFetch>(_onPostsFetch);
     on<HomeNotiRefresh>(_onNotiRefresh);
     on<HomeRefresh>(_onRefresh);
   }
@@ -70,11 +82,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   final userId = FirebaseAuth.instance.currentUser!.uid;
   final storage = FirebaseStorage.instance;
-
-  // final commentContr = TextEditingController();
-  // final commentKey = GlobalKey<FormFieldState>();
-  // final RxList<String> shareSel = RxList();
-  // final RxBool shareLoading = RxBool(false);
 
   void _notiStream() {
     noti.where('to', isEqualTo: userId).snapshots().listen((event) {
@@ -98,14 +105,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final page = query.orderBy('author');
       final snap = await page.orderBy('date_time', descending: true).get();
       final posts = snap.docs.map((e) {
-        final post = PostModel.fromJson(e.data());
+        final post = PostDbModel.fromJson(e.data());
         return post.copyWith(id: e.id);
       }).toList();
-      emit(state.copyWith(posts: posts));
+      add(HomePostsFetch(posts));
     } catch (e) {
       logPrint(e, 'Home');
-    } finally {
-      emit(state.copyWith(loading: false));
     }
   }
 
@@ -114,73 +119,20 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     add(HomeInitial());
   }
 
-  // void likePost(String id, {required PostModel post}) async {
-  //   posts.doc(id).update({
-  //     'likes': post.likes.contains(auth.user!.id)
-  //         ? FieldValue.arrayRemove([auth.user!.id])
-  //         : FieldValue.arrayUnion([auth.user!.id]),
-  //   });
-  // }
-
-  // void gotoProfile(String id) =>
-  //     Get.toNamed(AppRoutes.gotoProfile, arguments: id);
-  // void gotoPost(String id) => Get.toNamed(AppRoutes.gotoPost, arguments: id);
-
-  // void postComment(String doc, {required UserDetails postAuthor}) async {
-  //   if (!(commentKey.currentState?.validate() ?? false)) return;
-  //   if (commentContr.text.isEmpty) return;
-  //   final user = authServices.user!;
-  //   final comment = CommentModel(
-  //       author: user.id,
-  //       title: commentContr.text,
-  //       dateTime: DateTime.now().toJson());
-
-  //   posts.doc(doc).update({
-  //     'comments': FieldValue.arrayUnion([comment.toJson()])
-  //   });
-  //   commentKey.currentState?.reset();
-  //   commentContr.clear();
-  //   FocusManager.instance.primaryFocus?.unfocus();
-
-  //   if (postAuthor.friends.contains(user.id)) {
-  //     final noti = NotiModel(
-  //       from: user.id,
-  //       to: postAuthor.id,
-  //       postId: doc,
-  //       dateTime: DateTime.now().toJson(),
-  //       category: NotiCategory.comment,
-  //     );
-  //     this.noti.add(noti.toJson());
-  //   }
-  // }
-
-  // void sharePost(String postId) async {
-  //   final userId = authServices.user!.id;
-  //   shareLoading.value = true;
-  //   final ref = await _messages.where('users', arrayContains: userId).get();
-  //   final List docs = [];
-  //   for (var e in ref.docs) {
-  //     final users = e.data()['users'] as List;
-  //     users.removeWhere((e) => e == userId);
-  //     docs.addIf(shareSel.contains(users.first), e.id);
-  //   }
-  //   for (var id in docs) {
-  //     final doc = _messages.doc(id);
-  //     await doc.get().then((e) {
-  //       final text = '${AppConstants.appUrl}/$postId';
-  //       final position = (e.data()!['messages'] as List).length;
-  //       final message = Messages(
-  //           author: userId,
-  //           dateTime: DateTime.now().toJson(),
-  //           text: text,
-  //           scrollAt: null,
-  //           position: position + 1);
-  //       doc.update({
-  //         'messages': FieldValue.arrayUnion([message.toJson()])
-  //       });
-  //     });
-  //   }
-  //   shareLoading.value = false;
-  //   Get.back();
-  // }
+  void _onPostsFetch(HomePostsFetch event, Emitter<HomeState> emit) async {
+    final _posts = List<PostDbModel>.from(event.posts);
+    try {
+      final List<PostModel> posts = [];
+      for (PostDbModel post in _posts) {
+        final _user = await users.doc(post.author).get();
+        final author = UserDetails.fromJson(_user.data()!);
+        posts.add(PostModel.fromDb(user: author, post: post));
+      }
+      emit(state.copyWith(loading: false, posts: posts));
+    } catch (e) {
+      logPrint(e, 'Home');
+    } finally {
+      emit(state.copyWith(loading: false));
+    }
+  }
 }

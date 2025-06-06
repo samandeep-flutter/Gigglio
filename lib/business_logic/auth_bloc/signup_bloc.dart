@@ -12,8 +12,6 @@ import 'package:gigglio/services/getit_instance.dart';
 import '../../data/utils/string.dart';
 
 class SignUpEvents extends Equatable {
-  const SignUpEvents();
-
   @override
   List<Object?> get props => [];
 }
@@ -130,6 +128,9 @@ class SignUpBloc extends Bloc<SignUpEvents, SignupState> {
         break;
       case 'email-already-in-use':
         showToast('The account already exists for that email.');
+        break;
+      case 'network-request-failed':
+        showToast('Check network connection', timeInSec: 5);
         break;
       default:
         showToast(e.message ?? StringRes.errorUnknown);

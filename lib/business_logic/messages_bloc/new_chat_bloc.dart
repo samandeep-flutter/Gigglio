@@ -7,10 +7,8 @@ import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 
 class NewChatEvent extends Equatable {
-  const NewChatEvent();
-
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class NewChatInitial extends NewChatEvent {}
@@ -35,7 +33,7 @@ class NewChatState extends Equatable {
   }
 
   @override
-  List<Object> get props => [isLoading, users];
+  List<Object?> get props => [isLoading, users];
 }
 
 class NewChatBloc extends Bloc<NewChatEvent, NewChatState> {

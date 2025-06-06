@@ -22,6 +22,12 @@ class BoxServices {
     await box.write(BoxKeys.theme, theme.title);
   }
 
+  Future<void> write(String key, dynamic value) async {
+    await box.write(key, value);
+  }
+
+  T? read<T>(String key) => box.read<T>(key);
+
   Future<void> clear() async => await box.erase();
 
   Future<void> removeUserDetails() async => box.remove(BoxKeys.theme);

@@ -5,8 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 
 class ForgotPassEvents extends Equatable {
-  const ForgotPassEvents();
-
   @override
   List<Object?> get props => [];
 }

@@ -19,7 +19,6 @@ class UserProfileEvent extends Equatable {
 
 class UserProfileInitial extends UserProfileEvent {
   final String userId;
-
   const UserProfileInitial(this.userId);
 
   @override
@@ -28,7 +27,6 @@ class UserProfileInitial extends UserProfileEvent {
 
 class UserProfileRefresh extends UserProfileEvent {
   final String userId;
-
   const UserProfileRefresh(this.userId);
 
   @override
@@ -39,7 +37,6 @@ class UserPostsRefresh extends UserProfileEvent {}
 
 class UserProfileRequest extends UserProfileEvent {
   final String id;
-
   const UserProfileRequest(this.id);
 
   @override
@@ -118,10 +115,13 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       final query = this.posts.where('author', isEqualTo: event.userId);
       final json = await query.orderBy('date_time', descending: true).get();
       final posts = json.docs.map((e) {
-        final post = PostModel.fromJson(e.data());
+        final post = PostDbModel.fromJson(e.data());
         return post.copyWith(id: e.id);
       }).toList();
-      emit(state.copyWith(posts: posts));
+      final _user = await users.doc(event.userId).get();
+      final user = UserDetails.fromJson(_user.data()!);
+      final _posts = posts.map((e) => PostModel.fromDb(user: user, post: e));
+      emit(state.copyWith(posts: _posts.toList()));
     } catch (e) {
       logPrint(e, 'UserProfile');
     } finally {
@@ -159,10 +159,12 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       final query = this.posts.where('author', isEqualTo: state.other!.id);
       final json = await query.orderBy('date_time', descending: true).get();
       final posts = json.docs.map((e) {
-        final post = PostModel.fromJson(e.data());
+        final post = PostDbModel.fromJson(e.data());
         return post.copyWith(id: e.id);
       }).toList();
-      emit(state.copyWith(posts: posts));
+      final _posts =
+          posts.map((e) => PostModel.fromDb(user: state.other!, post: e));
+      emit(state.copyWith(posts: _posts.toList()));
     } catch (e) {
       logPrint(e, 'UserProfile');
     }

@@ -28,15 +28,17 @@ class _ImageCarouselState extends State<ImageCarousel> {
   Widget build(BuildContext context) {
     if (images.length == 1) {
       return ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: context.height * .6),
+          constraints: BoxConstraints(
+              maxHeight: context.height * .6, minHeight: context.height * .4),
           child: MyCachedImage(images.first,
-              width: context.width, fit: BoxFit.fitHeight));
+              width: context.width, fit: BoxFit.fitWidth));
     }
 
     return Column(
       children: [
         ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: context.height * .4),
+          constraints: BoxConstraints(
+              maxHeight: context.height * .4, minHeight: context.height * .3),
           child: PageView.builder(
               controller: pageContr,
               onPageChanged: (value) => setState(() => current = value),

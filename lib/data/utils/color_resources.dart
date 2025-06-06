@@ -1,7 +1,8 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
 
 class ColorRes {
-  static const Color shimmer = Color(0xFFE0E0E0);
   static const Color success = Color(0xFF2B722E);
   static const Color onSuccess = Color(0xFFD1EFCE);
   static const Color error = Color(0xFFB71C1C);
@@ -17,14 +18,14 @@ enum MyTheme {
     onPrimary: Color(0xFFFFFFFF),
     primaryContainer: Color(0xFFD1F4BA),
     onPrimaryContainer: Color(0xFF294E19),
-  ),
-  brown.dark(
-    title: 'Dark Brown Oak',
-    primary: Color(0xFF795548),
-    onPrimary: Color(0xFFFFFFFF),
-    primaryContainer: Color(0xFF4E2C19),
-    onPrimaryContainer: Color(0xFFF4DABA),
   );
+  // brown.dark(
+  //   title: 'Dark Brown Oak',
+  //   primary: Color(0xFF795548),
+  //   onPrimary: Color(0xFFFFFFFF),
+  //   primaryContainer: Color(0xFF4E2C19),
+  //   onPrimaryContainer: Color(0xFFF4DABA),
+  // );
 
   final String title;
   final Brightness brightness;

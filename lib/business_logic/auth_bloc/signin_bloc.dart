@@ -12,8 +12,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/utils/app_constants.dart';
 
 class SignInEvents extends Equatable {
-  const SignInEvents();
-
   @override
   List<Object?> get props => [];
 }
@@ -187,8 +185,13 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
         showToast('Incorrect Email or Passowrd.', timeInSec: 5);
         break;
       case 'user-disabled':
-        showToast('The user account is disabled,'
-            ' kindly try a different login method.');
+        showToast(
+            'The user account is disabled,'
+            ' kindly try a different login method.',
+            timeInSec: 5);
+        break;
+      case 'network-request-failed':
+        showToast('Check network connection', timeInSec: 5);
         break;
       default:
         showToast(e.message ?? 'Something went wrong, try again');

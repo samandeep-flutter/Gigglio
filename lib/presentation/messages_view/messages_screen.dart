@@ -77,10 +77,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
               itemBuilder: (context, index) {
                 final chat = state.messages[index];
 
-                Messages? last;
+                // final unseen=state.messages.where((e)=>e.)
+
+                MessagesDb? last;
                 if (chat.messages.isNotEmpty) last = chat.messages.last;
                 return ListTile(
-                  onTap: () => toChat(chat.user),
+                  onTap: () => toChat(chat.id!, user: chat.user),
                   leading: MyAvatar(chat.user.image,
                       id: chat.user.id, isAvatar: true),
                   title: Text(chat.user.displayName),
@@ -110,7 +112,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
     );
   }
 
-  void toChat(UserDetails user) {
-    context.pushNamed(AppRoutes.chatScreen, extra: user);
+  void toChat(String id, {required UserDetails user}) {
+    final params = {'id': id};
+    context.pushNamed(AppRoutes.chatScreen,
+        extra: user, queryParameters: params);
   }
 }

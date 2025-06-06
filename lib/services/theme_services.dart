@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gigglio/services/box_services.dart';
-import 'package:gigglio/services/getit_instance.dart';
 import '../data/utils/color_resources.dart';
-import 'auth_services.dart';
 
 class _Themes extends InheritedWidget {
   final ThemeServiceState data;
   const _Themes({required super.child, required this.data});
 
   @override
-  bool updateShouldNotify(covariant _Themes oldWidget) {
-    // ignore: unused_local_variable
-    bool result = data.primary != oldWidget.data.primary;
-    return true;
-  }
+  bool updateShouldNotify(covariant _Themes oldWidget) => true;
 }
 
 class ThemeServices extends StatefulWidget {
@@ -34,7 +28,7 @@ class ThemeServices extends StatefulWidget {
 }
 
 class ThemeServiceState extends State<ThemeServices> {
-  final _services = BoxServices.instance;
+  final _box = BoxServices.instance;
 
   late String _text;
   late Color _primary;
@@ -64,7 +58,7 @@ class ThemeServiceState extends State<ThemeServices> {
 
   @override
   void initState() {
-    final theme = getIt<AuthServices>().theme;
+    final theme = _box.getTheme();
     _text = theme.title;
     _primary = theme.primary;
     _onPrimary = theme.onPrimary;
@@ -97,7 +91,7 @@ class ThemeServiceState extends State<ThemeServices> {
     _textColorLight = theme.textColorLight;
     _disabled = theme.disabled;
     setState(() {});
-    _services.saveTheme(theme);
+    _box.saveTheme(theme);
   }
 
   @override

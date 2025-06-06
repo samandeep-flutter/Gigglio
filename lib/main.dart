@@ -7,15 +7,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:gigglio/business_logic/home_bloc/comments_bloc.dart';
+import 'package:gigglio/business_logic/home_bloc/share_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/user_profile_bloc.dart';
 import 'package:gigglio/business_logic/root_bloc.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/string.dart';
+import 'package:gigglio/services/box_services.dart';
 import 'package:gigglio/services/getit_instance.dart';
 import 'package:gigglio/services/notification_services.dart';
 import 'package:gigglio/services/theme_services.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/config/routes/app_pages.dart';
 import 'config/firebase_options.dart';
 
@@ -51,7 +53,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = getIt<AuthServices>().theme;
+    final theme = BoxServices.instance.getTheme();
 
     return MaterialApp.router(
       title: StringRes.fullAppName,
@@ -60,6 +62,8 @@ class MyApp extends StatelessWidget {
         MultiBlocProvider(providers: [
           BlocProvider(create: (_) => RootBloc()),
           BlocProvider(create: (_) => UserProfileBloc()),
+          BlocProvider(create: (_) => CommentsBloc()),
+          BlocProvider(create: (_) => ShareBloc()),
         ], child: child ?? const SizedBox.shrink()),
         breakpoints: [
           const ResponsiveBreakpoint.resize(450, name: MOBILE),
@@ -69,12 +73,15 @@ class MyApp extends StatelessWidget {
         ],
       ),
       theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-              primary: theme.primary,
-              onPrimary: theme.onPrimary,
-              seedColor: theme.primary,
-              brightness: theme.brightness),
-          useMaterial3: true),
+        colorScheme: ColorScheme.fromSeed(
+            primary: theme.primary,
+            onPrimary: theme.onPrimary,
+            seedColor: theme.primary,
+            brightness: theme.brightness),
+        useMaterial3: true,
+        // fontFamily: StringRes.fontFamily,
+        // textTheme: context.textTheme,
+      ),
     );
   }
 }

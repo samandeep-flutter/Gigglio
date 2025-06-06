@@ -104,7 +104,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   _onUserFetch(NotiUserFetch event, Emitter<NotificationState> emit) async {
     final List<NotiModel> notifications = [];
     final user = Completer<UserDetails>();
-    final post = Completer<PostModel?>();
+    final post = Completer<PostDbModel?>();
     try {
       for (final noti in event.notifications) {
         users.doc(noti.from).get().then((json) {
@@ -113,7 +113,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
         try {
           if (noti.postId == null) throw Exception();
           posts.doc(noti.postId!).get().then((json) {
-            post.complete(PostModel.fromJson(json.data()!));
+            post.complete(PostDbModel.fromJson(json.data()!));
           });
         } catch (_) {
           post.complete(null);
@@ -121,13 +121,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
 
         final _user = await user.future;
         final _post = await post.future;
-        notifications.add(NotiModel(
-          from: _user,
-          to: noti.to,
-          post: _post,
-          dateTime: noti.dateTime,
-          category: noti.category,
-        ));
+        notifications
+            .add(NotiModel.fromDb(user: _user, post: _post, noti: noti));
       }
       emit(state.copyWith(notifications: notifications));
     } catch (e) {

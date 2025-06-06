@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gigglio/data/utils/color_resources.dart';
+import 'package:gigglio/data/utils/utils.dart';
 import 'package:gigglio/services/extension_services.dart';
 import '../../data/utils/dimens.dart';
 import 'my_cached_image.dart';
@@ -17,7 +17,7 @@ class _Shimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-          color: ColorRes.shimmer,
+          color: context.scheme.backgroundDark,
           borderRadius: BorderRadius.all(Radius.circular(borderRadius ?? 0))),
     );
   }
@@ -54,6 +54,8 @@ class UserTileShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shimmer = context.scheme.backgroundDark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         vertical: Dimens.sizeSmall,
@@ -81,7 +83,7 @@ class UserTileShimmer extends StatelessWidget {
           ],
         ),
         const Spacer(),
-        trailing ?? const Icon(Icons.more_vert, color: ColorRes.shimmer),
+        trailing ?? Icon(Icons.more_vert, color: shimmer),
       ]),
     );
   }
@@ -92,6 +94,7 @@ class PostTileShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shimmer = context.scheme.backgroundDark;
     double iconSize = 35;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -106,23 +109,11 @@ class PostTileShimmer extends StatelessWidget {
         Row(
           children: [
             const SizedBox(width: Dimens.sizeSmall),
-            Icon(
-              Icons.favorite,
-              size: iconSize,
-              color: ColorRes.shimmer,
-            ),
+            Icon(Icons.favorite, size: iconSize, color: shimmer),
             const SizedBox(width: Dimens.sizeMedium),
-            Icon(
-              Icons.comment,
-              size: iconSize,
-              color: ColorRes.shimmer,
-            ),
+            Icon(Icons.comment, size: iconSize, color: shimmer),
             const SizedBox(width: Dimens.sizeMedium),
-            Icon(
-              Icons.ios_share_rounded,
-              size: iconSize - 2,
-              color: ColorRes.shimmer,
-            ),
+            Icon(Icons.ios_share_rounded, size: iconSize - 2, color: shimmer),
           ],
         ),
         Padding(
@@ -209,6 +200,7 @@ class FriendsRequests extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
         itemCount: 3,
+        physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.only(top: Dimens.sizeLarge),
         itemBuilder: (context, _) {
           return UserTileShimmer(
@@ -239,6 +231,45 @@ class MessagesShimmer extends StatelessWidget {
           ),
         );
       }),
+    );
+  }
+}
+
+class CommentsShimmer extends StatelessWidget {
+  const CommentsShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+        itemCount: 6,
+        itemBuilder: (context, index) {
+          return UserTileShimmer(
+              trailing: const SizedBox(), subtitle: context.width * .7);
+        });
+  }
+}
+
+class ShareShimmer extends StatelessWidget {
+  const ShareShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: 6,
+      padding: EdgeInsets.only(bottom: Dimens.sizeDefault),
+      gridDelegate: Utils.gridDelegate(2, spacing: Dimens.sizeSmall),
+      itemBuilder: (context, index) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const MyCachedImage.loading(
+                isAvatar: true, avatarRadius: Dimens.sizeExtraLarge),
+            const SizedBox(height: Dimens.sizeSmall),
+            SizedBox(height: 10, width: 50, child: Shimmer.box)
+          ],
+        );
+      },
     );
   }
 }

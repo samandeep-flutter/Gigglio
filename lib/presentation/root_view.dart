@@ -38,54 +38,59 @@ class _RootViewState extends State<RootView> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: scheme.background,
       resizeToAvoidBottomInset: false,
-      body: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          MultiBlocProvider(
-              providers: [
-                BlocProvider(create: (_) => HomeBloc()),
-                BlocProvider(create: (_) => ProfileBloc()),
-                BlocProvider(create: (_) => MessagesBloc()),
-              ],
-              child: TabBarView(
-                controller: bloc.tabController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: const [
-                  HomeScreen(),
-                  SizedBox.shrink(),
-                  MessagesScreen(),
-                  ProfileScreen()
-                ],
-              )),
-          SafeArea(
-              minimum: const EdgeInsets.only(bottom: Dimens.sizeDefault),
-              child: Card(
-                margin: Utils.paddingHoriz(Dimens.sizeMedium),
-                shape: Utils.roundedRectangle(Dimens.borderDefault),
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(Dimens.borderDefault),
-                    child: BlocBuilder<RootBloc, RootState>(
-                        buildWhen: (pr, cr) => pr.index != cr.index,
-                        builder: (context, state) {
-                          return BottomNavigationBar(
-                            items: bloc.tabList,
-                            currentIndex: state.index,
-                            type: BottomNavigationBarType.fixed,
-                            selectedItemColor: scheme.primary,
-                            unselectedItemColor: scheme.disabled,
-                            backgroundColor: scheme.surface,
-                            onTap: (index) {
-                              if (index == 1) {
-                                context.pushNamed(AppRoutes.newPost);
-                                return;
-                              }
-                              bloc.add(RootIndexChanged(index));
-                            },
-                          );
-                        })),
-              ))
-        ],
-      ),
+      extendBody: true,
+      bottomNavigationBar: SafeArea(
+          child: Container(
+        margin: Utils.paddingHoriz(Dimens.sizeMedium),
+        decoration: BoxDecoration(
+            color: scheme.surface,
+            borderRadius: BorderRadius.circular(Dimens.borderDefault),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.textColor.withAlpha(80),
+                blurRadius: Dimens.sizeLarge,
+                spreadRadius: Dimens.sizeLarge,
+                offset: const Offset(0, Dimens.sizeDefault),
+              )
+            ]),
+        child: ClipRRect(
+            borderRadius: BorderRadius.circular(Dimens.borderDefault),
+            child: BlocBuilder<RootBloc, RootState>(
+                buildWhen: (pr, cr) => pr.index != cr.index,
+                builder: (context, state) {
+                  return BottomNavigationBar(
+                    items: bloc.tabList,
+                    currentIndex: state.index,
+                    type: BottomNavigationBarType.fixed,
+                    selectedItemColor: scheme.primary,
+                    unselectedItemColor: scheme.disabled,
+                    backgroundColor: scheme.surface,
+                    onTap: (index) {
+                      if (index == 1) {
+                        context.pushNamed(AppRoutes.newPost);
+                        return;
+                      }
+                      bloc.add(RootIndexChanged(index));
+                    },
+                  );
+                })),
+      )),
+      body: MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => HomeBloc()),
+            BlocProvider(create: (_) => ProfileBloc()),
+            BlocProvider(create: (_) => MessagesBloc()),
+          ],
+          child: TabBarView(
+            controller: bloc.tabController,
+            physics: const NeverScrollableScrollPhysics(),
+            children: const [
+              HomeScreen(),
+              SizedBox.shrink(),
+              MessagesScreen(),
+              ProfileScreen()
+            ],
+          )),
     );
   }
 }

@@ -9,7 +9,6 @@ import 'package:gigglio/services/box_services.dart';
 import 'package:gigglio/config/routes/routes.dart';
 import 'package:gigglio/services/getit_instance.dart';
 import 'package:go_router/go_router.dart';
-import '../data/utils/color_resources.dart';
 
 class AuthServices {
   AuthServices._init();
@@ -27,13 +26,9 @@ class AuthServices {
   final navigationKey = GlobalKey<NavigatorState>();
   BuildContext? get navContext => navigationKey.currentContext;
 
-  late MyTheme _theme;
-  MyTheme get theme => _theme;
-
   late String minVersion;
 
   Future<AuthServices> init() async {
-    _theme = box.getTheme();
     Future(_getVersion);
     return this;
   }

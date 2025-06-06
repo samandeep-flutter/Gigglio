@@ -4,8 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/messages_model.dart';
+import 'package:gigglio/data/data_models/post_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
-import 'package:gigglio/data/utils/utils.dart';
+import 'package:gigglio/services/box_services.dart';
 import '../../data/utils/app_constants.dart';
 
 class ChatEvent extends Equatable {
@@ -16,18 +17,19 @@ class ChatEvent extends Equatable {
 }
 
 class ChatInitial extends ChatEvent {
+  final String? id;
   final UserDetails user;
-  const ChatInitial(this.user);
+  const ChatInitial(this.id, {required this.user});
 
   @override
-  List<Object?> get props => [user, ...super.props];
+  List<Object?> get props => [id, user, ...super.props];
 }
 
 class ChatReadRecipts extends ChatEvent {}
 
-class ChatScrollTo extends ChatEvent {}
-
 class ChatSendMessage extends ChatEvent {}
+
+class ChatFromDB extends ChatEvent {}
 
 class ChatStream extends ChatEvent {
   final MessagesDbModel chat;
@@ -82,15 +84,17 @@ class ChatState extends Equatable {
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ChatBloc() : super(const ChatState.init()) {
     on<ChatInitial>(_onInit);
+    on<ChatFromDB>(_fromDB);
     on<ChatStream>(_stream);
-    on<ChatScrollTo>(_scrollTo, transformer: Utils.debounce(Durations.medium4));
     on<ChatReadRecipts>(_readRecipts);
     on<ChatSendMessage>(_sendMessage);
   }
 
   final messages = FirebaseFirestore.instance.collection(FBKeys.messages);
+  final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
   final userId = FirebaseAuth.instance.currentUser!.uid;
+  final box = BoxServices.instance;
 
   final messageContr = TextEditingController();
   final messageKey = GlobalKey<FormFieldState>();
@@ -101,8 +105,15 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   Future<void> _chatStream() async {
     messages.doc(chatId).snapshots().listen((doc) {
       if (isClosed) return;
-      add(ChatStream(MessagesDbModel.fromJson(doc.data()!)));
+      final message = MessagesDbModel.fromJson(doc.data()!);
+      add(ChatStream(message.copyWith(id: doc.id)));
     });
+  }
+
+  void onPop(bool canPop, [result]) {
+    if (state.messages.isEmpty) return;
+    final _messages = state.messages.map((e) => e.toJson()).toList();
+    box.write(BoxKeys.chat(chatId!), _messages);
   }
 
   _onInit(ChatInitial event, Emitter<ChatState> emit) async {
@@ -110,6 +121,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     scrollContr.addListener(_listener);
     try {
       final filter = Filter('users', arrayContains: userId);
+      if (event.id?.isNotEmpty ?? false) throw FormatException();
       try {
         final _chats = await messages.where(filter).get();
         final chat = _chats.docs.firstWhere((e) {
@@ -125,43 +137,73 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         final doc = await messages.add(message.toJson());
         chatId = doc.id;
       }
-      Future(_chatStream);
+    } on FormatException {
+      chatId = event.id;
     } catch (e) {
       logPrint(e, 'Chat');
+    } finally {
+      add(ChatFromDB());
+      Future(_chatStream);
     }
+  }
+
+  _fromDB(ChatFromDB event, Emitter<ChatState> emit) {
+    final List json = box.read(BoxKeys.chat(chatId!)) ?? [];
+    final _messages =
+        List<Messages>.from(json.map((e) => Messages.fromJson(e)));
+    emit(state.copyWith(messages: _messages));
+    Future(() async {
+      try {
+        await Future.delayed(const Duration(milliseconds: 100));
+        final pos = scrollContr.position.maxScrollExtent;
+        scrollContr.jumpTo(pos);
+      } catch (_) {}
+    });
   }
 
   void _stream(ChatStream event, Emitter<ChatState> emit) async {
     try {
-      final _messages = List<Messages>.from(event.chat.messages);
-      _messages.removeWhere((e) => state.messages.any((f) {
+      final messages = List<MessagesDb>.from(event.chat.messages);
+      messages.removeWhere((e) => state.messages.any((f) {
             return f.dateTime == e.dateTime;
           }));
       final data = event.chat.userData;
+      final List<Messages> _messages = [];
+      for (final message in messages) {
+        try {
+          if (message.post != null) throw Exception();
+          _messages.add(Messages.fromDb(db: message));
+        } catch (_) {
+          final path = message.post?.split('/').last;
+          final _doc = await posts.doc(path).get();
+          final _post = PostDbModel.fromJson(_doc.data()!);
+          final _author = await users.doc(_post.author).get();
+          final author = UserDetails.fromJson(_author.data()!);
+          final post = PostModel.fromDb(user: author, post: _post);
+          _messages.add(Messages.fromDb(db: message, post: post));
+        }
+      }
       emit(state.copyWith(
           messages: [...state.messages, ..._messages], userData: data));
-      if (!scrollContr.hasClients) add(ChatReadRecipts());
-    } catch (_) {
+
+      final pos = scrollContr.position.maxScrollExtent;
+      if (!scrollContr.hasClients || pos == 0) add(ChatReadRecipts());
+    } catch (e) {
+      logPrint(e, 'Chat');
     } finally {
       emit(state.copyWith(isLoading: false));
     }
   }
 
-  void _scrollTo(ChatScrollTo event, Emitter<ChatState> emit) async {
-    final user = state.userData.firstWhere((e) => e.id == userId);
-    final index = state.messages.indexWhere((e) => user.seen == e.dateTime);
-    scrollContr.jumpTo(index.toDouble());
-  }
-
-  // void gotoPost(String id) => Get.toNamed(AppRoutes.gotoPost, arguments: id);
-
   void _listener() => add(ChatReadRecipts());
 
   void _readRecipts(ChatReadRecipts event, Emitter<ChatState> emit) async {
+    if (state.userData.isEmpty) return;
     final index = state.userData.indexWhere((e) => e.id == userId);
     final userData = List<UserData>.from(state.userData);
     try {
       final position = scrollContr.position;
+      if (state.scrollAt == position.pixels.toInt()) return;
       final _userData = userData[index]
           .copyWith(seen: DateTime.now(), scrollAt: position.pixels);
       userData[index] = _userData;
@@ -183,14 +225,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     final position = scrollContr.position;
     try {
       final scrollAt = position.pixels > 0 ? position.pixels : null;
-      final pos = state.messages.length + 1;
-      final message = Messages.text(
-        author: userId,
-        text: text,
-        dateTime: dateTime,
-        scrollAt: scrollAt,
-        position: pos,
-      );
+      final _scrollAt = double.tryParse(scrollAt?.toStringAsFixed(2) ?? '');
+      final message = MessagesDb.text(
+          author: userId, text: text, dateTime: dateTime, scrollAt: _scrollAt);
       await messages.doc(chatId).update({
         'messages': FieldValue.arrayUnion([message.toJson()]),
         'last_updated': dateTime.toIso8601String(),

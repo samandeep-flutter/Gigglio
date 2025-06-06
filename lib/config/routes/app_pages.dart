@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/business_logic/auth_bloc/forgot_pass_bloc.dart';
 import 'package:gigglio/business_logic/auth_bloc/signin_bloc.dart';
 import 'package:gigglio/business_logic/auth_bloc/signup_bloc.dart';
+import 'package:gigglio/business_logic/home_bloc/goto_post_bloc.dart';
 import 'package:gigglio/business_logic/home_bloc/new_post_bloc.dart';
 import 'package:gigglio/business_logic/home_bloc/notification_bloc.dart';
 import 'package:gigglio/business_logic/messages_bloc/chat_bloc.dart';
@@ -100,16 +101,22 @@ sealed class AppPages {
         GoRoute(
           name: AppRoutes.gotoPost,
           path: AppRoutePaths.gotoPost,
-          builder: (_, state) => const GotoPost(),
+          builder: (_, state) {
+            return BlocProvider(
+              create: (_) => GotoPostBloc(),
+              child: GotoPost(state.extra as String),
+            );
+          },
         ),
         GoRoute(
           name: AppRoutes.chatScreen,
           path: AppRoutePaths.chatScreen,
           builder: (_, state) {
             final user = state.extra as UserDetails;
+            final id = state.uri.queryParameters['id'];
             return BlocProvider(
               create: (_) => ChatBloc(),
-              child: ChatScreen(user: user),
+              child: ChatScreen(id, user: user),
             );
           },
         ),

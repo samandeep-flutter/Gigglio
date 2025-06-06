@@ -17,7 +17,7 @@ class ProfileEvent extends Equatable {
 class ProfileInitial extends ProfileEvent {}
 
 class ProfilePostsRefresh extends ProfileEvent {
-  final List<PostModel>? posts;
+  final List<PostDbModel>? posts;
 
   const ProfilePostsRefresh(this.posts);
 
@@ -26,15 +26,13 @@ class ProfilePostsRefresh extends ProfileEvent {
 }
 
 class ProfileState extends Equatable {
-  final List<PostModel> posts;
+  final List<PostDbModel> posts;
   const ProfileState({required this.posts});
 
   const ProfileState.init() : posts = const [];
 
-  ProfileState copyWith({List<PostModel>? posts}) {
-    return ProfileState(
-      posts: posts ?? this.posts,
-    );
+  ProfileState copyWith({List<PostDbModel>? posts}) {
+    return ProfileState(posts: posts ?? this.posts);
   }
 
   @override
@@ -59,7 +57,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final query = _posts.where('author', isEqualTo: userId);
     query.orderBy('date_time', descending: true).snapshots().listen((event) {
       if (isClosed) return;
-      final posts = event.docs.map((e) => PostModel.fromJson(e.data()));
+      final posts = event.docs.map((e) => PostDbModel.fromJson(e.data()));
       if (posts.length == state.posts.length) return;
       add(ProfilePostsRefresh(posts.toList()));
     });

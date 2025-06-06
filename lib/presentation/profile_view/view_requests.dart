@@ -40,6 +40,9 @@ class _ViewRequestsState extends State<ViewRequests> {
           buildWhen: (pr, cr) => pr.isLoading != cr.isLoading,
           builder: (context, state) {
             if (state.isLoading) return const FriendsRequests();
+            if (state.requests.isEmpty) {
+              return ToolTipWidget(title: StringRes.noRequestsDesc);
+            }
 
             return ListView.builder(
                 padding: const EdgeInsets.only(top: Dimens.sizeLarge),

@@ -1,13 +1,16 @@
 import 'package:equatable/equatable.dart';
+import 'package:gigglio/data/data_models/post_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 
 class MessagesDbModel extends Equatable {
+  final String? id;
   final List<String> users;
   final List<UserData> userData;
   final DateTime? lastUpdated;
-  final List<Messages> messages;
+  final List<MessagesDb> messages;
 
   const MessagesDbModel({
+    this.id,
     required this.users,
     required this.userData,
     this.lastUpdated,
@@ -21,8 +24,8 @@ class MessagesDbModel extends Equatable {
         return UserData.fromJson(e);
       })),
       lastUpdated: DateTime.tryParse(json['last_updated'] ?? ''),
-      messages: List<Messages>.from(json['messages'].map((e) {
-        return Messages.fromJson(e);
+      messages: List<MessagesDb>.from(json['messages'].map((e) {
+        return MessagesDb.fromJson(e);
       })),
     );
   }
@@ -35,12 +38,14 @@ class MessagesDbModel extends Equatable {
       };
 
   MessagesDbModel copyWith({
+    String? id,
     List<UserData>? userData,
     DateTime? lastUpdated,
-    List<Messages>? messages,
+    List<MessagesDb>? messages,
   }) {
     return MessagesDbModel(
       users: users,
+      id: id ?? this.id,
       userData: userData ?? this.userData,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       messages: messages ?? this.messages,
@@ -48,59 +53,74 @@ class MessagesDbModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [users, userData, lastUpdated, messages];
+  List<Object?> get props => [id, users, userData, lastUpdated, messages];
 }
 
 class MessagesModel extends Equatable {
+  final String? id;
   final UserDetails user;
   final List<UserData> userData;
   final DateTime? lastUpdated;
-  final List<Messages> messages;
+  final List<MessagesDb> messages;
 
   const MessagesModel({
+    required this.id,
     required this.user,
     required this.userData,
     required this.lastUpdated,
     required this.messages,
   });
 
+  factory MessagesModel.fromDB(
+      {required UserDetails user, required MessagesDbModel model}) {
+    return MessagesModel(
+        user: user,
+        id: model.id,
+        userData: model.userData,
+        lastUpdated: model.lastUpdated,
+        messages: model.messages);
+  }
+
   @override
-  List<Object?> get props => [user, userData, lastUpdated, messages];
+  List<Object?> get props => [id, user, userData, lastUpdated, messages];
 }
 
-class Messages extends Equatable {
+class MessagesDb extends Equatable {
   final String author;
   final DateTime dateTime;
   final String? text;
   final String? post;
   final double? scrollAt;
-  final int position;
 
-  const Messages({
+  const MessagesDb({
     required this.author,
     required this.dateTime,
     required this.text,
     required this.post,
     required this.scrollAt,
-    required this.position,
   });
 
-  const Messages.text({
+  const MessagesDb.text({
     required this.author,
     required this.dateTime,
     required this.text,
     required this.scrollAt,
-    required this.position,
   }) : post = null;
 
-  factory Messages.fromJson(Map<String, dynamic> json) {
-    return Messages(
+  const MessagesDb.post({
+    required this.author,
+    required this.dateTime,
+    required this.post,
+  })  : text = null,
+        scrollAt = null;
+
+  factory MessagesDb.fromJson(Map<String, dynamic> json) {
+    return MessagesDb(
       author: json['author'],
       dateTime: DateTime.parse(json['date_time']),
       text: json['text'],
       post: json['post'],
       scrollAt: json['scroll_at']?.toDouble(),
-      position: json['position'],
     );
   }
 
@@ -109,30 +129,74 @@ class Messages extends Equatable {
         'date_time': dateTime.toIso8601String(),
         'text': text,
         'post': post,
-        'position': position,
         'scroll_at': scrollAt?.toDouble(),
       };
 
-  Messages copyWith({
+  MessagesDb copyWith({
     String? author,
     DateTime? dateTime,
     String? text,
     String? post,
-    int? position,
     double? scrollAt,
   }) {
-    return Messages(
+    return MessagesDb(
       author: author ?? this.author,
       dateTime: dateTime ?? this.dateTime,
       text: text ?? this.text,
       post: post ?? this.post,
-      position: position ?? this.position,
       scrollAt: scrollAt ?? this.scrollAt,
     );
   }
 
   @override
-  List<Object?> get props => [author, dateTime, text, post, scrollAt, position];
+  List<Object?> get props => [author, dateTime, text, post, scrollAt];
+}
+
+class Messages extends Equatable {
+  final String author;
+  final DateTime dateTime;
+  final String? text;
+  final PostModel? post;
+  final double? scrollAt;
+
+  const Messages({
+    required this.author,
+    required this.dateTime,
+    required this.text,
+    required this.post,
+    required this.scrollAt,
+  });
+
+  factory Messages.fromDb({PostModel? post, required MessagesDb db}) {
+    return Messages(
+      author: db.author,
+      dateTime: db.dateTime,
+      text: db.text,
+      post: post,
+      scrollAt: db.scrollAt,
+    );
+  }
+
+  factory Messages.fromJson(Map<String, dynamic> json) {
+    return Messages(
+      author: json['author'],
+      dateTime: DateTime.parse(json['date_time']),
+      text: json['text'],
+      post: json['post'] != null ? PostModel.fromJson(json['post']) : null,
+      scrollAt: json['scroll_at']?.toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'author': author,
+        'date_time': dateTime.toIso8601String(),
+        'text': text,
+        'post': post?.toJson(),
+        'scroll_at': scrollAt?.toDouble(),
+      };
+
+  @override
+  List<Object?> get props => [author, dateTime, text, post, scrollAt];
 }
 
 class UserData extends Equatable {

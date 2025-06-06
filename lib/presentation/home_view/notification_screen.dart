@@ -70,7 +70,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 text: item.from.displayName,
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold)),
-                            const WidgetSpan(child: SizedBox(width: 4)),
+                            TextSpan(text: '\t'),
                             TextSpan(text: item.category.desc)
                           ]),
                       trailing: _TrailingWidget(item),

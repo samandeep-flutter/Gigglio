@@ -60,7 +60,7 @@ class NotiModel extends Equatable {
   final UserDetails from;
   final String to;
   final DateTime dateTime;
-  final PostModel? post;
+  final PostDbModel? post;
   final NotiCategory category;
 
   const NotiModel({
@@ -70,6 +70,20 @@ class NotiModel extends Equatable {
     required this.post,
     required this.category,
   });
+
+  factory NotiModel.fromDb({
+    required UserDetails user,
+    PostDbModel? post,
+    required NotiDbModel noti,
+  }) {
+    return NotiModel(
+      from: user,
+      post: post,
+      to: noti.to,
+      dateTime: noti.dateTime,
+      category: noti.category,
+    );
+  }
 
   @override
   List<Object?> get props => [from, to, dateTime, post, category];

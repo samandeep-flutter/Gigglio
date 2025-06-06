@@ -90,15 +90,17 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
     }
   }
 
-  Future<void> _getMessages() async {
+  void _getMessages() {
     try {
       final filter = Filter('users', arrayContains: userId);
       final _query = messages.where(filter);
       final query = _query.orderBy('last_updated', descending: true);
-      query.snapshots().listen((event) async {
+      query.snapshots().listen((event) {
         if (isClosed) return;
-        final _chats =
-            event.docs.map((e) => MessagesDbModel.fromJson(e.data())).toList();
+        final _chats = event.docs.map((e) {
+          final message = MessagesDbModel.fromJson(e.data());
+          return message.copyWith(id: e.id);
+        }).toList();
         final chats = _chats.where((e) => e.messages.isNotEmpty).toList();
         add(MessagesStream(chats));
       });
@@ -114,12 +116,8 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
         final _id = message.users.firstWhere((element) => element != userId);
         final _user = await users.doc(_id).get();
 
-        messages.add(MessagesModel(
-          user: UserDetails.fromJson(_user.data()!),
-          userData: message.userData,
-          lastUpdated: message.lastUpdated,
-          messages: message.messages,
-        ));
+        messages.add(MessagesModel.fromDB(
+            user: UserDetails.fromJson(_user.data()!), model: message));
       }
       _allMessages = messages;
       emit(state.copyWith(messages: messages));

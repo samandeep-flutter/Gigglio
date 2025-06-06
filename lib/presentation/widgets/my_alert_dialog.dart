@@ -56,6 +56,8 @@ class MyAlertDialog extends StatelessWidget {
 
 class MyBottomSheet extends StatelessWidget {
   final String title;
+  final bool isExpanded;
+  final double? bottomPadding;
   final TickerProvider vsync;
   final VoidCallback? onClose;
   final Widget child;
@@ -65,6 +67,8 @@ class MyBottomSheet extends StatelessWidget {
     required this.title,
     required this.vsync,
     this.onClose,
+    this.bottomPadding,
+    this.isExpanded = false,
     required this.child,
   });
 
@@ -72,47 +76,48 @@ class MyBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomSheet(
       onClosing: () {},
+      backgroundColor: context.scheme.background,
       animationController: BottomSheet.createAnimationController(vsync),
       builder: (_) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SizedBox(width: 75),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: Dimens.fontExtraLarge,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: Dimens.sizeDefault),
-                    child: TextButton(
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
                       onPressed: () {
                         Navigator.pop(context);
                         onClose?.call();
                       },
                       style: TextButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
-                      ),
+                          visualDensity: VisualDensity.compact),
                       child: const Text(
                         StringRes.close,
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
+                    const SizedBox(width: Dimens.sizeDefault),
+                  ],
+                ),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: Dimens.fontExtraLarge,
+                    fontWeight: FontWeight.w600,
                   ),
-                ],
-              ),
-              const SizedBox(height: Dimens.sizeSmall),
-              const MyDivider(),
-              const SizedBox(height: Dimens.sizeDefault),
-              child,
-            ],
-          ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Dimens.sizeSmall),
+            const MyDivider(),
+            const SizedBox(height: Dimens.sizeDefault),
+            if (isExpanded) Expanded(child: child) else child,
+            SafeArea(child: SizedBox(height: bottomPadding)),
+          ],
         );
       },
     );

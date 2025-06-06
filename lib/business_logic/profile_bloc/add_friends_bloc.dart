@@ -9,7 +9,6 @@ import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/utils.dart';
 import 'package:gigglio/services/auth_services.dart';
 import 'package:gigglio/services/getit_instance.dart';
-import 'package:go_router/go_router.dart';
 
 class AddFriendsEvent extends Equatable {
   const AddFriendsEvent();
@@ -59,7 +58,6 @@ class AddFriendsState extends Equatable {
     bool? isLoading,
     List<String>? requested,
     List<UserDetails>? users,
-    int? requests,
   }) {
     return AddFriendsState(
       isLoading: isLoading ?? this.isLoading,
@@ -74,10 +72,10 @@ class AddFriendsState extends Equatable {
 
 class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
   AddFriendsBloc() : super(AddFriendsState.init()) {
+    on<AddFriendsInitial>(_onInit);
     on<SearchFriends>(_onSearch);
     on<SearchFriendsTrigger>(_onSearchTrigger,
         transformer: Utils.debounce(Durations.medium4));
-    on<AddFriendsInitial>(_onInit);
     on<AddFriendRequest>(_onRequest);
     on<RemoveAddedRFriend>(_onRemove);
   }
@@ -91,10 +89,10 @@ class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
 
   void _onInit(AddFriendsInitial event, Emitter<AddFriendsState> emit) async {
     friendContr.addListener(_listener);
-    emit(state.copyWith(isLoading: false));
+    emit(state.copyWith(isLoading: true));
     try {
-      final friends = await users.where('friends', arrayContains: userId).get();
-      final _friends = friends.docs.map((e) => UserDetails.fromJson(e.data()));
+      final query = await users.where('friends', arrayContains: userId).get();
+      final _friends = query.docs.map((e) => UserDetails.fromJson(e.data()));
       this._friends = _friends.toList();
       emit(state.copyWith(users: _friends.toList()));
     } catch (e) {
@@ -116,38 +114,21 @@ class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
     final query = friendContr.text.trim().toLowerCase();
 
     try {
-      if (query.isEmpty) throw GoException('empty');
+      if (query.isEmpty) throw FormatException();
       final filter = Filter.or(
           Filter('display_name', isGreaterThanOrEqualTo: query),
           Filter('email', isGreaterThanOrEqualTo: query));
       final _query = await this.users.where(filter).get();
       final users = _query.docs.map((e) => UserDetails.fromJson(e.data()));
       emit(state.copyWith(users: users.toList()));
-    } on GoException catch (e) {
-      if (e.message == 'empty') emit(state.copyWith(users: _friends));
+    } on FormatException {
+      emit(state.copyWith(users: _friends));
     } catch (e) {
       logPrint(e, 'search');
     } finally {
       emit(state.copyWith(isLoading: false));
     }
   }
-
-  // void _onRetrieve(AddFriendsRetrieve event, Emitter<AddFriendsState> emit) {
-  //   try {
-  //     final cUser = event.users.firstWhere((e) => e.id == auth.user!.id);
-  //     _allUsers = event.users.where((e) => e.id != auth.user!.id).toList();
-  //     final _req = _allUsers.where((e) => e.requests.contains(auth.user!.id));
-  //     final ids = _req.map((e) => e.id).toList();
-  //     final requests = cUser.requests.length;
-  //     emit(state.copyWith(requests: requests, profile: cUser, requested: ids));
-  //     if (state.query.isEmpty) {
-  //       final users = event.users.where((e) => cUser.friends.contains(e.id));
-  //       emit(state.copyWith(users: users.toList()));
-  //     }
-  //   } catch (e) {
-  //     logPrint(e, 'retrieve');
-  //   }
-  // }
 
   void _onRequest(AddFriendRequest event, Emitter<AddFriendsState> emit) async {
     try {

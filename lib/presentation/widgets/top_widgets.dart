@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/string.dart';
 import 'package:gigglio/data/utils/utils.dart';
 import 'package:gigglio/services/extension_services.dart';
@@ -203,7 +204,7 @@ class MyAvatar extends StatelessWidget {
       onTap: onTap ?? () => context.pushNamed(AppRoutes.gotoProfile, extra: id),
       borderRadius:
           BorderRadius.circular(borderRadius ?? Dimens.sizeExtraLarge),
-      splashColor: scheme.disabled.withAlpha(125),
+      splashColor: scheme.disabled.withAlpha(100),
       child: Padding(
         padding: padding ?? const EdgeInsets.all(Dimens.sizeExtraSmall),
         child: MyCachedImage(
@@ -273,22 +274,64 @@ class FriendsTile extends StatelessWidget {
   }
 }
 
-class MyRichText extends StatelessWidget {
+class MyRichText extends StatefulWidget {
   final int? maxLines;
+  final TextOverflow? overflow;
   final TextStyle? style;
+  final Function(bool)? isOverflowing;
   final List<InlineSpan> children;
+
   const MyRichText({
     super.key,
     this.maxLines,
+    this.overflow,
     this.style,
+    this.isOverflowing,
     required this.children,
   });
 
   @override
+  State<MyRichText> createState() => _MyRichTextState();
+}
+
+class _MyRichTextState extends State<MyRichText> {
+  final _key = GlobalKey();
+
+  @override
+  void didUpdateWidget(MyRichText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    WidgetsBinding.instance.addPostFrameCallback(_checkOverflow);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(_checkOverflow);
+  }
+
+  void _checkOverflow(dynamic) {
+    try {
+      final renderBox = _key.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox == null || !renderBox.hasSize) return;
+
+      final textPainter = TextPainter(
+        text: TextSpan(style: widget.style, children: widget.children),
+        maxLines: widget.maxLines,
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: renderBox.size.width);
+      widget.isOverflowing?.call(textPainter.didExceedMaxLines);
+    } catch (e) {
+      logPrint(e, 'text overflow');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return RichText(
-      maxLines: maxLines,
-      text: TextSpan(style: style, children: children),
+      key: _key,
+      maxLines: widget.maxLines,
+      overflow: widget.overflow ?? TextOverflow.clip,
+      text: TextSpan(style: widget.style, children: widget.children),
     );
   }
 }

@@ -125,9 +125,9 @@ class NewPostBloc extends Bloc<NewPostEvent, NewPostState> {
     FocusManager.instance.primaryFocus?.unfocus();
     try {
       emit(state.copyWith(postLoading: true));
-      final post = PostModel.add(
+      final post = PostDbModel.add(
         author: userId,
-        desc: captionContr.text,
+        desc: captionContr.text.trim(),
         dateTime: DateTime.now(),
       );
       final doc = await posts.add(post.toJson());

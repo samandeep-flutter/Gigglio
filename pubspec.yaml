@@ -9,6 +9,9 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # of the product and file versions while build-number is used as the build suffix.
 version: 2.0.0+1
 
+# if changed/modified icon, run this command ater changing the path to icon in yaml file
+# dart run flutter_native_splash:create --path=native_splash.yaml
+
 environment:
   sdk: '>=3.3.4 <4.0.0'
 
@@ -36,12 +39,12 @@ dependencies:
   app_links: ^6.3.2
   cached_network_image: ^3.4.1
   responsive_framework: ^0.1.4
+  flutter_native_splash: ^2.4.6
 
   flutter_dotenv: ^5.2.1
   fluttertoast: ^8.2.12
   image_picker: ^1.1.2
   flutter_html: ^3.0.0
-  readmore: ^3.0.0
 
 
 dev_dependencies:

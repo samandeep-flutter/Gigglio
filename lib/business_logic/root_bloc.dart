@@ -68,19 +68,17 @@ class RootBloc extends Bloc<RootEvents, RootState> {
   }
 
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
+  final posts = FirebaseFirestore.instance.collection(FBKeys.post);
   final userId = FirebaseAuth.instance.currentUser!.uid;
   late TabController tabController;
 
-  Future<void> _updateUser() async {
+  void _rootInit(RootInitial event, Emitter<RootState> emit) async {
+    emit(RootState.init());
+    Future(MyNotifications.initialize);
     users.doc(userId).snapshots().listen((snap) {
       final profile = UserDetails.fromJson(snap.data()!);
       add(RootUserUpdate(profile));
     });
-  }
-
-  void _rootInit(RootInitial event, Emitter<RootState> emit) async {
-    Future(MyNotifications.initialize);
-    Future(_updateUser);
   }
 
   void _onUpdate(RootUserUpdate event, Emitter<RootState> emit) {

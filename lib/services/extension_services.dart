@@ -14,6 +14,7 @@ extension MyContext on BuildContext {
   double get bottomBarHeight => MediaQuery.paddingOf(this).bottom;
   TextStyle? get subtitleTextStyle =>
       Theme.of(this).textTheme.bodyMedium?.copyWith(color: scheme.disabled);
+  TextTheme get textTheme => Theme.of(this).textTheme;
 
   void popUntil(String path) {
     Navigator.popUntil(this, ModalRoute.withName(path));
@@ -23,6 +24,10 @@ extension MyContext on BuildContext {
     int popped = 0;
     Navigator.of(this).popUntil((route) => popped++ >= count);
   }
+}
+
+extension SnapshotExtension<T> on AsyncSnapshot<T> {
+  bool get isLoading => connectionState == ConnectionState.waiting;
 }
 
 extension MyList<T> on List<T> {

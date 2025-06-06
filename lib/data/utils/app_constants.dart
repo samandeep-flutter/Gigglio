@@ -26,8 +26,8 @@ class FBKeys {
 
 class BoxKeys {
   static const String boxName = 'gigglio';
-  static const String theme = '$boxName:theme';
-  static const String user = '$boxName:user';
+  static const String theme = 'theme';
+  static String chat(String id) => 'chat:$id';
 }
 
 void logPrint(Object? object, [String? name]) {

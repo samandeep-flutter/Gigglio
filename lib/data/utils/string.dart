@@ -1,6 +1,8 @@
 class StringRes {
   static const String appName = 'Gigglio';
   static const String fullAppName = 'Gigglio: Social App';
+  static const String fontFamily = 'Nunito';
+  // static const String fontFamily = 'Cabin';
 
   static const String signin = 'Sign In';
   static const String signup = 'Sign Up';
@@ -113,6 +115,8 @@ class StringRes {
       ' to start a chat.';
   static const String noFriends = 'You don\'t currently have any friends,\n'
       'add some to chat with!';
+  static const String noRequestsDesc = 'No one has sent you a friend '
+      'request yet. Go make the first move!';
   static const String addFriendsDesc = 'Looking for friends? Enter their '
       'email address to find and connect with them on Gigglio!';
   static const String verifyEmailDesc = 'To get started, please verify your'

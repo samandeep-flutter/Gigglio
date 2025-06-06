@@ -7,8 +7,6 @@ import '../../data/utils/app_constants.dart';
 import '../../services/auth_services.dart';
 
 class SettingsEvent extends Equatable {
-  const SettingsEvent();
-
   @override
   List<Object?> get props => [];
 }
