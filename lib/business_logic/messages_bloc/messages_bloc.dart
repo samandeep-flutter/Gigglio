@@ -103,7 +103,7 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
         }).toList();
         final chats = _chats.where((e) => e.messages.isNotEmpty).toList();
         add(MessagesStream(chats));
-      });
+      }, onError: (e) => logPrint(e, 'Messages'));
     } catch (e) {
       logPrint(e, 'Messages');
     }

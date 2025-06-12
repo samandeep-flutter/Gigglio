@@ -49,8 +49,8 @@ class _CommentSheetState extends State<CommentSheet>
                   child: CustomTextField(
                     maxLines: 1,
                     defaultBorder: true,
-                    backgroundColor: scheme.surface,
                     title: 'add a comment...',
+                    backgroundColor: scheme.surface,
                     capitalization: TextCapitalization.sentences,
                     controller: bloc.commentsContr,
                   ),

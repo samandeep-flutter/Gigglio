@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/messages_model.dart';
 import 'package:gigglio/data/data_models/post_model.dart';
@@ -44,20 +45,17 @@ class ChatState extends Equatable {
   final UserDetails? profile;
   final List<Messages> messages;
   final List<UserData> userData;
-  final int? scrollAt;
 
   const ChatState({
     required this.isLoading,
     required this.profile,
     required this.messages,
     required this.userData,
-    required this.scrollAt,
   });
 
   const ChatState.init()
       : isLoading = true,
         profile = null,
-        scrollAt = null,
         userData = const [],
         messages = const [];
 
@@ -66,19 +64,17 @@ class ChatState extends Equatable {
     UserDetails? profile,
     List<Messages>? messages,
     List<UserData>? userData,
-    int? scrollAt,
   }) {
     return ChatState(
       isLoading: isLoading ?? this.isLoading,
       profile: profile ?? this.profile,
       messages: messages ?? this.messages,
       userData: userData ?? this.userData,
-      scrollAt: scrollAt ?? this.scrollAt,
     );
   }
 
   @override
-  List<Object?> get props => [isLoading, profile, messages, userData, scrollAt];
+  List<Object?> get props => [isLoading, profile, messages, userData];
 }
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
@@ -86,7 +82,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatInitial>(_onInit);
     on<ChatFromDB>(_fromDB);
     on<ChatStream>(_stream);
-    on<ChatReadRecipts>(_readRecipts);
+    on<ChatReadRecipts>(_readRecipts,
+        transformer: Utils.debounce(Durations.long1));
     on<ChatSendMessage>(_sendMessage);
   }
 
@@ -107,7 +104,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       if (isClosed) return;
       final message = MessagesDbModel.fromJson(doc.data()!);
       add(ChatStream(message.copyWith(id: doc.id)));
-    });
+    }, onError: (e) => logPrint(e, 'chat stream'));
   }
 
   void onPop(bool canPop, [result]) {
@@ -185,9 +182,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       }
       emit(state.copyWith(
           messages: [...state.messages, ..._messages], userData: data));
-
+      if (state.messages.isEmpty) return;
       final pos = scrollContr.position.maxScrollExtent;
       if (!scrollContr.hasClients || pos == 0) add(ChatReadRecipts());
+      scrollContr.jumpTo(pos);
     } catch (e) {
       logPrint(e, 'Chat');
     } finally {
@@ -195,26 +193,48 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  void _listener() => add(ChatReadRecipts());
+  void _listener() {
+    try {
+      final direction = scrollContr.position.userScrollDirection;
+      if (direction == ScrollDirection.forward) return;
+      final pixels = scrollContr.position.pixels;
+      final _scrollAt = double.parse(pixels.toStringAsFixed(2));
+      final message = state.messages.firstWhere((e) {
+        if ((e.scrollAt ?? 0) == 0) return false;
+        return e.scrollAt! >= _scrollAt;
+      });
+      final index = state.userData.indexWhere((e) => e.id == userId);
+      final userData = List<UserData>.from(state.userData);
+      if (userData[index].seen?.isAfter(message.dateTime) ?? false) return;
+    } catch (_) {}
+    add(ChatReadRecipts());
+  }
 
   void _readRecipts(ChatReadRecipts event, Emitter<ChatState> emit) async {
     if (state.userData.isEmpty) return;
     final index = state.userData.indexWhere((e) => e.id == userId);
     final userData = List<UserData>.from(state.userData);
     try {
-      final position = scrollContr.position;
-      if (state.scrollAt == position.pixels.toInt()) return;
-      final _userData = userData[index]
-          .copyWith(seen: DateTime.now(), scrollAt: position.pixels);
-      userData[index] = _userData;
-      emit(state.copyWith(scrollAt: position.pixels.toInt()));
+      if (scrollContr.position.maxScrollExtent == 0) throw Exception();
+      final pixels = scrollContr.position.pixels;
+      final _scrollAt = double.parse(pixels.toStringAsFixed(2));
+      final message = state.messages.firstWhere((e) {
+        if ((e.scrollAt ?? 0) == 0) return false;
+        return e.scrollAt! >= _scrollAt;
+      });
+      if (userData[index].seen?.isBefore(message.dateTime) ?? false) {
+        userData[index] = userData[index].copyWith(seen: message.dateTime);
+        final _userData = userData.map((e) => e.toJson()).toList();
+        messages.doc(chatId).update({'user_data': _userData});
+      }
     } catch (_) {
-      final _userData = userData[index].copyWith(seen: DateTime.now());
-      userData[index] = _userData;
+      final last = state.messages.last.dateTime;
+      if (userData[index].seen?.isAfter(last) ?? false) return;
+      userData[index] = userData[index].copyWith(seen: DateTime.now());
+      final data = userData.map((e) => e.toJson()).toList();
+      messages.doc(chatId).update({'user_data': data});
     } finally {
       emit(state.copyWith(userData: userData));
-      final _userData = userData.map((e) => e.toJson()).toList();
-      messages.doc(chatId).update({'user_data': _userData});
     }
   }
 
@@ -233,9 +253,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         'last_updated': dateTime.toIso8601String(),
       });
       add(ChatReadRecipts());
-      messageContr.clear();
     } catch (e) {
       logPrint(e, 'Chat');
+    } finally {
+      messageContr.clear();
     }
   }
 }

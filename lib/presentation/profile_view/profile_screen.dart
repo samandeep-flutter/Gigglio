@@ -212,12 +212,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ButtonStyle get buttonStyle {
     final scheme = context.scheme;
     return ElevatedButton.styleFrom(
-      elevation: .5,
       foregroundColor: scheme.onPrimary,
       backgroundColor: scheme.onPrimaryContainer,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Dimens.borderDefault)),
-      padding: const EdgeInsets.symmetric(vertical: Dimens.sizeMedSmall),
+          borderRadius: BorderRadius.circular(Dimens.borderMedSmall)),
+      padding: const EdgeInsets.symmetric(vertical: Dimens.sizeSmall),
     );
   }
 }

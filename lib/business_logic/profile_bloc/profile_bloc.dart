@@ -60,7 +60,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final posts = event.docs.map((e) => PostDbModel.fromJson(e.data()));
       if (posts.length == state.posts.length) return;
       add(ProfilePostsRefresh(posts.toList()));
-    });
+    }, onError: (e) => logPrint(e, 'user Posts'));
   }
 
   _onPostsRefresh(ProfilePostsRefresh event, Emitter<ProfileState> emit) {

@@ -87,7 +87,8 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
 
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final _user = FirebaseAuth.instance.currentUser;
-  final storage = FirebaseStorage.instance.ref();
+  final storage = FirebaseStorage.instance;
+
   final picker = ImagePicker();
 
   final nameController = TextEditingController();
@@ -120,18 +121,16 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
     File file = File(xfile.path);
     String ext = xfile.path.split('.').last;
     if (state.imageUrl != null) {
-      final storage = FirebaseStorage.instance;
       try {
         final ref = storage.refFromURL(state.imageUrl!);
         await ref.delete();
       } catch (_) {}
     }
     try {
-      final path = '${_user!.uid}.$ext';
-      final ref = storage.child(AppConstants.profileImage(path));
+      final path = AppConstants.profileImage('${_user!.uid}.$ext');
+      final ref = storage.ref().child(path);
       await ref.putFile(file);
-      String url = await ref.getDownloadURL();
-      return url;
+      return await ref.getDownloadURL();
     } catch (e) {
       logPrint(e, 'FBstorage');
       return null;
@@ -158,7 +157,6 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
       emit(state.copyWith(success: true));
     } catch (e) {
       logPrint(e, 'EditProfile');
-      // auth.logout();
     } finally {
       emit(state.copyWith(profileLoading: false));
     }

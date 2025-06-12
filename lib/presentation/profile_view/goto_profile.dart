@@ -160,10 +160,10 @@ class _GotoProfileState extends State<GotoProfile> {
                           onPressed: () =>
                               bloc.add(UserProfileRequest(otherId!)),
                           enable: !(friend || requested),
-                          isLoading: false,
                           width: double.infinity,
-                          border: Dimens.borderDefault,
+                          border: Dimens.borderMedSmall,
                           backgroundColor: scheme.onPrimaryContainer,
+                          padding: EdgeInsets.all(Dimens.sizeSmall),
                           child: Builder(builder: (context) {
                             if (friend) return Text(StringRes.friends);
                             if (requested) return Text(StringRes.requested);
@@ -176,9 +176,9 @@ class _GotoProfileState extends State<GotoProfile> {
                       child: LoadingButton(
                           enable: friend,
                           onPressed: () => toChat(state.other),
-                          isLoading: false,
                           width: double.infinity,
-                          border: Dimens.borderDefault,
+                          border: Dimens.borderMedSmall,
+                          padding: EdgeInsets.all(Dimens.sizeSmall),
                           backgroundColor: scheme.onPrimaryContainer,
                           child: const Text(StringRes.sendMessage)),
                     ),

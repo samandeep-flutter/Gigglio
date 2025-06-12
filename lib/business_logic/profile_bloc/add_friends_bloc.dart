@@ -75,7 +75,7 @@ class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
     on<AddFriendsInitial>(_onInit);
     on<SearchFriends>(_onSearch);
     on<SearchFriendsTrigger>(_onSearchTrigger,
-        transformer: Utils.debounce(Durations.medium4));
+        transformer: Utils.debounce(Durations.long4));
     on<AddFriendRequest>(_onRequest);
     on<RemoveAddedRFriend>(_onRemove);
   }
@@ -116,8 +116,10 @@ class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
     try {
       if (query.isEmpty) throw FormatException();
       final filter = Filter.or(
-          Filter('display_name', isGreaterThanOrEqualTo: query),
-          Filter('email', isGreaterThanOrEqualTo: query));
+          Filter.and(Filter('display_name', isGreaterThanOrEqualTo: query),
+              Filter('display_name', isLessThanOrEqualTo: '$query\uf8ff')),
+          Filter.and(Filter('email', isGreaterThanOrEqualTo: query),
+              Filter('email', isLessThanOrEqualTo: '$query\uf8ff')));
       final _query = await this.users.where(filter).get();
       final users = _query.docs.map((e) => UserDetails.fromJson(e.data()));
       emit(state.copyWith(users: users.toList()));

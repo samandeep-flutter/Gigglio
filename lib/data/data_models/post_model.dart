@@ -44,8 +44,8 @@ class PostDbModel extends Equatable {
 
   Map<String, dynamic> toJson() => {
         'author': author,
-        'desc': desc,
         'images': images,
+        if (desc != null) 'desc': desc,
         'date_time': dateTime.toIso8601String(),
         'likes': likes,
         'comments': comments.map((e) => e.toJson()).toList(),

@@ -25,6 +25,15 @@ class RootUserUpdate extends RootEvents {
   List<Object?> get props => [profile, super.props];
 }
 
+class RootPostLiked extends RootEvents {
+  final String id;
+  final bool? contains;
+  const RootPostLiked(this.id, {this.contains});
+
+  @override
+  List<Object?> get props => [id, contains, super.props];
+}
+
 class RootIndexChanged extends RootEvents {
   final int index;
   const RootIndexChanged(this.index);
@@ -63,6 +72,7 @@ class RootState extends Equatable {
 class RootBloc extends Bloc<RootEvents, RootState> {
   RootBloc() : super(const RootState.init()) {
     on<RootInitial>(_rootInit);
+    on<RootPostLiked>(_onPostLiked);
     on<RootUserUpdate>(_onUpdate);
     on<RootIndexChanged>(_rootIndexChanged);
   }
@@ -78,7 +88,7 @@ class RootBloc extends Bloc<RootEvents, RootState> {
     users.doc(userId).snapshots().listen((snap) {
       final profile = UserDetails.fromJson(snap.data()!);
       add(RootUserUpdate(profile));
-    });
+    }, onError: (e) => logPrint(e, 'root user'));
   }
 
   void _onUpdate(RootUserUpdate event, Emitter<RootState> emit) {
@@ -88,6 +98,18 @@ class RootBloc extends Bloc<RootEvents, RootState> {
   void _rootIndexChanged(RootIndexChanged event, Emitter<RootState> emit) {
     tabController.animateTo(event.index);
     emit(state.copyWith(index: event.index));
+  }
+
+  void _onPostLiked(RootPostLiked event, Emitter<RootState> emit) async {
+    if (event.contains ?? false) {
+      posts.doc(event.id).update({
+        'likes': FieldValue.arrayRemove([userId])
+      });
+      return;
+    }
+    posts.doc(event.id).update({
+      'likes': FieldValue.arrayUnion([userId])
+    });
   }
 
   final List<BottomNavigationBarItem> tabList = [

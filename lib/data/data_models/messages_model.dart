@@ -126,10 +126,10 @@ class MessagesDb extends Equatable {
 
   Map<String, dynamic> toJson() => {
         'author': author,
-        'date_time': dateTime.toIso8601String(),
         'text': text,
-        'post': post,
-        'scroll_at': scrollAt?.toDouble(),
+        if (post != null) 'post': post,
+        'date_time': dateTime.toIso8601String(),
+        if (scrollAt != null) 'scroll_at': scrollAt,
       };
 
   MessagesDb copyWith({
@@ -202,36 +202,21 @@ class Messages extends Equatable {
 class UserData extends Equatable {
   final String id;
   final DateTime? seen;
-  final double? scrollAt;
 
-  const UserData(
-      {required this.id, required this.seen, required this.scrollAt});
-
-  const UserData.newUser(this.id)
-      : seen = null,
-        scrollAt = null;
+  const UserData({required this.id, required this.seen});
+  const UserData.newUser(this.id) : seen = null;
 
   factory UserData.fromJson(Map<String, dynamic> json) {
     return UserData(
-        id: json['id'],
-        seen: DateTime.tryParse(json['seen'] ?? ''),
-        scrollAt: json['scroll_at']?.toDouble());
+        id: json['id'], seen: DateTime.tryParse(json['seen'] ?? ''));
   }
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'seen': seen?.toIso8601String(),
-        'scroll_at': scrollAt?.toDouble()
-      };
+  Map<String, dynamic> toJson() => {'id': id, 'seen': seen?.toIso8601String()};
 
-  UserData copyWith({String? id, DateTime? seen, double? scrollAt}) {
-    return UserData(
-      id: id ?? this.id,
-      seen: seen ?? this.seen,
-      scrollAt: scrollAt ?? this.scrollAt,
-    );
+  UserData copyWith({String? id, DateTime? seen}) {
+    return UserData(id: id ?? this.id, seen: seen ?? this.seen);
   }
 
   @override
-  List<Object?> get props => [id, seen, scrollAt];
+  List<Object?> get props => [id, seen];
 }

@@ -82,10 +82,11 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
 
   void _onInit(
       NotificationInitial event, Emitter<NotificationState> emit) async {
+    final profile = Completer<UserDetails>();
     try {
       users.doc(userId).get().then((snap) {
-        final profile = UserDetails.fromJson(snap.data()!);
-        emit(state.copyWith(profile: profile));
+        final _profile = UserDetails.fromJson(snap.data()!);
+        profile.complete(_profile);
       });
       final _query = this.noti.where('to', isEqualTo: userId);
       final query = _query.orderBy('to').limit(10);
@@ -95,6 +96,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       add(NotiUserFetch(noti.toList()));
       final date = DateTime.now().toIso8601String();
       users.doc(userId).update({'noti_seen': date});
+      final _profile = await profile.future;
+      emit(state.copyWith(profile: _profile));
     } catch (e) {
       logPrint(e, 'Notification');
       emit(state.copyWith(loading: false));
@@ -103,10 +106,10 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
 
   _onUserFetch(NotiUserFetch event, Emitter<NotificationState> emit) async {
     final List<NotiModel> notifications = [];
-    final user = Completer<UserDetails>();
-    final post = Completer<PostDbModel?>();
     try {
       for (final noti in event.notifications) {
+        final user = Completer<UserDetails>();
+        final post = Completer<PostDbModel?>();
         users.doc(noti.from).get().then((json) {
           user.complete(UserDetails.fromJson(json.data()!));
         });
@@ -137,14 +140,13 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       users.doc(event.id).update({
         'friends': FieldValue.arrayUnion([userId])
       });
-      await users.doc(userId).update({
+      users.doc(userId).update({
         'requests': FieldValue.arrayRemove([event.id]),
         'friends': FieldValue.arrayUnion([event.id])
       });
-      users.doc(userId).get().then((snap) {
-        final profile = UserDetails.fromJson(snap.data()!);
-        emit(state.copyWith(profile: profile));
-      });
+      final friends = state.profile?.friends ?? [];
+      final _profile = state.profile!.copyWith(friends: [...friends, event.id]);
+      emit(state.copyWith(profile: _profile));
 
       final noti = NotiDbModel(
         from: userId,

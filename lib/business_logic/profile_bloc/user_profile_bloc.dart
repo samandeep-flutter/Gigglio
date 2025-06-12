@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -186,6 +185,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   }
 
   _scrollTo(UserProfileScrollTo event, Emitter<UserProfileState> emit) async {
+    if (event.index == 0) return;
     try {
       final maxHeight = postController.position.maxScrollExtent;
       postController.animateTo(maxHeight * event.index,

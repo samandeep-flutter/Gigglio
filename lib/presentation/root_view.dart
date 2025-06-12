@@ -40,6 +40,7 @@ class _RootViewState extends State<RootView> with TickerProviderStateMixin {
       resizeToAvoidBottomInset: false,
       extendBody: true,
       bottomNavigationBar: SafeArea(
+          minimum: const EdgeInsets.only(bottom: Dimens.sizeSmall),
           child: Container(
         margin: Utils.paddingHoriz(Dimens.sizeMedium),
         decoration: BoxDecoration(
@@ -88,7 +89,7 @@ class _RootViewState extends State<RootView> with TickerProviderStateMixin {
               HomeScreen(),
               SizedBox.shrink(),
               MessagesScreen(),
-              ProfileScreen()
+              ProfileScreen(),
             ],
           )),
     );

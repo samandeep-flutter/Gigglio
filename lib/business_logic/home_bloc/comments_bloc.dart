@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gigglio/data/data_models/notification_model.dart';
 import 'package:gigglio/data/data_models/post_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
+import 'package:gigglio/services/auth_services.dart';
+import 'package:gigglio/services/getit_instance.dart';
 
 class CommentsEvent extends Equatable {
   const CommentsEvent();
@@ -31,11 +36,11 @@ class CommentsGetUsers extends CommentsEvent {
 }
 
 class AddComment extends CommentsEvent {
-  final String postId;
-  const AddComment(this.postId);
+  final String id;
+  const AddComment(this.id);
 
   @override
-  List<Object?> get props => [postId, ...super.props];
+  List<Object?> get props => [id, ...super.props];
 }
 
 class CommentsState extends Equatable {
@@ -72,6 +77,8 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final userId = FirebaseAuth.instance.currentUser!.uid;
+  final AuthServices auth = getIt();
+
   final commentsContr = TextEditingController();
 
   void _onInit(CommentsInitial event, Emitter<CommentsState> emit) async {
@@ -114,27 +121,41 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       final comment = CommentDbModel(
           author: userId, title: message, dateTime: DateTime.now());
       showToast('posting...');
-      await posts.doc(event.postId).update({
+      posts.doc(event.id).update({
         'comments': FieldValue.arrayUnion([comment.toJson()])
       });
-      final post = await posts.doc(event.postId).get();
-      final postModel = PostDbModel.fromJson(post.data()!);
-      add(CommentsGetUsers(postModel.comments));
-      // TODO: integrate notification logic here
-      // where if friends send notification to owner.
-
-      // if (postAuthor.friends.contains(user.id)) {
-      //   final noti = NotiModel(
-      //     from: user.id,
-      //     to: postAuthor.id,
-      //     postId: doc,
-      //     dateTime: DateTime.now().toJson(),
-      //     category: NotiCategory.comment,
-      //   );
-      //   auth.sendNotification(noti);
-      // }
+      add(CommentsGetUsers([comment]));
+      sendNotfication(event.id);
     } catch (e) {
       logPrint(e, 'add Comments');
+    }
+  }
+
+  Future<void> sendNotfication(String postId) async {
+    try {
+      final _user = Completer<UserDetails>();
+      final _post = Completer<PostDbModel>();
+      if (state.comments.any((e) => e.author.id == userId)) return;
+      users.doc(userId).get().then((json) {
+        _user.complete(UserDetails.fromJson(json.data()!));
+      });
+      posts.doc(postId).get().then((json) {
+        _post.complete(PostDbModel.fromJson(json.data()!));
+      });
+      final user = await _user.future;
+      final author = (await _post.future).author;
+
+      if (!user.friends.contains(author)) return;
+      final noti = NotiDbModel(
+        from: userId,
+        to: author,
+        postId: postId,
+        dateTime: DateTime.now(),
+        category: NotiCategory.comment,
+      );
+      auth.sendNotification(noti);
+    } catch (e) {
+      logPrint(e, 'send noti');
     }
   }
 }

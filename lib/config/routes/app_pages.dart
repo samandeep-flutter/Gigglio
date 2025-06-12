@@ -10,7 +10,6 @@ import 'package:gigglio/business_logic/messages_bloc/chat_bloc.dart';
 import 'package:gigglio/business_logic/messages_bloc/new_chat_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/add_friends_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/edit_profile_bloc.dart';
-import 'package:gigglio/business_logic/profile_bloc/settings_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/view_requests_bloc.dart';
 import 'package:gigglio/business_logic/root_bloc.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
@@ -190,12 +189,7 @@ sealed class AppPages {
         GoRoute(
           name: AppRoutes.changePass,
           path: AppRoutePaths.changePass,
-          builder: (context, state) {
-            return BlocProvider(
-              create: (_) => SettingsBloc(),
-              child: const ChangePassword(),
-            );
-          },
+          builder: (_, state) => const ChangePassword(),
         ),
         GoRoute(
           name: AppRoutes.privacyPolicy,

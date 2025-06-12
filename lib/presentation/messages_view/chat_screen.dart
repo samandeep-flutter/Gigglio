@@ -98,10 +98,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     itemCount: state.messages.length,
                     itemBuilder: (context, index) {
                       final message = state.messages[index];
-                      final notNull = message.scrollAt != null;
-                      bool isSeen = notNull
-                          ? (other?.scrollAt ?? 0) >= message.scrollAt!
-                          : other?.seen?.isAfter(message.dateTime) ?? false;
+                      bool isSeen =
+                          other?.seen?.isAfter(message.dateTime) ?? false;
 
                       Messages? _above;
                       try {

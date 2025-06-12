@@ -33,7 +33,7 @@ class NotiDbModel extends Equatable {
         'from': from,
         'to': to,
         'date_time': dateTime.toIso8601String(),
-        'post_id': postId,
+        if (postId != null) 'post_id': postId,
         'category': category.id
       };
 
@@ -47,8 +47,7 @@ enum NotiCategory {
   request('request',
       title: 'New Friend Request', desc: 'requested to be friends with you'),
   reqAccepted('request-accepted',
-      title: 'Request Accepted', desc: 'accepted your friend request'),
-  ;
+      title: 'Request Accepted', desc: 'accepted your friend request');
 
   const NotiCategory(this.id, {required this.title, required this.desc});
   final String title;

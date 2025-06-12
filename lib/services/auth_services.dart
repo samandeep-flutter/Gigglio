@@ -57,7 +57,8 @@ class AuthServices {
     final json = await _users.doc(noti.to).get();
     final user = UserDetails.fromJson(json.data()!);
     if (!(user.login ?? false)) return;
-    repo.sendNotification(user.deviceToken, sender: user, noti: noti.category);
+    // use firebase cloud functions
+    // repo.sendNotification(user.deviceToken, sender: user, noti: noti.category);
   }
 
   void logout() async {

@@ -57,9 +57,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     padding: const EdgeInsets.symmetric(
                         vertical: Dimens.sizeExtraSmall),
                     child: ListTile(
-                      leading: MyAvatar(item.from.image,
+                      leading: Padding(
+                        padding: const EdgeInsets.only(right: Dimens.sizeSmall),
+                        child: MyAvatar(item.from.image,
                           isAvatar: true, id: item.from.id),
-                      horizontalTitleGap: Dimens.sizeSmall,
+                      ),
+                      horizontalTitleGap: 0,
                       title: MyRichText(
                           style: TextStyle(
                               color: scheme.textColor,
@@ -71,7 +74,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold)),
                             TextSpan(text: '\t'),
-                            TextSpan(text: item.category.desc)
+                            TextSpan(text: item.category.desc),
+                            TextSpan(text: '\t\t'),
+                            TextSpan(
+                                text: Utils.timeFromNow(item.dateTime, 'ago'),
+                                style: TextStyle(color: scheme.disabled)),
                           ]),
                       trailing: _TrailingWidget(item),
                     ),

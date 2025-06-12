@@ -9,6 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:gigglio/business_logic/home_bloc/comments_bloc.dart';
 import 'package:gigglio/business_logic/home_bloc/share_bloc.dart';
+import 'package:gigglio/business_logic/profile_bloc/settings_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/user_profile_bloc.dart';
 import 'package:gigglio/business_logic/root_bloc.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
@@ -39,6 +40,10 @@ Future<void> _initServices() async {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
     };
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light));
     FirebaseMessaging.onBackgroundMessage(myBackgroundMessageHandler);
     await GetStorage.init(BoxKeys.boxName);
     await dotenv.load();
@@ -64,6 +69,7 @@ class MyApp extends StatelessWidget {
           BlocProvider(create: (_) => UserProfileBloc()),
           BlocProvider(create: (_) => CommentsBloc()),
           BlocProvider(create: (_) => ShareBloc()),
+          BlocProvider(create: (_) => SettingsBloc()),
         ], child: child ?? const SizedBox.shrink()),
         breakpoints: [
           const ResponsiveBreakpoint.resize(450, name: MOBILE),

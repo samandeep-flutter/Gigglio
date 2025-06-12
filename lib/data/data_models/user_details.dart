@@ -56,12 +56,12 @@ class UserDetails extends Equatable {
         'image': image,
         'display_name': displayName,
         'email': email,
-        'bio': bio,
+        if (bio != null) 'bio': bio,
         'noti_seen': notiSeen.toIso8601String(),
         'friends': friends,
         'requests': requests,
         'login': login,
-        'device_token': deviceToken,
+        if (deviceToken != null) 'device_token': deviceToken,
       };
 
   UserDetails copyWith({

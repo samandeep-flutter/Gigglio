@@ -89,7 +89,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         if (isClosed || event.docs.isEmpty) return;
         add(HomeNotiRefresh(noti: event.docs.first.data()));
       } catch (_) {}
-    });
+    }, onError: (e) => logPrint(e, 'noti stream'));
   }
 
   _onNotiRefresh(HomeNotiRefresh event, Emitter<HomeState> emit) {

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/business_logic/root_bloc.dart';
@@ -59,65 +58,59 @@ class _PostTileState extends State<PostTile> {
         if (widget.post.images.isNotEmpty)
           ImageCarousel(images: widget.post.images),
         const SizedBox(height: Dimens.sizeSmall),
-        Row(
-          children: [
-            const SizedBox(width: Dimens.sizeSmall),
-            StreamBuilder(
-                stream: bloc.posts.doc(widget.post.id).snapshots(),
-                builder: (context, snapshot) {
-                  final json = snapshot.data?.data();
-                  List<String>? likes;
-                  try {
-                    likes = PostDbModel.fromJson(json!).likes;
-                  } catch (_) {}
-                  return Row(
-                    children: [
-                      IconButton(
-                          onPressed: () {
-                            if (likes == null) return;
-                            if (likes.contains(bloc.userId)) {
-                              bloc.posts.doc(widget.post.id).update({
-                                'likes': FieldValue.arrayRemove([bloc.userId])
-                              });
-                            } else {
-                              bloc.posts.doc(widget.post.id).update({
-                                'likes': FieldValue.arrayUnion([bloc.userId])
-                              });
-                            }
-                          },
-                          isSelected: likes?.contains(bloc.userId) ?? false,
-                          iconSize: Dimens.sizeMidLarge,
-                          selectedIcon: const Icon(Icons.favorite),
-                          icon: Icon(Icons.favorite_outline,
-                              color: scheme.disabled)),
-                      if (likes?.isNotEmpty ?? false)
-                        Text(likes!.length.format),
-                    ],
-                  );
-                }),
-            const SizedBox(width: Dimens.sizeSmall),
-            IconButton(
-                onPressed: _toComments,
-                style: IconButton.styleFrom(
-                    padding: const EdgeInsets.only(top: 2)),
-                iconSize: Dimens.sizeMidLarge,
-                icon: Icon(Icons.comment_outlined, color: scheme.disabled)),
-            StreamBuilder(
-                stream: bloc.posts.doc(widget.post.id).snapshots(),
-                builder: (context, snapshot) {
-                  final json = snapshot.data?.data();
-                  if (json == null) return const SizedBox.shrink();
-                  final length = PostDbModel.fromJson(json).comments.length;
-                  return Text(length > 0 ? length.format : '\t');
-                }),
-            const SizedBox(width: Dimens.sizeSmall),
-            IconButton(
-                onPressed: _sharePost,
-                style: IconButton.styleFrom(
-                    padding: const EdgeInsets.only(bottom: 4)),
-                iconSize: Dimens.sizeMidLarge,
-                icon: Icon(Icons.ios_share_outlined, color: scheme.disabled)),
-          ],
+        DefaultTextStyle.merge(
+          style: TextStyle(
+              fontWeight: FontWeight.bold, fontSize: Dimens.fontLarge),
+          child: StreamBuilder(
+              stream: bloc.posts.doc(widget.post.id).snapshots(),
+              builder: (context, snapshot) {
+                final json = snapshot.data?.data();
+                PostDbModel? post;
+                try {
+                  post = PostDbModel.fromJson(json!);
+                } catch (_) {}
+                return Row(
+                  children: [
+                    const SizedBox(width: Dimens.sizeSmall),
+                    IconButton(
+                      onPressed: () {
+                        if (post == null) return;
+                        final id = widget.post.id!;
+                        final contains = post.likes.contains(bloc.userId);
+                        bloc.add(RootPostLiked(id, contains: contains));
+                      },
+                      isSelected: post?.likes.contains(bloc.userId) ?? false,
+                      iconSize: Dimens.sizeMidLarge,
+                      selectedIcon: const Icon(Icons.favorite),
+                      icon: Icon(Icons.favorite_outline),
+                    ),
+                    Builder(builder: (context) {
+                      final length = post?.likes.length ?? 0;
+                      return Text(length > 0 ? length.format : '\t');
+                    }),
+                    const SizedBox(width: Dimens.sizeSmall),
+                    IconButton(
+                      onPressed: _toComments,
+                      style: IconButton.styleFrom(
+                          padding: const EdgeInsets.only(top: 2)),
+                      iconSize: Dimens.sizeMidLarge,
+                      icon: Icon(Icons.comment_outlined),
+                    ),
+                    Builder(builder: (context) {
+                      final length = post?.comments.length ?? 0;
+                      return Text(length > 0 ? length.format : '\t');
+                    }),
+                    const SizedBox(width: Dimens.sizeSmall),
+                    IconButton(
+                      onPressed: _sharePost,
+                      style: IconButton.styleFrom(
+                          padding: const EdgeInsets.only(bottom: 4)),
+                      iconSize: Dimens.sizeMidLarge,
+                      icon: Icon(Icons.ios_share_outlined),
+                    ),
+                  ],
+                );
+              }),
         ),
         MoreText(widget.post.desc, author: widget.post.author.displayName),
         TextButton(

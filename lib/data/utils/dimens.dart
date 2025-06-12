@@ -62,6 +62,9 @@ class Dimens {
   /// size of 8
   static const double borderSmall = 8;
 
+  /// size of 10
+  static const double borderMedSmall = 10;
+
   /// size of 12
   static const double borderDefault = 12;
 

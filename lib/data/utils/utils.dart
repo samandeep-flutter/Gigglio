@@ -55,7 +55,7 @@ class Utils {
   static TextStyle get defTitleStyle {
     return const TextStyle(
       fontSize: Dimens.fontExtraLarge,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w600,
       color: Colors.black87,
     );
   }
