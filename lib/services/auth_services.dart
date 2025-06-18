@@ -1,151 +1,93 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:get/get.dart';
-import 'package:gigglio/model/models/user_details.dart';
-import 'package:gigglio/model/utils/app_constants.dart';
+import 'package:gigglio/data/data_models/notification_model.dart';
+import 'package:gigglio/data/data_models/user_details.dart';
+import 'package:gigglio/data/repository/auth_repo.dart';
+import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/services/box_services.dart';
-import 'package:gigglio/view_models/routes/routes.dart';
-import '../model/utils/color_resources.dart';
+import 'package:gigglio/config/routes/routes.dart';
+import 'package:gigglio/services/getit_instance.dart';
+import 'package:go_router/go_router.dart';
 
-class AuthServices extends GetxService {
-  static AuthServices get to => Get.find();
+class AuthServices {
+  AuthServices._init();
+  static AuthServices? _to;
+  static AuthServices get to => _to ??= AuthServices._init();
+
   final _auth = FirebaseAuth.instance;
-  final _fbFire = FirebaseFirestore.instance;
-  final boxServices = BoxServices.instance;
-  late MyTheme _theme;
-  MyTheme get theme => _theme;
-  Rxn<UserDetails> user = Rxn();
+  final box = BoxServices.instance;
+  final AuthRepo repo = getIt();
+
+  final _users = FirebaseFirestore.instance.collection(FBKeys.users);
+  final _about = FirebaseFirestore.instance.collection(FBKeys.about);
+  final _noti = FirebaseFirestore.instance.collection(FBKeys.noti);
+
+  final navigationKey = GlobalKey<NavigatorState>();
+  BuildContext? get navContext => navigationKey.currentContext;
+
   late String minVersion;
 
-  @override
-  onInit() {
-    _theme = boxServices.getTheme();
-    _getVersion();
-
-    super.onInit();
-  }
-
   Future<AuthServices> init() async {
+    Future(_getVersion);
     return this;
   }
 
-  String verify() {
-    if (_auth.currentUser == null) return Routes.signIn;
-    return Routes.rootView;
+  String get initialRoute {
+    try {
+      _auth.currentUser as User;
+      return AppRoutes.rootView;
+    } catch (_) {
+      return AppRoutes.signIn;
+    }
   }
 
   Future<void> _getVersion() async {
     if (_auth.currentUser == null) return;
     try {
-      final doc = await _fbFire.collection(FB.about).doc('info').get();
+      final doc = await _about.doc('info').get();
       minVersion = doc.data()!['min_version'];
     } catch (e) {
-      logPrint('FB: $e');
+      logPrint(e, 'FB');
     }
   }
 
-  Future<void> saveProfile(String? bio) async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-    var details = UserDetails(
-        id: user.uid,
-        displayName: user.displayName ?? '',
-        email: user.email!,
-        image: user.photoURL,
-        bio: bio?.isNotEmpty ?? false ? bio : null,
-        login: true,
-        verified: user.emailVerified);
-
-    final saved = boxServices.getUserDetails();
-    final updated = saved?.copyFrom(details: details);
-    this.user.value = updated ?? details;
-    final doc = _fbFire.collection(FB.users).doc(user.uid);
-    doc.update({
-      'image': this.user.value?.image,
-      'display_name': this.user.value?.displayName,
-      'bio': this.user.value?.bio,
-    });
-    await boxServices.saveUserDetails(updated ?? details);
-  }
-
-  Future<void> createFbUser(
-    UserCredential credentials, {
-    required String name,
-  }) async {
-    if (credentials.user == null) return;
-    var details = UserDetails(
-        id: credentials.user!.uid,
-        displayName: name,
-        email: credentials.user!.email!,
-        image: credentials.user?.photoURL,
-        notiSeen: 0,
-        login: true,
-        verified: credentials.user?.emailVerified);
-
-    user.value = details;
-    await boxServices.saveUserDetails(details);
-  }
-
-  Future<void> getUserDetails() async {
-    try {
-      UserDetails details = boxServices.getUserDetails()!;
-      user.value = details;
-      final doc = await _fbFire.collection(FB.users).doc(details.id).get();
-      user.value = UserDetails.fromJson(doc.data()!);
-    } catch (e) {
-      logPrint('getDetails: $e');
-      logout();
-    }
-  }
-
-  Future<void> fetchFbUser(UserCredential credentials) async {
-    final user = credentials.user;
-    if (user == null) return;
-    try {
-      final json = await _fbFire.collection(FB.users).doc(user.uid).get();
-      this.user.value = UserDetails.fromJson(json.data()!)
-          .copyWith(login: true, verified: user.emailVerified);
-    } catch (_) {
-      var details = UserDetails(
-          id: user.uid,
-          displayName: user.displayName ?? '',
-          email: user.email!,
-          image: user.photoURL,
-          login: true,
-          notiSeen: 0,
-          verified: user.emailVerified);
-      this.user.value = details;
-    }
-    await boxServices.saveUserDetails(this.user.value!);
+  Future<void> sendNotification(NotiDbModel noti) async {
+    _noti.add(noti.toJson());
+    final json = await _users.doc(noti.to).get();
+    final user = UserDetails.fromJson(json.data()!);
+    if (!(user.login ?? false)) return;
+    // use firebase cloud functions
+    // repo.sendNotification(user.deviceToken, sender: user, noti: noti.category);
   }
 
   void logout() async {
     try {
-      if (user.value != null) {
-        final doc = _fbFire.collection(FB.users).doc(user.value!.id);
+      if (_auth.currentUser != null) {
+        final doc = _users.doc(_auth.currentUser!.uid);
         doc.update({'login': false});
       }
       await _auth.signOut();
-      boxServices.removeUserDetails();
+      box.removeUserDetails();
     } catch (e) {
-      logPrint('LOGOUT: $e');
+      logPrint(e, 'LOGOUT');
     }
-    Get.offAllNamed(Routes.signIn);
+    navContext?.goNamed(AppRoutes.signIn);
   }
 
   /// Currently disalbed through firebase
   // void deleteUser() async {
   //   try {
   //     await _auth.currentUser?.delete();
-  //     Get.offAllNamed(Routes.signIn);
+  //     Get.offAllNamed(AppRoutes.signIn);
   //   } on FirebaseAuthException catch (e) {
-  //     logPrint('FbDelete: $e');
+  //     logPrint(e, 'FbDelete');
   //     if (e.code == 'requires-recent-login') {
   //       showToast('You need to re-login, in order to delete this account');
-  //       Get.offAllNamed(Routes.signIn);
+  //       Get.offAllNamed(AppRoutes.signIn);
   //     }
   //   } catch (e) {
-  //     logPrint(e.toString());
+  //     logPrint(e, 'FbDelete');
   //   }
   // }
 }

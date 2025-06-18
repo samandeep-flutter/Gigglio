@@ -1,43 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:gigglio/services/box_services.dart';
-
-import '../model/utils/color_resources.dart';
-import 'auth_services.dart';
+import '../data/utils/color_resources.dart';
 
 class _Themes extends InheritedWidget {
-  final _ThemeServiceState data;
+  final ThemeServiceState data;
   const _Themes({required super.child, required this.data});
 
   @override
-  bool updateShouldNotify(covariant _Themes oldWidget) {
-    // ignore: unused_local_variable
-    bool result = data.primary != oldWidget.data.primary;
-    return true;
-  }
+  bool updateShouldNotify(covariant _Themes oldWidget) => true;
 }
 
 class ThemeServices extends StatefulWidget {
   final Widget child;
   const ThemeServices({super.key, required this.child});
 
-  // ignore: library_private_types_in_public_api
-  static _ThemeServiceState? maybeOf(BuildContext context) {
+  static ThemeServiceState? maybeOf(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<_Themes>()?.data;
   }
 
-  // ignore: library_private_types_in_public_api
-  static _ThemeServiceState of(BuildContext context) {
+  static ThemeServiceState of(BuildContext context) {
     assert(maybeOf(context) != null);
     return maybeOf(context)!;
   }
 
   @override
-  State<ThemeServices> createState() => _ThemeServiceState();
+  State<ThemeServices> createState() => ThemeServiceState();
 }
 
-class _ThemeServiceState extends State<ThemeServices> {
-  final _services = BoxServices.instance;
+class ThemeServiceState extends State<ThemeServices> {
+  final _box = BoxServices.instance;
 
   late String _text;
   late Color _primary;
@@ -46,6 +37,7 @@ class _ThemeServiceState extends State<ThemeServices> {
   late Color _onPrimaryContainer;
   late Brightness _brightness;
   late Color _background;
+  late Color _backgroundDark;
   late Color _surface;
   late Color _textColor;
   late Color _textColorLight;
@@ -58,6 +50,7 @@ class _ThemeServiceState extends State<ThemeServices> {
   Color get onPrimaryContainer => _onPrimaryContainer;
   Brightness get brightness => _brightness;
   Color get background => _background;
+  Color get backgroundDark => _backgroundDark;
   Color get surface => _surface;
   Color get textColor => _textColor;
   Color get textColorLight => _textColorLight;
@@ -65,7 +58,7 @@ class _ThemeServiceState extends State<ThemeServices> {
 
   @override
   void initState() {
-    var theme = Get.find<AuthServices>().theme;
+    final theme = _box.getTheme();
     _text = theme.title;
     _primary = theme.primary;
     _onPrimary = theme.onPrimary;
@@ -73,6 +66,7 @@ class _ThemeServiceState extends State<ThemeServices> {
     _onPrimaryContainer = theme.onPrimaryContainer;
     _brightness = theme.brightness;
     _background = theme.background;
+    _backgroundDark = theme.backgroundDark;
     _surface = theme.surface;
     _textColor = theme.textColor;
     _textColorLight = theme.textColorLight;
@@ -91,12 +85,13 @@ class _ThemeServiceState extends State<ThemeServices> {
     _onPrimaryContainer = theme.onPrimaryContainer;
     _brightness = theme.brightness;
     _background = theme.background;
+    _backgroundDark = theme.backgroundDark;
     _surface = theme.surface;
     _textColor = theme.textColor;
     _textColorLight = theme.textColorLight;
     _disabled = theme.disabled;
     setState(() {});
-    _services.saveTheme(theme);
+    _box.saveTheme(theme);
   }
 
   @override
