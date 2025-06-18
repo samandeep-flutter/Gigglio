@@ -95,7 +95,7 @@ class SettingsScreen extends StatelessWidget {
                 defWidth: true,
                 onPressed: context.pop,
                 border: Dimens.borderSmall,
-                child: Text(StringRes.cancel),
+                child: const Text(StringRes.cancel),
               ),
             ],
           );

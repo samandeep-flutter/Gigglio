@@ -71,7 +71,7 @@ class AddFriendsState extends Equatable {
 }
 
 class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
-  AddFriendsBloc() : super(AddFriendsState.init()) {
+  AddFriendsBloc() : super(const AddFriendsState.init()) {
     on<AddFriendsInitial>(_onInit);
     on<SearchFriends>(_onSearch);
     on<SearchFriendsTrigger>(_onSearchTrigger,
@@ -114,7 +114,7 @@ class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
     final query = friendContr.text.trim().toLowerCase();
 
     try {
-      if (query.isEmpty) throw FormatException();
+      if (query.isEmpty) throw const FormatException();
       final filter = Filter.or(
           Filter.and(Filter('display_name', isGreaterThanOrEqualTo: query),
               Filter('display_name', isLessThanOrEqualTo: '$query\uf8ff')),

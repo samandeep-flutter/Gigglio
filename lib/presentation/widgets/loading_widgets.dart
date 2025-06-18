@@ -45,14 +45,14 @@ class LoadingButton extends StatelessWidget {
           backgroundColor: backgroundColor ?? scheme.primary,
           foregroundColor: foregroundColor ?? scheme.onPrimary,
           visualDensity: compact ? VisualDensity.compact : null,
-          padding: padding ?? EdgeInsets.all(Dimens.sizeMedSmall),
+          padding: padding ?? const EdgeInsets.all(Dimens.sizeMedSmall),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(border ?? Dimens.borderDefault),
           ),
         ),
         onPressed: enable && !(isLoading ?? false) ? onPressed : null,
         child: DefaultTextStyle.merge(
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: Dimens.fontLarge,
             fontWeight: FontWeight.w600,
           ),

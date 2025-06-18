@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/messages_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
+import 'package:gigglio/data/utils/utils.dart';
 
 class ShareEvent extends Equatable {
   const ShareEvent();
@@ -15,9 +17,17 @@ class ShareEvent extends Equatable {
 
 class ShareInitial extends ShareEvent {}
 
-class ShareTrigger extends ShareEvent {
+class SharePost extends ShareEvent {
   final String postId;
-  const ShareTrigger(this.postId);
+  const SharePost(this.postId);
+
+  @override
+  List<Object?> get props => [postId, ...super.props];
+}
+
+class SharePostTrigger extends ShareEvent {
+  final String postId;
+  const SharePostTrigger(this.postId);
 
   @override
   List<Object?> get props => [postId, ...super.props];
@@ -76,7 +86,9 @@ class ShareState extends Equatable {
 class ShareBloc extends Bloc<ShareEvent, ShareState> {
   ShareBloc() : super(const ShareState.init()) {
     on<ShareInitial>(_onInit);
-    on<ShareTrigger>(_onTrigger);
+    on<SharePost>(_onShare);
+    on<SharePostTrigger>(_onTrigger,
+        transformer: Utils.debounce(Durations.long4));
     on<ShareSelected>(_onSelected);
   }
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
@@ -106,14 +118,18 @@ class ShareBloc extends Bloc<ShareEvent, ShareState> {
     emit(state.copyWith(selected: selected));
   }
 
-  void _onTrigger(ShareTrigger event, Emitter<ShareState> emit) async {
+  void _onShare(SharePost event, Emitter<ShareState> emit) async {
     emit(state.copyWith(shareLoading: true));
+    add(SharePostTrigger(event.postId));
+  }
+
+  void _onTrigger(SharePostTrigger event, Emitter<ShareState> emit) async {
     try {
       final filter = Filter('users', arrayContains: userId);
       final query = await messages.where(filter).get();
       final _post = AppConstants.share(event.postId);
-      final message =
-          MessagesDb.post(author: userId, dateTime: DateTime.now(), post: _post);
+      final message = MessagesDb.post(
+          author: userId, dateTime: DateTime.now(), post: _post);
       for (final user in state.selected) {
         try {
           final doc = query.docs.firstWhere((e) {

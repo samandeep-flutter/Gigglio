@@ -68,7 +68,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         builder: (context, state) {
           if (state.isLoading) return const MessagesShimmer();
           if (state.messages.isEmpty) {
-            return ToolTipWidget(title: StringRes.noMessages);
+            return const ToolTipWidget(title: StringRes.noMessages);
           }
 
           return ListView.builder(

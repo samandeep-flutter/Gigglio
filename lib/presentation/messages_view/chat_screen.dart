@@ -77,7 +77,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 );
               }),
         ),
-        actions: [const SizedBox(width: Dimens.sizeDefault)],
+        actions: const [SizedBox(width: Dimens.sizeDefault)],
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -93,7 +93,7 @@ class _ChatScreenState extends State<ChatScreen> {
             return Stack(
               children: [
                 ListView.builder(
-                    padding: EdgeInsets.only(bottom: Dimens.sizeDefault),
+                    padding: const EdgeInsets.only(bottom: Dimens.sizeDefault),
                     controller: bloc.scrollContr,
                     itemCount: state.messages.length,
                     itemBuilder: (context, index) {
@@ -113,7 +113,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       final sameAbove = message.author == _above?.author;
                       final sameBelow = message.author == _below?.author;
 
-                      final _now = message.dateTime.subtract(Duration(days: 1));
+                      final _now =
+                          message.dateTime.subtract(const Duration(days: 1));
                       final diff =
                           message.dateTime.difference(_above?.dateTime ?? _now);
 
@@ -122,8 +123,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         children: [
                           if (diff.inDays > 0)
                             Container(
-                              margin: EdgeInsets.all(Dimens.sizeSmall),
-                              padding: EdgeInsets.symmetric(
+                              margin: const EdgeInsets.all(Dimens.sizeSmall),
+                              padding: const EdgeInsets.symmetric(
                                   vertical: Dimens.sizeExtraSmall,
                                   horizontal: Dimens.sizeMedSmall),
                               decoration: BoxDecoration(
@@ -143,15 +144,15 @@ class _ChatScreenState extends State<ChatScreen> {
                   Align(
                     alignment: Alignment.topCenter,
                     child: Container(
-                      margin: EdgeInsets.all(Dimens.sizeSmall),
-                      padding: EdgeInsets.symmetric(
+                      margin: const EdgeInsets.all(Dimens.sizeSmall),
+                      padding: const EdgeInsets.symmetric(
                           vertical: Dimens.sizeExtraSmall,
                           horizontal: Dimens.sizeMedSmall),
                       decoration: BoxDecoration(
                         color: scheme.background,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           CupertinoActivityIndicator(),

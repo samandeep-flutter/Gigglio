@@ -40,7 +40,7 @@ class ProfileState extends Equatable {
 }
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
-  ProfileBloc() : super(ProfileState.init()) {
+  ProfileBloc() : super(const ProfileState.init()) {
     on<ProfileInitial>(_onInit);
     on<ProfilePostsRefresh>(_onPostsRefresh);
   }

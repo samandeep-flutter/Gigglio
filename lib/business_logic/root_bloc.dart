@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
@@ -79,11 +80,13 @@ class RootBloc extends Bloc<RootEvents, RootState> {
 
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
+
   final userId = FirebaseAuth.instance.currentUser!.uid;
+  final storage = FirebaseStorage.instance;
   late TabController tabController;
 
   void _rootInit(RootInitial event, Emitter<RootState> emit) async {
-    emit(RootState.init());
+    emit(const RootState.init());
     Future(MyNotifications.initialize);
     users.doc(userId).snapshots().listen((snap) {
       final profile = UserDetails.fromJson(snap.data()!);
@@ -101,14 +104,10 @@ class RootBloc extends Bloc<RootEvents, RootState> {
   }
 
   void _onPostLiked(RootPostLiked event, Emitter<RootState> emit) async {
-    if (event.contains ?? false) {
-      posts.doc(event.id).update({
-        'likes': FieldValue.arrayRemove([userId])
-      });
-      return;
-    }
     posts.doc(event.id).update({
-      'likes': FieldValue.arrayUnion([userId])
+      'likes': event.contains ?? false
+          ? FieldValue.arrayRemove([userId])
+          : FieldValue.arrayUnion([userId])
     });
   }
 

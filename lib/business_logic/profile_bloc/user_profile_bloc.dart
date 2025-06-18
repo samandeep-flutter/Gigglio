@@ -93,7 +93,7 @@ class UserProfileState extends Equatable {
 }
 
 class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
-  UserProfileBloc() : super(UserProfileState.init()) {
+  UserProfileBloc() : super(const UserProfileState.init()) {
     on<UserProfileInitial>(_onInit);
     on<UserProfileRefresh>(_onRefresh);
     on<UserPostsRefresh>(_onPostsRefresh);
@@ -108,7 +108,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   final userId = FirebaseAuth.instance.currentUser!.uid;
 
   _onInit(UserProfileInitial event, Emitter<UserProfileState> emit) async {
-    emit(UserProfileState.init());
+    emit(const UserProfileState.init());
     try {
       add(UserProfileRefresh(event.userId));
       final query = this.posts.where('author', isEqualTo: event.userId);

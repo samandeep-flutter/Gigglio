@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gigglio/business_logic/home_bloc/comments_bloc.dart';
+import 'package:gigglio/business_logic/home_bloc/post_details_bloc.dart';
 import 'package:gigglio/business_logic/root_bloc.dart';
 import 'package:gigglio/config/routes/routes.dart';
 import 'package:gigglio/data/utils/string.dart';
 import 'package:gigglio/data/utils/utils.dart';
+import 'package:gigglio/presentation/home_view/post_details.dart';
 import 'package:gigglio/services/extension_services.dart';
 import 'package:gigglio/presentation/home_view/share_tile.dart';
 import 'package:gigglio/presentation/widgets/top_widgets.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/data_models/post_model.dart';
-import '../../data/utils/app_constants.dart';
-import '../../data/utils/color_resources.dart';
 import '../../data/utils/dimens.dart';
-import '../../business_logic/home_bloc/home_bloc.dart';
 import '../widgets/image_carosual.dart';
-import '../widgets/my_alert_dialog.dart';
 import 'comments_screen.dart';
 
 class PostTile extends StatefulWidget {
@@ -49,7 +48,11 @@ class _PostTileState extends State<PostTile> {
           ),
           title: Text(widget.post.author.displayName,
               maxLines: 1, overflow: TextOverflow.ellipsis),
-          subtitle: Text(widget.post.author.email,
+          titleTextStyle: TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: Dimens.fontExtraLarge,
+              color: scheme.textColor),
+          subtitle: Text(widget.post.author.bio ?? '',
               maxLines: 1, overflow: TextOverflow.ellipsis),
           subtitleTextStyle: TextStyle(color: scheme.textColorLight),
           trailing: IconButton(
@@ -59,8 +62,8 @@ class _PostTileState extends State<PostTile> {
           ImageCarousel(images: widget.post.images),
         const SizedBox(height: Dimens.sizeSmall),
         DefaultTextStyle.merge(
-          style: TextStyle(
-              fontWeight: FontWeight.bold, fontSize: Dimens.fontLarge),
+          style: const TextStyle(
+              fontWeight: FontWeight.w500, fontSize: Dimens.fontLarge),
           child: StreamBuilder(
               stream: bloc.posts.doc(widget.post.id).snapshots(),
               builder: (context, snapshot) {
@@ -82,7 +85,7 @@ class _PostTileState extends State<PostTile> {
                       isSelected: post?.likes.contains(bloc.userId) ?? false,
                       iconSize: Dimens.sizeMidLarge,
                       selectedIcon: const Icon(Icons.favorite),
-                      icon: Icon(Icons.favorite_outline),
+                      icon: const Icon(Icons.favorite_outline),
                     ),
                     Builder(builder: (context) {
                       final length = post?.likes.length ?? 0;
@@ -94,7 +97,7 @@ class _PostTileState extends State<PostTile> {
                       style: IconButton.styleFrom(
                           padding: const EdgeInsets.only(top: 2)),
                       iconSize: Dimens.sizeMidLarge,
-                      icon: Icon(Icons.comment_outlined),
+                      icon: const Icon(Icons.comment_outlined),
                     ),
                     Builder(builder: (context) {
                       final length = post?.comments.length ?? 0;
@@ -106,7 +109,7 @@ class _PostTileState extends State<PostTile> {
                       style: IconButton.styleFrom(
                           padding: const EdgeInsets.only(bottom: 4)),
                       iconSize: Dimens.sizeMidLarge,
-                      icon: Icon(Icons.ios_share_outlined),
+                      icon: const Icon(Icons.ios_share_outlined),
                     ),
                   ],
                 );
@@ -141,17 +144,16 @@ class _PostTileState extends State<PostTile> {
 
   void _showMore() {
     showModalBottomSheet(
-      context: context,
-      useSafeArea: true,
-      showDragHandle: true,
-      backgroundColor: context.scheme.background,
-      builder: (_) {
-        return BlocProvider.value(
-          value: context.read<HomeBloc>(),
-          child: ShowMore(widget.post, widget.reload),
-        );
-      },
-    );
+        context: context,
+        useSafeArea: true,
+        showDragHandle: true,
+        backgroundColor: context.scheme.background,
+        builder: (_) {
+          return BlocProvider(
+            create: (_) => PostDetailsBloc(),
+            child: PostDetails(widget.post, widget.reload),
+          );
+        });
   }
 
   void _sharePost() {
@@ -166,83 +168,17 @@ class _PostTileState extends State<PostTile> {
 
   void _toComments() {
     showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      useSafeArea: true,
-      isScrollControlled: true,
-      backgroundColor: context.scheme.background,
-      builder: (_) => CommentSheet(widget.post.id!),
-    );
-  }
-}
-
-class ShowMore extends StatefulWidget {
-  final PostModel post;
-  final VoidCallback reload;
-  const ShowMore(this.post, this.reload, {super.key});
-
-  @override
-  State<ShowMore> createState() => _ShowMoreState();
-}
-
-class _ShowMoreState extends State<ShowMore> with TickerProviderStateMixin {
-  @override
-  Widget build(BuildContext context) {
-    final bloc = context.read<HomeBloc>();
-
-    return MyBottomSheet(
-      title: StringRes.actions,
-      vsync: this,
-      child: Padding(
-        padding: Utils.paddingHoriz(Dimens.sizeLarge),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.post.author.friends.contains(bloc.userId))
-              CustomListTile(
-                onTap: () {
-                  context.pop();
-                  // TODO: add friends unfriend logic
-                  // bloc.add(HomeUserUnfriend(id: author.id));
-                },
-                leading: Icons.person_remove_outlined,
-                title: StringRes.unFriend,
-              )
-            else
-              CustomListTile(
-                enable: !widget.post.author.requests.contains(bloc.userId),
-                onTap: () {
-                  context.pop();
-                  // TODO: add friends request logic
-                  // controller.sendReq(author.id);
-                },
-                leading: Icons.person_add_outlined,
-                title: StringRes.sendFriendReq,
-              ),
-            if (bloc.userId == widget.post.author.id)
-              CustomListTile(
-                onTap: () async {
-                  context.pop();
-                  try {
-                    for (final image in widget.post.images) {
-                      final ref = bloc.storage.refFromURL(image);
-                      await ref.delete();
-                    }
-                    await bloc.posts.doc(widget.post.id).delete();
-                  } catch (e) {
-                    logPrint(e, 'DELETE POST');
-                  }
-                  widget.reload();
-                },
-                title: StringRes.deletePost,
-                iconColor: ColorRes.error,
-                splashColor: ColorRes.onError,
-                leading: Icons.delete_outline,
-              ),
-          ],
-        ),
-      ),
-    );
+        context: context,
+        showDragHandle: true,
+        useSafeArea: true,
+        isScrollControlled: true,
+        backgroundColor: context.scheme.background,
+        builder: (_) {
+          return BlocProvider(
+            create: (_) => CommentsBloc(),
+            child: CommentSheet(widget.post.id!),
+          );
+        });
   }
 }
 
@@ -274,16 +210,16 @@ class _MoreTextState extends State<MoreText> {
             style: TextStyle(color: scheme.textColor),
             children: [
               TextSpan(
-                  style: TextStyle(overflow: TextOverflow.ellipsis),
+                  style: const TextStyle(overflow: TextOverflow.ellipsis),
                   children: [
                     TextSpan(
                       text: widget.author,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    TextSpan(text: '\t\t'),
+                    const TextSpan(text: '\t\t'),
                     TextSpan(text: widget.text),
                   ]),
-              TextSpan(text: '\t\t\t\t'),
+              const TextSpan(text: '\t\t\t\t'),
             ],
             isOverflowing: (overflowing) {
               showLess = overflowing;
@@ -293,7 +229,7 @@ class _MoreTextState extends State<MoreText> {
           if (showLess)
             GestureDetector(
               onTap: onTap,
-              child: Text(
+              child: const Text(
                 '... show more',
                 style: TextStyle(color: Colors.blue),
               ),

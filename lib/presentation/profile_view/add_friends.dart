@@ -41,7 +41,7 @@ class _AddFriendsState extends State<AddFriends> {
         title: const Text(StringRes.addFriends),
         titleTextStyle: Utils.defTitleStyle,
         bottom: PreferredSize(
-            preferredSize: Size.fromHeight(kTextTabBarHeight),
+            preferredSize: const Size.fromHeight(kTextTabBarHeight),
             child: SearchTextField(
               compact: true,
               backgroundColor: scheme.surface,

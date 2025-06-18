@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:gigglio/business_logic/home_bloc/comments_bloc.dart';
 import 'package:gigglio/business_logic/home_bloc/share_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/settings_bloc.dart';
 import 'package:gigglio/business_logic/profile_bloc/user_profile_bloc.dart';
@@ -30,7 +29,6 @@ void main() async {
 
 Future<void> _initServices() async {
   dprint('initServices started...');
-
   try {
     await Firebase.initializeApp(options: DefaultFBOptions.currentPlatform);
     SystemChrome.setPreferredOrientations(
@@ -67,7 +65,6 @@ class MyApp extends StatelessWidget {
         MultiBlocProvider(providers: [
           BlocProvider(create: (_) => RootBloc()),
           BlocProvider(create: (_) => UserProfileBloc()),
-          BlocProvider(create: (_) => CommentsBloc()),
           BlocProvider(create: (_) => ShareBloc()),
           BlocProvider(create: (_) => SettingsBloc()),
         ], child: child ?? const SizedBox.shrink()),

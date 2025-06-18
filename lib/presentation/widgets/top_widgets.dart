@@ -176,6 +176,7 @@ class MyAvatar extends StatelessWidget {
   final EdgeInsets? padding;
   final double? avatarRadius;
   final double? borderRadius;
+  final BoxConstraints? constrants;
   final double? height;
   final double? width;
   final BoxFit? fit;
@@ -189,6 +190,7 @@ class MyAvatar extends StatelessWidget {
     this.id,
     this.padding,
     this.avatarRadius,
+    this.constrants,
     this.isAvatar,
     this.fit,
     this.borderRadius,
@@ -207,16 +209,19 @@ class MyAvatar extends StatelessWidget {
       splashColor: scheme.disabled.withAlpha(100),
       child: Padding(
         padding: padding ?? const EdgeInsets.all(Dimens.sizeExtraSmall),
-        child: MyCachedImage(
-          image,
-          isAvatar: isAvatar ?? false,
-          height: height,
-          width: width,
-          fit: fit,
-          avatarRadius: avatarRadius ?? Dimens.sizeLarge,
-          borderRadius: borderRadius != null
-              ? BorderRadius.circular(borderRadius!)
-              : null,
+        child: ConstrainedBox(
+          constraints: constrants ?? const BoxConstraints(),
+          child: MyCachedImage(
+            image,
+            isAvatar: isAvatar ?? false,
+            height: height,
+            width: width,
+            fit: fit,
+            avatarRadius: avatarRadius ?? Dimens.sizeLarge,
+            borderRadius: borderRadius != null
+                ? BorderRadius.circular(borderRadius!)
+                : null,
+          ),
         ),
       ),
     );

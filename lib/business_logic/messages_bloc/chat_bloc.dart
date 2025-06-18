@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/messages_model.dart';
 import 'package:gigglio/data/data_models/post_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
+import 'package:gigglio/data/utils/utils.dart';
 import 'package:gigglio/services/box_services.dart';
 import '../../data/utils/app_constants.dart';
 
@@ -118,7 +119,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     scrollContr.addListener(_listener);
     try {
       final filter = Filter('users', arrayContains: userId);
-      if (event.id?.isNotEmpty ?? false) throw FormatException();
+      if (event.id?.isNotEmpty ?? false) throw const FormatException();
       try {
         final _chats = await messages.where(filter).get();
         final chat = _chats.docs.firstWhere((e) {
@@ -127,6 +128,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         });
         chatId = chat.id;
       } catch (_) {
+        emit(state.copyWith(isLoading: false));
         final message = MessagesDbModel(
           users: [userId, event.user.id],
           userData: [UserData.newUser(userId), UserData.newUser(event.user.id)],
@@ -183,6 +185,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       emit(state.copyWith(
           messages: [...state.messages, ..._messages], userData: data));
       if (state.messages.isEmpty) return;
+      final index = state.userData.indexWhere((e) => e.id == userId);
+      final userData = List<UserData>.from(state.userData);
+      final seen = userData[index].seen;
+      if (seen?.isAfter(state.messages.last.dateTime) ?? false) return;
       final pos = scrollContr.position.maxScrollExtent;
       if (!scrollContr.hasClients || pos == 0) add(ChatReadRecipts());
       scrollContr.jumpTo(pos);

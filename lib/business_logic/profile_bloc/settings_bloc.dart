@@ -34,7 +34,7 @@ class SettingsState extends Equatable {
 }
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
-  SettingsBloc() : super(SettingsState.init()) {
+  SettingsBloc() : super(const SettingsState.init()) {
     on<PasswordChanged>(_onPassChanged);
   }
 

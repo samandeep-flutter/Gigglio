@@ -82,8 +82,6 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
   final commentsContr = TextEditingController();
 
   void _onInit(CommentsInitial event, Emitter<CommentsState> emit) async {
-    emit(CommentsState.init());
-    commentsContr.clear();
     try {
       final post = await posts.doc(event.postId).get();
       final postModel = PostDbModel.fromJson(post.data()!);

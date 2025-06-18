@@ -163,7 +163,7 @@ class _EditProfileState extends State<EditProfile> {
                   ListTile(
                     onTap: () {
                       context.pop();
-                      bloc.add(EditProfileImage(ImageSource.gallery));
+                      bloc.add(const EditProfileImage(ImageSource.gallery));
                     },
                     leading: const Icon(Icons.photo_library_outlined),
                     title: const Text(StringRes.gallery),
@@ -171,7 +171,7 @@ class _EditProfileState extends State<EditProfile> {
                   ListTile(
                     onTap: () {
                       context.pop();
-                      bloc.add(EditProfileImage(ImageSource.camera));
+                      bloc.add(const EditProfileImage(ImageSource.camera));
                     },
                     leading: const Icon(Icons.camera_alt_outlined),
                     title: const Text(StringRes.camera),

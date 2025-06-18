@@ -203,7 +203,7 @@ class FriendsRequests extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.only(top: Dimens.sizeLarge),
         itemBuilder: (context, _) {
-          return UserTileShimmer(
+          return const UserTileShimmer(
             trailing: ShimmerButton(
               height: Dimens.sizeMidLarge,
               width: Dimens.sizeExtraLarge,
@@ -242,10 +242,8 @@ class CommentsShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
         itemCount: 6,
-        itemBuilder: (context, index) {
-          return UserTileShimmer(
-              trailing: const SizedBox(), subtitle: context.width * .7);
-        });
+        itemBuilder: (context, _) => UserTileShimmer(
+            trailing: const SizedBox(), subtitle: context.width * .6));
   }
 }
 
@@ -257,7 +255,7 @@ class ShareShimmer extends StatelessWidget {
     return GridView.builder(
       scrollDirection: Axis.horizontal,
       itemCount: 6,
-      padding: EdgeInsets.only(bottom: Dimens.sizeDefault),
+      padding: const EdgeInsets.only(bottom: Dimens.sizeDefault),
       gridDelegate: Utils.gridDelegate(2, spacing: Dimens.sizeSmall),
       itemBuilder: (context, index) {
         return Column(

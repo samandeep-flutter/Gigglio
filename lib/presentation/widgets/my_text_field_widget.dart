@@ -112,7 +112,7 @@ class _MyTextFieldState extends State<MyTextField> {
       textCapitalization: widget.capitalization ?? TextCapitalization.none,
       decoration: widget.decoration ??
           InputDecoration(
-            contentPadding: EdgeInsets.all(Dimens.sizeDefault),
+            contentPadding: const EdgeInsets.all(Dimens.sizeDefault),
             suffixIcon: widget.obscureText
                 ? IconButton(
                     padding: EdgeInsets.zero,
@@ -317,7 +317,7 @@ class CustomTextField extends StatelessWidget {
         inputFormatters: inputFormatters,
         decoration: InputDecoration(
           hintText: title,
-          contentPadding: EdgeInsets.all(Dimens.sizeDefault),
+          contentPadding: const EdgeInsets.all(Dimens.sizeDefault),
           focusedBorder: defaultBorder ?? false
               ? OutlineInputBorder(
                   borderRadius: radius,

@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/post_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
@@ -52,7 +51,7 @@ class HomeState extends Equatable {
   });
 
   const HomeState.init()
-      : loading = false,
+      : loading = true,
         posts = const [],
         notiFetch = null;
 
@@ -81,7 +80,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final noti = FirebaseFirestore.instance.collection(FBKeys.noti);
 
   final userId = FirebaseAuth.instance.currentUser!.uid;
-  final storage = FirebaseStorage.instance;
 
   void _notiStream() {
     noti.where('to', isEqualTo: userId).snapshots().listen((event) {
@@ -98,7 +96,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   void _onInit(HomeInitial event, Emitter<HomeState> emit) async {
-    emit(state.copyWith(loading: true));
     try {
       _notiStream();
       final query = this.posts.where('author', isNotEqualTo: userId);

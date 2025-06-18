@@ -51,20 +51,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     buildWhen: (pr, cr) => pr.notiFetch != cr.notiFetch,
                     builder: (context, state) {
                       final noti = state.notiFetch;
-
                       return BlocBuilder<RootBloc, RootState>(
                           buildWhen: (pr, cr) => pr.profile != cr.profile,
                           builder: (context, state) {
                             final date = state.profile?.notiSeen;
-
                             if (date == null) return const SizedBox.shrink();
                             if ((noti?.isAfter(date) ?? false)) {
                               return DecoratedBox(
                                 decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: scheme.primary,
-                                ),
-                                child: SizedBox.square(dimension: 10),
+                                    shape: BoxShape.circle,
+                                    color: scheme.primary),
+                                child: const SizedBox.square(dimension: 10),
                               );
                             }
                             return const SizedBox.shrink();
@@ -77,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       child: RefreshIndicator(
-        onRefresh: () async => bloc.add(HomeRefresh()),
+        onRefresh: () async => bloc.add(const HomeRefresh()),
         child: BlocBuilder<HomeBloc, HomeState>(
             buildWhen: (pr, cr) => pr.loading != cr.loading,
             builder: (context, state) {
@@ -100,6 +97,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void reload() {
     final bloc = context.read<HomeBloc>();
-    bloc.add(HomeRefresh(loading: false));
+    bloc.add(const HomeRefresh(loading: false));
   }
 }

@@ -30,7 +30,7 @@ class AuthRepo {
       'Content-Type': 'application/json',
       'Authorization': 'key=${dotenv.get('SERVER_KEY')}',
     });
-    final url = 'https://fcm.googleapis.com/fcm/send';
+    const url = 'https://fcm.googleapis.com/fcm/send';
     final response =
         await dio.post(url, data: body, options: options, client: dio);
     ApiResponse.verify(response,

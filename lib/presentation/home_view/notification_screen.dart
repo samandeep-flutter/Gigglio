@@ -73,9 +73,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 text: item.from.displayName,
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold)),
-                            TextSpan(text: '\t'),
+                            const TextSpan(text: '\t'),
                             TextSpan(text: item.category.desc),
-                            TextSpan(text: '\t\t'),
+                            const TextSpan(text: '\t\t'),
                             TextSpan(
                                 text: Utils.timeFromNow(item.dateTime, 'ago'),
                                 style: TextStyle(color: scheme.disabled)),

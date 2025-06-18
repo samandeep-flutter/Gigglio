@@ -41,7 +41,7 @@ class _ViewRequestsState extends State<ViewRequests> {
           builder: (context, state) {
             if (state.isLoading) return const FriendsRequests();
             if (state.requests.isEmpty) {
-              return ToolTipWidget(title: StringRes.noRequestsDesc);
+              return const ToolTipWidget(title: StringRes.noRequestsDesc);
             }
 
             return ListView.builder(

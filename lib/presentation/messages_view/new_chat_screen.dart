@@ -37,10 +37,10 @@ class _NewChatScreenState extends State<NewChatScreen> {
       padding: EdgeInsets.zero,
       appBar: AppBar(
         backgroundColor: scheme.background,
-        title: Text(StringRes.newChat),
+        title: const Text(StringRes.newChat),
         titleTextStyle: Utils.defTitleStyle,
         bottom: PreferredSize(
-            preferredSize: Size.fromHeight(kToolbarHeight),
+            preferredSize: const Size.fromHeight(kToolbarHeight),
             child: SearchTextField(
               title: 'Search',
               compact: true,
@@ -65,7 +65,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
         }
 
         if (state.users.isEmpty) {
-          return ToolTipWidget(title: StringRes.noFriends);
+          return const ToolTipWidget(title: StringRes.noFriends);
         }
         return ListView.builder(
             padding: const EdgeInsets.only(top: Dimens.sizeLarge),

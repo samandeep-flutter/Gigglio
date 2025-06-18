@@ -67,7 +67,7 @@ class NotificationState extends Equatable {
 }
 
 class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
-  NotificationBloc() : super(NotificationState.init()) {
+  NotificationBloc() : super(const NotificationState.init()) {
     on<NotificationInitial>(_onInit);
     on<NotiReqAccepted>(_onReqAccepted);
     on<NotiUserFetch>(_onUserFetch,

@@ -50,7 +50,7 @@ class _ShareTileSheetState extends State<ShareTileSheet>
                 listener: (context, state) {
                   if (state.success) context.pop();
                 },
-                child: SizedBox.shrink(),
+                child: const SizedBox.shrink(),
               ),
               Expanded(
                 child: BlocBuilder<ShareBloc, ShareState>(
@@ -66,7 +66,7 @@ class _ShareTileSheetState extends State<ShareTileSheet>
                       border: Dimens.borderDefault,
                       isLoading: state.shareLoading,
                       margin: Utils.paddingHoriz(Dimens.sizeLarge),
-                      onPressed: () => bloc.add(ShareTrigger(widget.postId)),
+                      onPressed: () => bloc.add(SharePost(widget.postId)),
                       child: const Text(StringRes.share),
                     );
                   },
@@ -87,7 +87,7 @@ class _ShareTileSheetState extends State<ShareTileSheet>
               return GridView.builder(
                 scrollDirection:
                     state.friends.length < 6 ? Axis.vertical : Axis.horizontal,
-                padding: EdgeInsets.only(bottom: Dimens.sizeDefault),
+                padding: const EdgeInsets.only(bottom: Dimens.sizeDefault),
                 itemCount: state.friends.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: state.friends.length < 6 ? 3 : 2,

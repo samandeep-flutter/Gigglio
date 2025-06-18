@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/config/routes/routes.dart';
 import 'package:gigglio/data/data_models/messages_model.dart';
 import 'package:gigglio/presentation/widgets/top_widgets.dart';
-import 'package:gigglio/services/extension_services.dart';
 import 'package:gigglio/business_logic/messages_bloc/chat_bloc.dart';
+import 'package:gigglio/services/extension_services.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/utils/dimens.dart';
 
@@ -33,71 +33,77 @@ class MessageTile extends StatelessWidget {
         mainAxisAlignment: me ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           const SizedBox(width: Dimens.sizeDefault),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(Dimens.borderDefault),
-            child: ColoredBox(
-              color: scheme.background,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: Dimens.sizeSmall),
-                  Row(
-                    children: [
-                      const SizedBox(width: Dimens.sizeSmall),
-                      MyAvatar(
-                        message.post?.author.image,
-                        isAvatar: true,
-                        id: message.post?.author.id,
-                        avatarRadius: 14,
-                      ),
-                      const SizedBox(width: Dimens.sizeSmall),
-                      Text(
-                        message.post?.author.displayName ?? '',
-                        style: TextStyle(
-                            fontSize: Dimens.fontDefault,
-                            color: scheme.textColorLight),
-                      ),
-                      const SizedBox(width: Dimens.sizeSmall),
-                    ],
-                  ),
-                  const SizedBox(height: Dimens.sizeExtraSmall),
-                  Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      MyAvatar(
-                        onTap: () => gotoPost(context, id: message.post?.id),
-                        padding: EdgeInsets.zero,
-                        message.post?.images.first,
-                        width: 200,
-                        fit: BoxFit.fitHeight,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(Dimens.sizeSmall),
-                        child: Row(
-                          children: [
-                            Text(
-                              message.dateTime.formatTime,
-                              style: TextStyle(
-                                  color: scheme.background,
-                                  fontSize: Dimens.fontMed),
-                            ),
-                            if (me) ...[
-                              Text('\t\t'),
-                              Icon(
-                                Icons.done_all,
-                                color: seen ?? false
-                                    ? Colors.blue
-                                    : scheme.backgroundDark,
-                                size: Dimens.sizeDefault,
-                              ),
-                            ]
-                          ],
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: Dimens.sizeSmall),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(Dimens.borderDefault),
+              child: ColoredBox(
+                color: scheme.background,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: Dimens.sizeSmall),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(width: Dimens.sizeExtraSmall),
+                        MyAvatar(
+                          message.post?.author.image,
+                          isAvatar: true,
+                          id: message.post?.author.id,
+                          avatarRadius: Dimens.sizeDefault,
                         ),
-                      )
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: Dimens.sizeSmall),
+                        Text(
+                          message.post?.author.displayName ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: Dimens.fontLarge),
+                        ),
+                        const SizedBox(width: Dimens.sizeSmall),
+                      ],
+                    ),
+                    const SizedBox(height: Dimens.sizeExtraSmall),
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        MyAvatar(
+                          onTap: () => gotoPost(context, id: message.post?.id),
+                          padding: EdgeInsets.zero,
+                          message.post?.images.first,
+                          fit: BoxFit.fitHeight,
+                          constrants: const BoxConstraints(
+                              maxHeight: 300, minWidth: 170, minHeight: 200),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(Dimens.sizeSmall),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                message.dateTime.formatTime,
+                                style: TextStyle(
+                                    color: scheme.background,
+                                    fontSize: Dimens.fontMed),
+                              ),
+                              if (me) ...[
+                                const Text('\t\t'),
+                                Icon(
+                                  Icons.done_all,
+                                  color: seen ?? false
+                                      ? Colors.blue
+                                      : scheme.backgroundDark,
+                                  size: Dimens.sizeDefault,
+                                ),
+                              ]
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -126,11 +132,12 @@ class MessageTile extends StatelessWidget {
                 style: TextStyle(color: scheme.textColor),
                 children: [
                   TextSpan(text: message.text ?? ''),
-                  WidgetSpan(child: SizedBox(width: Dimens.sizeSmall)),
+                  const WidgetSpan(child: SizedBox(width: Dimens.sizeSmall)),
                   WidgetSpan(
                       alignment: PlaceholderAlignment.top,
                       child: Padding(
-                          padding: EdgeInsets.only(top: Dimens.sizeMedSmall),
+                          padding:
+                              const EdgeInsets.only(top: Dimens.sizeMedSmall),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -142,7 +149,7 @@ class MessageTile extends StatelessWidget {
                                     fontSize: Dimens.fontMed),
                               ),
                               if (me) ...[
-                                SizedBox(width: Dimens.sizeExtraSmall),
+                                const SizedBox(width: Dimens.sizeExtraSmall),
                                 Icon(
                                   Icons.done_all,
                                   color: seen ?? false
@@ -176,7 +183,7 @@ class MessageTile extends StatelessWidget {
   }
 
   BorderRadius _borderRadius(bool me) {
-    final border = Radius.circular(Dimens.borderSmall);
+    const border = Radius.circular(Dimens.borderSmall);
     return BorderRadius.only(
         topLeft: me || !sameUserAbove ? border : Radius.zero,
         topRight: me && sameUserAbove ? Radius.zero : border,

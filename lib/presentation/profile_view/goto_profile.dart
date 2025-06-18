@@ -131,18 +131,18 @@ class _GotoProfileState extends State<GotoProfile> {
               },
               builder: (context, state) {
                 if (state.loading || state.reqLoading) {
-                  return Row(children: [
-                    const SizedBox(width: Dimens.sizeLarge),
+                  return const Row(children: [
+                    SizedBox(width: Dimens.sizeLarge),
                     Expanded(
                         child: ShimmerButton(
                             borderRadius: Dimens.borderDefault,
                             height: Dimens.sizeExtraDoubleLarge)),
-                    const SizedBox(width: Dimens.sizeDefault),
+                    SizedBox(width: Dimens.sizeDefault),
                     Expanded(
                         child: ShimmerButton(
                             borderRadius: Dimens.borderDefault,
                             height: Dimens.sizeExtraDoubleLarge)),
-                    const SizedBox(width: Dimens.sizeLarge),
+                    SizedBox(width: Dimens.sizeLarge),
                   ]);
                 }
                 final id = state.profile?.id;
@@ -163,12 +163,12 @@ class _GotoProfileState extends State<GotoProfile> {
                           width: double.infinity,
                           border: Dimens.borderMedSmall,
                           backgroundColor: scheme.onPrimaryContainer,
-                          padding: EdgeInsets.all(Dimens.sizeSmall),
+                          padding: const EdgeInsets.all(Dimens.sizeSmall),
                           child: Builder(builder: (context) {
-                            if (friend) return Text(StringRes.friends);
-                            if (requested) return Text(StringRes.requested);
-                            if (requests) return Text(StringRes.accept);
-                            return Text(StringRes.sendRequest);
+                            if (friend) return const Text(StringRes.friends);
+                            if (requested) return const Text(StringRes.requested);
+                            if (requests) return const Text(StringRes.accept);
+                            return const Text(StringRes.sendRequest);
                           })),
                     ),
                     const SizedBox(width: Dimens.sizeDefault),
@@ -178,7 +178,7 @@ class _GotoProfileState extends State<GotoProfile> {
                           onPressed: () => toChat(state.other),
                           width: double.infinity,
                           border: Dimens.borderMedSmall,
-                          padding: EdgeInsets.all(Dimens.sizeSmall),
+                          padding: const EdgeInsets.all(Dimens.sizeSmall),
                           backgroundColor: scheme.onPrimaryContainer,
                           child: const Text(StringRes.sendMessage)),
                     ),

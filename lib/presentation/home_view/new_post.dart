@@ -28,7 +28,7 @@ class NewPost extends StatelessWidget {
         centerTitle: true,
       ),
       child: ListView(
-        padding: EdgeInsets.only(top: Dimens.sizeSmall),
+        padding: const EdgeInsets.only(top: Dimens.sizeSmall),
         children: [
           const ImageWidget(),
           const SizedBox(height: Dimens.sizeLarge),

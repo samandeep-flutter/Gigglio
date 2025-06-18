@@ -66,9 +66,9 @@ class _CommentSheetState extends State<CommentSheet>
         padding: Utils.paddingHoriz(Dimens.sizeDefault),
         child: BlocBuilder<CommentsBloc, CommentsState>(
           builder: (context, state) {
-            if (state.loading) const CommentsShimmer();
+            if (state.loading) return const CommentsShimmer();
             if (state.comments.isEmpty) {
-              return ToolTipWidget(title: StringRes.noComments);
+              return const ToolTipWidget(title: StringRes.noComments);
             }
             return ListView.builder(
                 padding: EdgeInsets.zero,
