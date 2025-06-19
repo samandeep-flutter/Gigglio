@@ -205,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void toPost(int index) {
     final bloc = context.read<UserProfileBloc>();
-    bloc.add(UserProfileInitial(bloc.userId));
+    bloc.add(UserProfileInitial(bloc.box.uid!));
     context.pushNamed(AppRoutes.userPosts, extra: index);
   }
 

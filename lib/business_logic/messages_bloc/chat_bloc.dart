@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -91,7 +90,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final messages = FirebaseFirestore.instance.collection(FBKeys.messages);
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
-  final userId = FirebaseAuth.instance.currentUser!.uid;
   final box = BoxServices.instance;
 
   final messageContr = TextEditingController();
@@ -118,7 +116,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(state.copyWith(profile: event.user));
     scrollContr.addListener(_listener);
     try {
-      final filter = Filter('users', arrayContains: userId);
+      final filter = Filter('users', arrayContains: box.uid!);
       if (event.id?.isNotEmpty ?? false) throw const FormatException();
       try {
         final _chats = await messages.where(filter).get();
@@ -130,8 +128,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       } catch (_) {
         emit(state.copyWith(isLoading: false));
         final message = MessagesDbModel(
-          users: [userId, event.user.id],
-          userData: [UserData.newUser(userId), UserData.newUser(event.user.id)],
+          users: [box.uid!, event.user.id],
+          userData: [UserData.newUser(box.uid!), UserData.newUser(event.user.id)],
         );
         final doc = await messages.add(message.toJson());
         chatId = doc.id;
@@ -185,7 +183,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       emit(state.copyWith(
           messages: [...state.messages, ..._messages], userData: data));
       if (state.messages.isEmpty) return;
-      final index = state.userData.indexWhere((e) => e.id == userId);
+      final index = state.userData.indexWhere((e) => e.id == box.uid!);
       final userData = List<UserData>.from(state.userData);
       final seen = userData[index].seen;
       if (seen?.isAfter(state.messages.last.dateTime) ?? false) return;
@@ -209,7 +207,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         if ((e.scrollAt ?? 0) == 0) return false;
         return e.scrollAt! >= _scrollAt;
       });
-      final index = state.userData.indexWhere((e) => e.id == userId);
+      final index = state.userData.indexWhere((e) => e.id == box.uid!);
       final userData = List<UserData>.from(state.userData);
       if (userData[index].seen?.isAfter(message.dateTime) ?? false) return;
     } catch (_) {}
@@ -218,7 +216,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   void _readRecipts(ChatReadRecipts event, Emitter<ChatState> emit) async {
     if (state.userData.isEmpty) return;
-    final index = state.userData.indexWhere((e) => e.id == userId);
+    final index = state.userData.indexWhere((e) => e.id == box.uid!);
     final userData = List<UserData>.from(state.userData);
     try {
       if (scrollContr.position.maxScrollExtent == 0) throw Exception();
@@ -253,7 +251,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       final scrollAt = position.pixels > 0 ? position.pixels : null;
       final _scrollAt = double.tryParse(scrollAt?.toStringAsFixed(2) ?? '');
       final message = MessagesDb.text(
-          author: userId, text: text, dateTime: dateTime, scrollAt: _scrollAt);
+          author: box.uid!, text: text, dateTime: dateTime, scrollAt: _scrollAt);
       await messages.doc(chatId).update({
         'messages': FieldValue.arrayUnion([message.toJson()]),
         'last_updated': dateTime.toIso8601String(),

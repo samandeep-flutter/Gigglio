@@ -36,6 +36,7 @@ class AuthServices {
   String get initialRoute {
     try {
       _auth.currentUser as User;
+      box.read(BoxKeys.uid) as String;
       return AppRoutes.rootView;
     } catch (_) {
       return AppRoutes.signIn;
@@ -65,10 +66,10 @@ class AuthServices {
     try {
       if (_auth.currentUser != null) {
         final doc = _users.doc(_auth.currentUser!.uid);
-        doc.update({'login': false});
+        await doc.update({'login': false});
       }
       await _auth.signOut();
-      box.removeUserDetails();
+      await box.remove(BoxKeys.uid);
     } catch (e) {
       logPrint(e, 'LOGOUT');
     }

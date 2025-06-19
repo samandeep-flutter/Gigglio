@@ -41,7 +41,7 @@ class _PostTileState extends State<PostTile> {
             widget.post.author.image,
             isAvatar: true,
             onTap: () {
-              if (widget.post.author.id == bloc.userId) return;
+              if (widget.post.author.id == bloc.box.uid!) return;
               context.pushNamed(AppRoutes.gotoProfile,
                   extra: widget.post.author.id);
             },
@@ -79,10 +79,10 @@ class _PostTileState extends State<PostTile> {
                       onPressed: () {
                         if (post == null) return;
                         final id = widget.post.id!;
-                        final contains = post.likes.contains(bloc.userId);
+                        final contains = post.likes.contains(bloc.box.uid!);
                         bloc.add(RootPostLiked(id, contains: contains));
                       },
-                      isSelected: post?.likes.contains(bloc.userId) ?? false,
+                      isSelected: post?.likes.contains(bloc.box.uid!) ?? false,
                       iconSize: Dimens.sizeMidLarge,
                       selectedIcon: const Icon(Icons.favorite),
                       icon: const Icon(Icons.favorite_outline),

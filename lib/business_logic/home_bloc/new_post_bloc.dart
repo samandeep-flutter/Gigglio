@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/post_model.dart';
+import 'package:gigglio/services/box_services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../data/utils/app_constants.dart';
 
@@ -77,7 +77,7 @@ class NewPostBloc extends Bloc<NewPostEvent, NewPostState> {
 
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
   final storage = FirebaseStorage.instance.ref();
-  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final uid = BoxServices.instance.uid;
 
   final captionContr = TextEditingController();
   final picker = ImagePicker();
@@ -126,7 +126,7 @@ class NewPostBloc extends Bloc<NewPostEvent, NewPostState> {
     try {
       emit(state.copyWith(postLoading: true));
       final post = PostDbModel.add(
-        author: userId,
+        author: uid!,
         desc: captionContr.text.trim(),
         dateTime: DateTime.now(),
       );

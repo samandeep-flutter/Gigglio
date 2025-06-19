@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/string.dart';
+import 'package:gigglio/services/box_services.dart';
 import 'package:gigglio/services/notification_services.dart';
 
 class RootEvents extends Equatable {
@@ -80,15 +80,16 @@ class RootBloc extends Bloc<RootEvents, RootState> {
 
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
+  final box = BoxServices.instance;
 
-  final userId = FirebaseAuth.instance.currentUser!.uid;
   final storage = FirebaseStorage.instance;
   late TabController tabController;
 
   void _rootInit(RootInitial event, Emitter<RootState> emit) async {
     emit(const RootState.init());
     Future(MyNotifications.initialize);
-    users.doc(userId).snapshots().listen((snap) {
+    users.doc(box.uid!).snapshots().listen((snap) {
+      if (isClosed) return;
       final profile = UserDetails.fromJson(snap.data()!);
       add(RootUserUpdate(profile));
     }, onError: (e) => logPrint(e, 'root user'));
@@ -106,8 +107,8 @@ class RootBloc extends Bloc<RootEvents, RootState> {
   void _onPostLiked(RootPostLiked event, Emitter<RootState> emit) async {
     posts.doc(event.id).update({
       'likes': event.contains ?? false
-          ? FieldValue.arrayRemove([userId])
-          : FieldValue.arrayUnion([userId])
+          ? FieldValue.arrayRemove([box.uid!])
+          : FieldValue.arrayUnion([box.uid!])
     });
   }
 

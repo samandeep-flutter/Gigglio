@@ -88,7 +88,6 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final _user = FirebaseAuth.instance.currentUser;
   final storage = FirebaseStorage.instance;
-
   final picker = ImagePicker();
 
   final nameController = TextEditingController();

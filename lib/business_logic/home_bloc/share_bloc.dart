@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/messages_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/utils.dart';
+import 'package:gigglio/services/box_services.dart';
 
 class ShareEvent extends Equatable {
   const ShareEvent();
@@ -93,12 +93,13 @@ class ShareBloc extends Bloc<ShareEvent, ShareState> {
   }
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final messages = FirebaseFirestore.instance.collection(FBKeys.messages);
-  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final box = BoxServices.instance;
 
   void _onInit(ShareInitial event, Emitter<ShareState> emit) async {
     emit(state.copyWith(selected: []));
     try {
-      final _query = await users.where('friends', arrayContains: userId).get();
+      final _query =
+          await users.where('friends', arrayContains: box.uid!).get();
       final friends = _query.docs.map((e) => UserDetails.fromJson(e.data()));
       emit(state.copyWith(friends: friends.toList()));
     } catch (e) {
@@ -125,11 +126,11 @@ class ShareBloc extends Bloc<ShareEvent, ShareState> {
 
   void _onTrigger(SharePostTrigger event, Emitter<ShareState> emit) async {
     try {
-      final filter = Filter('users', arrayContains: userId);
+      final filter = Filter('users', arrayContains: box.uid!);
       final query = await messages.where(filter).get();
       final _post = AppConstants.share(event.postId);
       final message = MessagesDb.post(
-          author: userId, dateTime: DateTime.now(), post: _post);
+          author: box.uid!, dateTime: DateTime.now(), post: _post);
       for (final user in state.selected) {
         try {
           final doc = query.docs.firstWhere((e) {
@@ -141,9 +142,9 @@ class ShareBloc extends Bloc<ShareEvent, ShareState> {
           });
         } catch (_) {
           final chat = MessagesDbModel(
-            users: [userId, user],
+            users: [box.uid!, user],
             messages: [message],
-            userData: [UserData.newUser(userId), UserData.newUser(user)],
+            userData: [UserData.newUser(box.uid!), UserData.newUser(user)],
           );
           messages.add(chat.toJson());
         }

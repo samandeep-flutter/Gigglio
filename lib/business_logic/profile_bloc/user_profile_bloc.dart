@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/post_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/utils.dart';
+import 'package:gigglio/services/box_services.dart';
 
 class UserProfileEvent extends Equatable {
   const UserProfileEvent();
@@ -105,7 +105,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final postController = ScrollController();
-  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final box = BoxServices.instance;
 
   _onInit(UserProfileInitial event, Emitter<UserProfileState> emit) async {
     emit(const UserProfileState.init());
@@ -132,9 +132,9 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     try {
       final profile = Completer<UserDetails>();
       final other = Completer<UserDetails>();
-      final onlyMe = userId == event.userId;
+      final onlyMe = box.uid! == event.userId;
       if (!onlyMe) {
-        users.doc(userId).get().then((snap) {
+        users.doc(box.uid!).get().then((snap) {
           profile.complete(UserDetails.fromJson(snap.data()!));
         });
       }
@@ -174,7 +174,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     try {
       final doc = users.doc(event.id);
       doc.update({
-        'requests': FieldValue.arrayUnion([userId])
+        'requests': FieldValue.arrayUnion([box.uid!])
       });
     } catch (e) {
       logPrint(e, 'onRequest');

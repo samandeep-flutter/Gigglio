@@ -18,6 +18,8 @@ class BoxServices {
     );
   }
 
+  String? get uid => box.read<String>(BoxKeys.uid);
+
   Future<void> saveTheme(MyTheme theme) async {
     await box.write(BoxKeys.theme, theme.title);
   }
@@ -28,7 +30,7 @@ class BoxServices {
 
   T? read<T>(String key) => box.read<T>(key);
 
-  Future<void> clear() async => await box.erase();
+  Future<void> remove(String key) async => await box.remove(key);
 
-  Future<void> removeUserDetails() async => box.remove(BoxKeys.theme);
+  Future<void> clear() async => await box.erase();
 }

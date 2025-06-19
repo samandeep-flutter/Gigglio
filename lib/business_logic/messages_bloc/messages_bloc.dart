@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/messages_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/utils.dart';
+import 'package:gigglio/services/box_services.dart';
 
 class MessagesEvent extends Equatable {
   const MessagesEvent();
@@ -65,7 +65,7 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
 
   final messages = FirebaseFirestore.instance.collection(FBKeys.messages);
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
-  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final uid = BoxServices.instance.uid;
 
   final searchContr = TextEditingController();
   List<MessagesModel> _allMessages = [];
@@ -92,7 +92,7 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
 
   void _getMessages() {
     try {
-      final filter = Filter('users', arrayContains: userId);
+      final filter = Filter('users', arrayContains: uid!);
       final _query = messages.where(filter);
       final query = _query.orderBy('last_updated', descending: true);
       query.snapshots().listen((event) {
@@ -113,7 +113,7 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
     final List<MessagesModel> messages = [];
     try {
       for (final message in event.messages) {
-        final _id = message.users.firstWhere((element) => element != userId);
+        final _id = message.users.firstWhere((element) => element != uid!);
         final _user = await users.doc(_id).get();
 
         messages.add(MessagesModel.fromDB(

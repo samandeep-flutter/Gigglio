@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/notification_model.dart';
@@ -11,6 +10,7 @@ import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/utils.dart';
 import 'package:gigglio/services/auth_services.dart';
+import 'package:gigglio/services/box_services.dart';
 import 'package:gigglio/services/getit_instance.dart';
 
 class NotificationEvent extends Equatable {
@@ -77,25 +77,26 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   final noti = FirebaseFirestore.instance.collection(FBKeys.noti);
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
-  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final uid = BoxServices.instance.uid;
+
   final AuthServices auth = getIt();
 
   void _onInit(
       NotificationInitial event, Emitter<NotificationState> emit) async {
     final profile = Completer<UserDetails>();
     try {
-      users.doc(userId).get().then((snap) {
+      users.doc(uid!).get().then((snap) {
         final _profile = UserDetails.fromJson(snap.data()!);
         profile.complete(_profile);
       });
-      final _query = this.noti.where('to', isEqualTo: userId);
+      final _query = this.noti.where('to', isEqualTo: uid!);
       final query = _query.orderBy('to').limit(10);
       final snap = await query.orderBy('date_time', descending: true).get();
       final noti = snap.docs.map((e) => NotiDbModel.fromJson(e.data()));
       if (noti.isEmpty) throw Exception();
       add(NotiUserFetch(noti.toList()));
       final date = DateTime.now().toIso8601String();
-      users.doc(userId).update({'noti_seen': date});
+      users.doc(uid!).update({'noti_seen': date});
       final _profile = await profile.future;
       emit(state.copyWith(profile: _profile));
     } catch (e) {
@@ -138,9 +139,9 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   _onReqAccepted(NotiReqAccepted event, Emitter<NotificationState> emit) async {
     try {
       users.doc(event.id).update({
-        'friends': FieldValue.arrayUnion([userId])
+        'friends': FieldValue.arrayUnion([uid!])
       });
-      users.doc(userId).update({
+      users.doc(uid!).update({
         'requests': FieldValue.arrayRemove([event.id]),
         'friends': FieldValue.arrayUnion([event.id])
       });
@@ -149,7 +150,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       emit(state.copyWith(profile: _profile));
 
       final noti = NotiDbModel(
-        from: userId,
+        from: uid!,
         to: event.id,
         dateTime: DateTime.now(),
         category: NotiCategory.reqAccepted,

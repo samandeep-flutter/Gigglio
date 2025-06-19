@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/notification_model.dart';
@@ -8,6 +7,7 @@ import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/data/utils/utils.dart';
 import 'package:gigglio/services/auth_services.dart';
+import 'package:gigglio/services/box_services.dart';
 import 'package:gigglio/services/getit_instance.dart';
 
 class AddFriendsEvent extends Equatable {
@@ -81,7 +81,8 @@ class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
   }
 
   final AuthServices auth = getIt();
-  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final uid = BoxServices.instance.uid;
+
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
 
   final friendContr = TextEditingController();
@@ -91,7 +92,7 @@ class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
     friendContr.addListener(_listener);
     emit(state.copyWith(isLoading: true));
     try {
-      final query = await users.where('friends', arrayContains: userId).get();
+      final query = await users.where('friends', arrayContains: uid!).get();
       final _friends = query.docs.map((e) => UserDetails.fromJson(e.data()));
       this._friends = _friends.toList();
       emit(state.copyWith(users: _friends.toList()));
@@ -116,13 +117,16 @@ class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
     try {
       if (query.isEmpty) throw const FormatException();
       final filter = Filter.or(
-          Filter.and(Filter('display_name', isGreaterThanOrEqualTo: query),
-              Filter('display_name', isLessThanOrEqualTo: '$query\uf8ff')),
+          Filter.and(
+            Filter('display_name', isGreaterThanOrEqualTo: query),
+            Filter('display_name', isLessThanOrEqualTo: '$query\uf8ff'),
+          ),
           Filter.and(Filter('email', isGreaterThanOrEqualTo: query),
               Filter('email', isLessThanOrEqualTo: '$query\uf8ff')));
       final _query = await this.users.where(filter).get();
       final users = _query.docs.map((e) => UserDetails.fromJson(e.data()));
-      emit(state.copyWith(users: users.toList()));
+      final _users = users.toList()..removeWhere((e) => e.id == uid!);
+      emit(state.copyWith(users: _users));
     } on FormatException {
       emit(state.copyWith(users: _friends));
     } catch (e) {
@@ -135,11 +139,11 @@ class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
   void _onRequest(AddFriendRequest event, Emitter<AddFriendsState> emit) async {
     try {
       users.doc(event.id).update({
-        'requests': FieldValue.arrayUnion([userId])
+        'requests': FieldValue.arrayUnion([uid!])
       });
       emit(state.copyWith(requested: [...state.requested, event.id]));
       final noti = NotiDbModel(
-        from: userId,
+        from: uid!,
         to: event.id,
         dateTime: DateTime.now(),
         category: NotiCategory.request,
@@ -153,9 +157,9 @@ class AddFriendsBloc extends Bloc<AddFriendsEvent, AddFriendsState> {
   _onRemove(RemoveAddedRFriend event, Emitter<AddFriendsState> emit) async {
     try {
       users.doc(event.id).update({
-        'friends': FieldValue.arrayRemove([userId])
+        'friends': FieldValue.arrayRemove([uid!])
       });
-      users.doc(userId).update({
+      users.doc(uid!).update({
         'friends': FieldValue.arrayRemove([event.id])
       });
     } catch (e) {

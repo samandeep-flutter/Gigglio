@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
+import 'package:gigglio/services/box_services.dart';
 
 class NewChatEvent extends Equatable {
   @override
@@ -43,7 +43,7 @@ class NewChatBloc extends Bloc<NewChatEvent, NewChatState> {
   }
 
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
-  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final uid = BoxServices.instance.uid;
 
   final newChatContr = TextEditingController();
   List<UserDetails> _users = [];
@@ -51,7 +51,7 @@ class NewChatBloc extends Bloc<NewChatEvent, NewChatState> {
   _onInit(NewChatInitial event, Emitter<NewChatState> emit) async {
     newChatContr.addListener(_lisntner);
     try {
-      final query = await users.where('friends', arrayContains: userId).get();
+      final query = await users.where('friends', arrayContains: uid!).get();
       final _users = query.docs.map((e) => UserDetails.fromJson(e.data()));
       this._users = _users.toList();
       emit(state.copyWith(users: _users.toList()));

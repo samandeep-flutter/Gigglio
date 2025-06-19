@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/notification_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/services/auth_services.dart';
+import 'package:gigglio/services/box_services.dart';
 import 'package:gigglio/services/getit_instance.dart';
 
 class ViewRequestEvents extends Equatable {
@@ -64,7 +64,8 @@ class ViewRequestsBloc extends Bloc<ViewRequestEvents, ViewRequestState> {
   }
 
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
-  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final uid = BoxServices.instance.uid;
+
   final AuthServices auth = getIt();
 
   void _onInit(ViewRequestInitial event, Emitter<ViewRequestState> emit) async {
@@ -73,7 +74,7 @@ class ViewRequestsBloc extends Bloc<ViewRequestEvents, ViewRequestState> {
       final query = await this.users.get();
       var users =
           query.docs.map((e) => UserDetails.fromJson(e.data())).toList();
-      final cUser = users.firstWhere((e) => e.id == userId);
+      final cUser = users.firstWhere((e) => e.id == uid!);
       users.removeWhere((e) => !(cUser.requests.contains(e.id)));
       emit(state.copyWith(requests: users));
     } catch (e) {
@@ -85,12 +86,10 @@ class ViewRequestsBloc extends Bloc<ViewRequestEvents, ViewRequestState> {
 
   _onAccepted(RequestAccepted event, Emitter<ViewRequestState> emit) async {
     try {
-      final otherUser = users.doc(event.id);
-      final myUser = users.doc(userId);
-      otherUser.update({
-        'friends': FieldValue.arrayUnion([userId]),
+      users.doc(event.id).update({
+        'friends': FieldValue.arrayUnion([uid!]),
       });
-      myUser.update({
+      users.doc(uid!).update({
         'friends': FieldValue.arrayUnion([event.id]),
         'requests': FieldValue.arrayRemove([event.id]),
       });
@@ -98,7 +97,7 @@ class ViewRequestsBloc extends Bloc<ViewRequestEvents, ViewRequestState> {
       accepted.add(event.id);
       emit(state.copyWith(reqAccepted: accepted));
       final noti = NotiDbModel(
-        from: userId,
+        from: uid!,
         to: event.id,
         dateTime: DateTime.now(),
         category: NotiCategory.reqAccepted,
