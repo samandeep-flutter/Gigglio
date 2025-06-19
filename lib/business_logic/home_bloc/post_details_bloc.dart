@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
+import 'package:gigglio/services/box_services.dart';
 
 class PostDetailsEvent extends Equatable {
   const PostDetailsEvent();
@@ -66,9 +66,8 @@ class PostDetailsBloc extends Bloc<PostDetailsEvent, PostDetailsState> {
 
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
-
-  final userId = FirebaseAuth.instance.currentUser!.uid;
   final storage = FirebaseStorage.instance;
+  final uid = BoxServices.instance.uid;
 
   void _onInit(PostDetailsInitial event, Emitter<PostDetailsState> emit) async {
     emit(const PostDetailsState.init());
@@ -84,7 +83,7 @@ class PostDetailsBloc extends Bloc<PostDetailsEvent, PostDetailsState> {
   void _onAddFriend(PostAddFriend event, Emitter<PostDetailsState> emit) {
     try {
       users.doc(event.id).update({
-        'requests': FieldValue.arrayUnion([userId])
+        'requests': FieldValue.arrayUnion([uid!])
       });
       showToast('Friend request sent');
     } catch (e) {
@@ -96,11 +95,11 @@ class PostDetailsBloc extends Bloc<PostDetailsEvent, PostDetailsState> {
 
   void _onUnfriend(PostUserUnfriend event, Emitter<PostDetailsState> emit) {
     try {
-      users.doc(userId).update({
+      users.doc(uid!).update({
         'friends': FieldValue.arrayRemove([event.id])
       });
       users.doc(event.id).update({
-        'friends': FieldValue.arrayRemove([userId])
+        'friends': FieldValue.arrayRemove([uid!])
       });
     } catch (e) {
       logPrint(e, 'Unfriend');

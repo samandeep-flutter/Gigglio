@@ -26,6 +26,7 @@ class FBKeys {
 
 class BoxKeys {
   static const String boxName = 'gigglio';
+  static const String uid = 'uid';
   static const String theme = 'theme';
   static String chat(String id) => 'chat:$id';
 }

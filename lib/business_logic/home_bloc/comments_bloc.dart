@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/notification_model.dart';
@@ -10,6 +9,7 @@ import 'package:gigglio/data/data_models/post_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/services/auth_services.dart';
+import 'package:gigglio/services/box_services.dart';
 import 'package:gigglio/services/getit_instance.dart';
 
 class CommentsEvent extends Equatable {
@@ -76,7 +76,8 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
 
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
-  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final uid = BoxServices.instance.uid;
+
   final AuthServices auth = getIt();
 
   final commentsContr = TextEditingController();
@@ -117,7 +118,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
     try {
       if (message.isEmpty) return;
       final comment = CommentDbModel(
-          author: userId, title: message, dateTime: DateTime.now());
+          author: uid!, title: message, dateTime: DateTime.now());
       showToast('posting...');
       posts.doc(event.id).update({
         'comments': FieldValue.arrayUnion([comment.toJson()])
@@ -133,8 +134,8 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
     try {
       final _user = Completer<UserDetails>();
       final _post = Completer<PostDbModel>();
-      if (state.comments.any((e) => e.author.id == userId)) return;
-      users.doc(userId).get().then((json) {
+      if (state.comments.any((e) => e.author.id == uid!)) return;
+      users.doc(uid!).get().then((json) {
         _user.complete(UserDetails.fromJson(json.data()!));
       });
       posts.doc(postId).get().then((json) {
@@ -145,7 +146,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
 
       if (!user.friends.contains(author)) return;
       final noti = NotiDbModel(
-        from: userId,
+        from: uid!,
         to: author,
         postId: postId,
         dateTime: DateTime.now(),

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/post_model.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
@@ -56,7 +55,6 @@ class GotoPostBloc extends Bloc<GoToPostEvent, GoToPostState> {
   }
   final posts = FirebaseFirestore.instance.collection(FBKeys.post);
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
-  final userId = FirebaseAuth.instance.currentUser!.uid;
 
   void _onInit(GotoPostInitial event, Emitter<GoToPostState> emit) async {
     emit(state.copyWith(loading: true));

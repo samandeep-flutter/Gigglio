@@ -61,6 +61,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: StringRes.fullAppName,
       routerConfig: AppPages.routes,
+      debugShowCheckedModeBanner: false,
       builder: (context, child) => ResponsiveWrapper.builder(
         MultiBlocProvider(providers: [
           BlocProvider(create: (_) => RootBloc()),

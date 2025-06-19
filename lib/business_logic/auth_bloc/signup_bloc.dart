@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/data/utils/app_constants.dart';
 import 'package:gigglio/services/auth_services.dart';
+import 'package:gigglio/services/box_services.dart';
 import 'package:gigglio/services/getit_instance.dart';
 import '../../data/utils/string.dart';
 
@@ -49,6 +50,7 @@ class SignUpBloc extends Bloc<SignUpEvents, SignupState> {
   final fbAuth = FirebaseAuth.instance;
   final fbMessaging = FirebaseMessaging.instance;
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
+  final box = BoxServices.instance;
   final AuthServices auth = getIt();
 
   final formKey = GlobalKey<FormState>();
@@ -112,6 +114,7 @@ class SignUpBloc extends Bloc<SignUpEvents, SignupState> {
         login: true,
       );
       await users.doc(details.id).set(details.toJson());
+      box.write(BoxKeys.uid, credentials.user!.uid);
     } catch (e) {
       logPrint(e, 'createFbUser');
     }

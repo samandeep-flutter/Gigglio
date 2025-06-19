@@ -26,7 +26,7 @@ class MessageTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = context.read<ChatBloc>();
     final scheme = context.scheme;
-    final me = message.author == bloc.userId;
+    final me = message.author == bloc.box.uid!;
 
     if (message.post != null) {
       return Row(

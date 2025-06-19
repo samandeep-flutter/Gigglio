@@ -65,8 +65,7 @@ class _PostDetailsState extends State<PostDetails>
                 final requests = state.profile!.requests.contains(id);
                 return BlocBuilder<PostDetailsBloc, PostDetailsState>(
                     builder: (context, state) {
-                  final requested =
-                      state.profile?.requests.contains(bloc.userId);
+                  final requested = state.profile?.requests.contains(bloc.uid!);
                   return CustomListTile(
                     enable: !((requested ?? false) || requests),
                     onTap: () => bloc.add(PostAddFriend(id)),
@@ -85,7 +84,7 @@ class _PostDetailsState extends State<PostDetails>
               leading: Icons.share,
               title: StringRes.share,
             ),
-            if (bloc.userId == widget.post.author.id)
+            if (bloc.uid! == widget.post.author.id)
               CustomListTile(
                 onTap: () async {
                   context.pop();

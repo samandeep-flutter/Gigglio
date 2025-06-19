@@ -1,8 +1,6 @@
 
 ![Logo](https://firebasestorage.googleapis.com/v0/b/gigglio.appspot.com/o/app-media%2Fapp-graphic.png?alt=media&token=602a08ea-290a-4126-bf43-98da264d8325)
 
-#  Gigglio
-
 ![Flutter](https://img.shields.io/badge/Flutter-3.22-blue?logo=flutter) ![Firebase](https://img.shields.io/badge/Firebase-Enabled-yellow?logo=firebase) ![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-green) ![GitHub repo size](https://img.shields.io/github/repo-size/samandeep-flutter/Gigglio) ![GitHub License](https://img.shields.io/github/license/samandeep-flutter/Gigglio)
 
 

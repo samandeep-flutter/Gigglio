@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gigglio/data/data_models/user_details.dart';
 import 'package:gigglio/services/auth_services.dart';
+import 'package:gigglio/services/box_services.dart';
 import 'package:gigglio/services/getit_instance.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/utils/app_constants.dart';
@@ -71,6 +72,7 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
   final fbAuth = FirebaseAuth.instance;
   final fbMessaging = FirebaseMessaging.instance;
   final users = FirebaseFirestore.instance.collection(FBKeys.users);
+  final box = BoxServices.instance;
   final AuthServices auth = getIt();
 
   final formKey = GlobalKey<FormState>();
@@ -176,6 +178,7 @@ class SignInBloc extends Bloc<SignInEvents, SignInState> {
       );
       await users.doc(details.id).set(details.toJson());
     }
+    box.write(BoxKeys.uid, credentials.user!.uid);
   }
 
   void onFbSignInException(FirebaseAuthException e) {
